@@ -6,7 +6,7 @@
 |---|---|
 | Projectnaam | KinoBooking |
 | Documenttype | Functioneel ontwerp / Cahier des charges (Business Analyst document) |
-| Versie | 1.2 |
+| Versie | 1.3 |
 | Datum | 2026-09-07 |
 | Methode | Secties 1–10 en 14: reverse-engineering van de bestaande prototype-code (`index.html`). Secties 11–13: vooruitblikkend ontwerp (user stories, MVP-scope, architectuur) op basis van team-beslissingen. |
 | Status | Beschrijft zowel de huidige werking van het **statische front-end prototype** als de **afgesproken doelarchitectuur** voor de MVP |
@@ -468,28 +468,78 @@ graph TB
     Gerant -.->|controleert manueel eigen M-Pesa-app| MPesa
 ```
 
-### 13.3 Voorbeeldflow: aanvraag met afspraak (sequentiediagram)
+### 13.3 Use case-diagram (gebruikers en functionaliteiten)
 
-Dit diagram toont hoe de gekozen stack de flow uit sectie 7.1 (klant reserveert met afspraak) concreet zou afhandelen.
+In plaats van een technisch sequentiediagram toont dit diagram de architectuur vanuit de gebruiker: welke actor (rol) gebruikt welke functionaliteit. Het is een visuele samenvatting van de user stories in sectie 11, aangevuld met de externe systemen (WhatsApp, M-Pesa) waarmee klant en gérant in de MVP rechtstreeks interageren — buiten het systeem om, zonder API-koppeling (zie sectie 13.1).
 
 ```mermaid
-sequenceDiagram
-    actor K as Klant
-    participant W as Next.js Web App
-    participant DB as Supabase (DB + Realtime)
-    actor G as Gérant
+flowchart LR
+    Klant[👤 Klant]
+    Gerant[👤 Gérant / Eigenaar]
+    Personeel[👤 Personeel]
+    Admin[👤 Platformbeheerder]
 
-    K->>W: Vult boekingsformulier in en verstuurt
-    W->>DB: Aanvraag opslaan (status PENDING_APPROVAL)
-    DB-->>G: Realtime update: nieuwe aanvraag verschijnt in dashboard
-    G->>W: Valideert de aanvraag
-    W->>DB: Status wijzigen naar APPROVED_WAITING_PAYMENT
-    W-->>G: Genereert wa.me-link met vooraf ingevulde tekst
-    G->>K: Verstuurt WhatsApp-bericht (manueel, via de link)
-    K->>G: Betaalt aanbetaling via M-Pesa (buiten het systeem om)
-    G->>W: Bevestigt betaling manueel ("Betaling ontvangen"-knop)
-    W->>DB: Status wijzigen naar CONFIRMED
+    subgraph SysKlant["Reservering en wachtrij"]
+        UC1([Zaken zoeken en filteren])
+        UC2([Dienstenaanbod bekijken])
+        UC3([Boekingsaanvraag indienen met afspraak])
+        UC4([Ticket nemen zonder afspraak])
+        UC5([Bevestiging ontvangen])
+        UC6([Aanbetaling betalen])
+    end
+
+    subgraph SysZaak["Zaakbeheer — dashboard"]
+        UC7([Aanvragen bekijken - volledige gegevens])
+        UC8([Aanvraag valideren of weigeren])
+        UC9([Walk-in klant toevoegen])
+        UC10([Catalogus en tarieven beheren])
+        UC11([Reactietermijn instellen])
+        UC12([Betaling manueel bevestigen])
+        UC13([Inloggen op dashboard])
+    end
+
+    subgraph SysPersoneel["Beperkte zaaktoegang"]
+        UC14([Aanvragen bekijken - gemaskeerd nummer])
+    end
+
+    subgraph SysAdmin["Platformbeheer"]
+        UC15([Nieuwe zaak onboarden])
+        UC16([Abonnementen opvolgen])
+    end
+
+    subgraph SysExtern["Externe systemen - MVP: manueel/link-based"]
+        WhatsAppExt[☁️ WhatsApp]
+        MPesaExt[☁️ M-Pesa]
+    end
+
+    Klant --- UC1
+    Klant --- UC2
+    Klant --- UC3
+    Klant --- UC4
+    Klant --- UC5
+    Klant --- UC6
+
+    Gerant --- UC7
+    Gerant --- UC8
+    Gerant --- UC9
+    Gerant --- UC10
+    Gerant --- UC11
+    Gerant --- UC12
+    Gerant --- UC13
+
+    Personeel --- UC9
+    Personeel --- UC13
+    Personeel --- UC14
+
+    Admin --- UC15
+    Admin --- UC16
+
+    UC5 --- WhatsAppExt
+    UC6 --- MPesaExt
+    UC12 --- MPesaExt
 ```
+
+> De MVP-status (aanwezig / ontbreekt / later / geschrapt) van elke use case staat niet in dit diagram om het leesbaar te houden — zie de tabellen in sectie 11 (User Stories) en sectie 12 (MVP-scope) voor dat detail per item. Bijvoorbeeld: UC13 (inloggen), UC12 (betaling manueel bevestigen) en UC15 (zaak onboarden) horen bij de MVP maar ontbreken vandaag volledig; UC14 (gemaskeerd nummer voor personeel) is bewust naar "Later" verschoven (zie BR-8 en US-O9/US-S2); UC16 (abonnementen opvolgen) is geschrapt voor v1.
 
 ### 13.4 Hosting en omgevingen
 
@@ -517,4 +567,4 @@ sequenceDiagram
 
 ---
 
-*Dit document is opgesteld op basis van reverse-engineering van de broncode in `index.html` op de branch `claude/bookings-by-kino-aadqaq`, en weerspiegelt de staat van het prototype op 2026-09-07. Versie 1.1 voegt user stories en een MVP-scope-analyse toe; versie 1.2 (eveneens 2026-09-07) voegt de afgesproken architectuur en technologiestack voor de MVP toe (sectie 13).*
+*Dit document is opgesteld op basis van reverse-engineering van de broncode in `index.html` op de branch `claude/bookings-by-kino-aadqaq`, en weerspiegelt de staat van het prototype op 2026-09-07. Versie 1.1 voegt user stories en een MVP-scope-analyse toe; versie 1.2 voegt de afgesproken architectuur en technologiestack voor de MVP toe (sectie 13); versie 1.3 (eveneens 2026-09-07) vervangt het technische sequentiediagram in sectie 13.3 door een gebruikersgericht use case-diagram.*
