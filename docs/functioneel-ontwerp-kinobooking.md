@@ -6,12 +6,12 @@
 |---|---|
 | Projectnaam | KinoBooking |
 | Documenttype | Functioneel ontwerp / Cahier des charges (Business Analyst document) |
-| Versie | 1.3 |
+| Versie | 1.4 |
 | Datum | 2026-09-07 |
-| Methode | Secties 1–10 en 14: reverse-engineering van de bestaande prototype-code (`index.html`). Secties 11–13: vooruitblikkend ontwerp (user stories, MVP-scope, architectuur) op basis van team-beslissingen. |
+| Methode | Secties 1–10 en 14: reverse-engineering van de bestaande prototype-code (`index.html`). Secties 11–13: vooruitblikkend ontwerp (user stories, MVP-scope, architectuur — inclusief het use case- en dataflow-diagram) op basis van team-beslissingen. Enkele onderdelen van secties 4, 5, 6 en 7 zijn eveneens vooruitblikkend (de centrale agenda) en zijn inline gemarkeerd als "vooruitblikkend". |
 | Status | Beschrijft zowel de huidige werking van het **statische front-end prototype** als de **afgesproken doelarchitectuur** voor de MVP |
 
-> **Belangrijke opmerking vooraf.** Secties 1 t.e.m. 10 en 14 van dit document zijn opgesteld door de broncode van het prototype te analyseren (HTML-structuur, Tailwind-klassen en de JavaScript-logica in `index.html`) en beschrijven dus wat de applicatie **vandaag daadwerkelijk doet**, inclusief de plekken waar functionaliteit gesimuleerd is (bijv. met een `alert()`) in plaats van echt geïmplementeerd — sectie 9 vat deze beperkingen expliciet samen. Secties 11 (user stories), 12 (MVP-scope) en 13 (architectuur) zijn **vooruitblikkend**: ze beschrijven wat gebouwd moet worden en met welke technologie, niet wat er vandaag al bestaat.
+> **Belangrijke opmerking vooraf.** Secties 1 t.e.m. 10 en 14 van dit document zijn hoofdzakelijk opgesteld door de broncode van het prototype te analyseren (HTML-structuur, Tailwind-klassen en de JavaScript-logica in `index.html`) en beschrijven dus wat de applicatie **vandaag daadwerkelijk doet**, inclusief de plekken waar functionaliteit gesimuleerd is (bijv. met een `alert()`) in plaats van echt geïmplementeerd — sectie 9 vat deze beperkingen expliciet samen. Een aantal onderdelen daarin (met name de centrale agenda, zie 4.9, 6.4–6.5, 7.5, BR-10/BR-11) zijn expliciet gemarkeerd als **"vooruitblikkend"**: ze bestaan niet in het prototype maar zijn toegevoegd na een teambeslissing. Secties 11 (user stories), 12 (MVP-scope) en 13 (architectuur, met use case-diagram in 13.3 en dataflow diagram in 13.4) zijn volledig **vooruitblikkend**: ze beschrijven wat gebouwd moet worden en met welke technologie, niet wat er vandaag al bestaat.
 
 ---
 
@@ -161,6 +161,20 @@ Elke functionele eis krijgt een ID (FR = Functional Requirement) voor latere tra
 | FR-8.2 | Voor elke categorie toont het systeem het huidige maandbedrag en een korte toelichting (bijv. aantal zaken dat de optie afneemt). |
 | FR-8.3 | Een tariefoverzicht toont de drie beschikbare opties/tiers met prijs en beschrijving: QR-wachtrijmodule (+$15/m), WhatsApp-marketing (+$20/m), en de VIP-reserveringsoptie (inbegrepen in Business/Pro-abonnementen, met een platform-servicekost van $3 tot $5 per VIP-boeking die de eindklant betaalt). |
 
+### 4.9 Module: Centrale agenda- en beschikbaarheidsbeheer (vooruitblikkend — niet in het prototype)
+
+> Deze module bestaat niet in het huidige prototype (dat werkt met vier vaste tijdsloten, zie beperking 4 in sectie 9). Ze is toegevoegd na een teambeslissing: de agenda moet het **enige punt van waarheid** worden voor de gérant, zodat die geen apart of dubbel systeem (papier, Google Calendar, …) moet bijhouden naast KinoBooking. De uitrol gebeurt in twee fases (zie BR-10 en BR-11).
+
+| ID | Beschrijving |
+|---|---|
+| FR-9.1 | Het systeem biedt per zaak één centrale agenda waarin elke boeking terechtkomt, ongeacht de bron: een online aanvraag via het klantenportaal, een telefonisch genoteerde afspraak, of een klant die ter plaatse komt (walk-in). |
+| FR-9.2 | De gérant kan per zaak de openingsdagen en -uren instellen, en per tijdsblok (bv. per uur of half uur) de beschikbare capaciteit configureren (aantal parallelle plaatsen/stoelen/tafels). |
+| FR-9.3 | De gérant of het personeel kan rechtstreeks in de agenda een boeking of een blokkering (bv. verlofdag, persoonlijke afspraak) toevoegen, wijzigen of verwijderen. |
+| FR-9.4 | Het klantenportaal toont uitsluitend tijdstippen waarvoor nog capaciteit beschikbaar is in de agenda; de vaste tijdsloten uit het prototype (10:00, 12:00, 14:30, 17:00) worden vervangen door dynamisch berekende beschikbaarheid. |
+| FR-9.5 | **Fase 1.** Ook wanneer de agenda voldoende capaciteit toont, blijft de manuele validatie door de gérant behouden (status blijft `PENDING_APPROVAL` tot bevestiging) — dit blijft zo tot de betrouwbaarheid van de agenda in de praktijk (bij de pilootzaak) bevestigd is. |
+| FR-9.6 | **Fase 2** (na de validatieperiode van fase 1). Zodra een tijdstip in de agenda beschikbaar is, wordt de aanvraag automatisch bevestigd zonder tussenkomst van de gérant, en krijgt de klant onmiddellijk het M-Pesa-nummer en het te betalen bedrag te zien. |
+| FR-9.7 | Elke online aanvraag, elke walk-in en elke manuele invoer verbruikt dezelfde onderliggende capaciteit in de agenda, zodat er geen dubbele boeking kan ontstaan tussen de verschillende invoerkanalen. |
+
 ---
 
 ## 5. Bedrijfsregels (Business Rules)
@@ -176,6 +190,8 @@ Elke functionele eis krijgt een ID (FR = Functional Requirement) voor latere tra
 | BR-7 | Reserveringen **zonder afspraak** (walk-in/wachtrij) vereisen **geen aanbetaling** en worden **onmiddellijk bevestigd** met een volgnummer, zonder validatiestap door de zaak. |
 | BR-8 | Personeelsleden (rol "Personnel") mogen **nooit** het volledige telefoonnummer van een klant zien; enkel de eerste 3 en laatste 2 cijfers zijn zichtbaar. Enkel de rol "Gérant/Propriétaire" heeft volledige toegang. |
 | BR-9 | Elk bedrijf behoort tot precies **één hoofdcategorie**: Beauté óf Horeca. Deze keuze bepaalt welke velden in het reserveringsformulier zichtbaar zijn (bijv. medewerkerkeuze enkel bij Beauté). |
+| BR-10 | *(Vooruitblikkend, zie 4.9)* De centrale agenda is de enige bron van waarheid voor beschikbaarheid: elke boeking — online, telefonisch of ter plaatse — wordt erin geregistreerd, zodat de gérant nooit een apart of dubbel systeem moet bijhouden. |
+| BR-11 | *(Vooruitblikkend, zie 4.9)* De overgang van fase 1 (manuele validatie, ondanks een beschikbare agenda) naar fase 2 (automatische bevestiging zodra er plaats is) gebeurt pas nadat de betrouwbaarheid van de agenda in de praktijk bij de pilootzaak bevestigd is. Dit is een bewuste, gefaseerde uitrol — geen technische beperking. |
 
 ---
 
@@ -222,7 +238,31 @@ Elke functionele eis krijgt een ID (FR = Functional Requirement) voor latere tra
 | ref | tekst | Betalingsreferentie (leeg tot bevestiging) |
 | isVip | boolean | Geeft aan of de VIP-optie is gekozen |
 
-> **Opmerking.** Dit datamodel bestaat enkel als JavaScript-objecten in het geheugen van de browser. Er is geen backend-API, geen database en geen enkele vorm van datapersistentie tussen sessies.
+> **Opmerking.** Dit datamodel (6.1–6.3) bestaat enkel als JavaScript-objecten in het geheugen van de browser. Er is geen backend-API, geen database en geen enkele vorm van datapersistentie tussen sessies.
+
+### 6.4 Entiteit: Beschikbaarheidsinstelling (`AvailabilityRule`) — vooruitblikkend, zie 4.9
+
+| Veld | Type | Omschrijving |
+|---|---|---|
+| id | tekst | Unieke identificatie |
+| businessId | referentie | Zaak waartoe deze regel behoort |
+| weekday | enum | Dag van de week |
+| startTime / endTime | tijd | Openingsvenster op die dag |
+| slotDuration | getal (minuten) | Lengte van één tijdsblok |
+| capacity | getal | Aantal parallelle boekingen toegelaten per tijdsblok (bv. aantal stoelen/tafels) |
+
+### 6.5 Entiteit: Agenda-item (`AgendaEntry`) — vooruitblikkend, uitbreiding van `Request` (6.3)
+
+| Veld | Type | Omschrijving |
+|---|---|---|
+| id | tekst | Unieke identificatie |
+| businessId | referentie | Zaak waartoe dit item behoort |
+| bron | enum | `KLANT_APP`, `MANUEEL` (door gérant/personeel ingevoerd), `WALK_IN`, `BLOKKERING` (geen boeking, bv. verlof) |
+| startTime / endTime | tijd | Tijdsvenster van het item |
+| status | enum | `PENDING_APPROVAL`, `APPROVED_WAITING_PAYMENT`, `CONFIRMED`, `GEANNULEERD` (niet van toepassing op `BLOKKERING`) |
+| *(overige velden)* | — | De overige velden (klantnaam, telefoon, dienst, aanbetaling, VIP, …) blijven zoals in `Request` (6.3) |
+
+> **Opmerking.** De entiteiten 6.4 en 6.5 zijn **vooruitblikkend**: ze bestaan niet in het prototype en horen bij de MVP-scope zoals afgesproken in sectie 12.
 
 ---
 
@@ -255,6 +295,14 @@ Elke functionele eis krijgt een ID (FR = Functional Requirement) voor latere tra
 1. Eigenaar opent tabblad "Gérer le Catalogue & Tarifs".
 2. Eigenaar klikt "Ajouter un Service" en vult naam, categorie, beschrijving, duur, prijs en aanbetaling in.
 3. De nieuwe dienst is onmiddellijk beschikbaar, zowel in het dashboard als in het klantreserveringsformulier.
+
+### 7.5 Flow: Gérant beheert de centrale agenda (vooruitblikkend, zie 4.9)
+
+1. Gérant stelt eenmalig de openingsdagen/-uren en de capaciteit per tijdsblok in voor zijn zaak.
+2. Wanneer een klant telefonisch of in de zaak zelf een afspraak maakt, voegt de gérant (of het personeel) deze manueel toe aan de agenda — net zoals hij dat vandaag op papier of in een externe agenda zou doen.
+3. Wil de gérant een periode blokkeren (verlofdag, persoonlijke afspraak), dan voegt hij een blokkering toe; deze periode verschijnt niet meer als beschikbaar voor klanten.
+4. Het klantenportaal (flow 7.1) berekent de tijdstippen die het toont steeds op basis van deze agenda — nooit op basis van vaste, losstaande tijdsloten.
+5. *(Fase 2, na de validatieperiode van fase 1)* Zodra de agenda voldoende betrouwbaar gebleken is, vervalt stap 6 van flow 7.1 (manuele validatie): een online aanvraag voor een beschikbaar tijdstip wordt automatisch bevestigd.
 
 ---
 
@@ -328,6 +376,8 @@ Deze user stories vertalen de functionele vereisten (sectie 4) naar het klassiek
 | US-C7 | Als klant wil ik een account kunnen aanmaken en inloggen, zodat ik mijn boekingsgeschiedenis kan terugvinden. | Later – gast-boeking (naam + WhatsApp-nummer, zonder account) volstaat voor de MVP |
 | US-C8 | Als klant wil ik een discrete/VIP-reservering kunnen kiezen, zodat mijn bezoek privé blijft. | Geschrapt voor v1 |
 | US-C9 | Als klant wil ik een voorkeursmedewerker kunnen kiezen, zodat ik steeds door dezelfde persoon geholpen word. | Later |
+| US-C10 | Als klant wil ik enkel tijdstippen kunnen kiezen die ook echt beschikbaar zijn in de agenda van de zaak, zodat ik zeker weet dat mijn aanvraag zinvol is. | MVP (ontbreekt volledig — zie 4.9) |
+| US-C11 | Als klant wil ik, zodra de agenda betrouwbaar genoeg gebleken is, onmiddellijk het M-Pesa-nummer en het bedrag ontvangen zonder te moeten wachten op een menselijke validatie. | Later — Fase 2 (zie BR-11) |
 
 ### 11.2 Zaakeigenaar / Gérant
 
@@ -344,6 +394,10 @@ Deze user stories vertalen de functionele vereisten (sectie 4) naar het klassiek
 | US-O9 | Als eigenaar wil ik mijn personeel toegang geven tot het dashboard zonder dat zij de volledige telefoonnummers van klanten zien, zodat mijn klantenbestand beschermd is tegen diefstal. | Later (belangrijk, maar server-side afdwingen komt na de kernflow) |
 | US-O10 | Als eigenaar wil ik een QR-code kunnen ophangen aan mijn deur zodat klanten zelf een ticket kunnen nemen zonder personeel nodig te hebben. | Geschrapt voor v1 |
 | US-O11 | Als eigenaar wil ik oude klanten automatisch laten heractiveren via WhatsApp na 30 dagen, zodat ik zelf minder marketinginspanning moet leveren. | Geschrapt voor v1 |
+| US-O12 | Als eigenaar wil ik één centrale agenda hebben waarin alle boekingen samenkomen — online, telefonisch, of ter plaatse — zodat ik geen apart of dubbel systeem (papier, Google Calendar, …) moet bijhouden. | MVP (kernfeature, ontbreekt volledig — zie 4.9) |
+| US-O13 | Als eigenaar wil ik zelf mijn openingsuren en de beschikbare capaciteit per tijdsblok instellen, zodat klanten alleen realistisch beschikbare tijdstippen te zien krijgen. | MVP (ontbreekt volledig) |
+| US-O14 | Als eigenaar wil ik manueel een boeking of een blokkering (verlof, eigen afspraak) rechtstreeks in de agenda kunnen toevoegen, zodat telefonische of persoonlijke afspraken ook door het systeem gekend zijn. | MVP (ontbreekt volledig) |
+| US-O15 | Als eigenaar wil ik, zodra de agenda betrouwbaar gebleken is, dat een boeking automatisch bevestigd wordt zodra er plaats is — zonder dat ik elke aanvraag manueel moet valideren. | Later — Fase 2, na de validatieperiode met de pilootzaak (zie BR-11) |
 
 ### 11.3 Personeelslid
 
@@ -352,6 +406,7 @@ Deze user stories vertalen de functionele vereisten (sectie 4) naar het klassiek
 | US-S1 | Als personeelslid wil ik dezelfde aanvragenlijst zien als de eigenaar, zodat ik klanten kan bedienen zonder de eigenaar te moeten storen. | MVP – UI aanwezig |
 | US-S2 | Als personeelslid wil ik géén volledig telefoonnummer van klanten zien, zodat ik hen niet buiten de zaak om kan contacteren. | Later (nu enkel client-side gesimuleerd, niet afgedwongen) |
 | US-S3 | Als personeelslid wil ik zelf een walk-in-klant aan de wachtrij kunnen toevoegen, zodat ik snel kan werken aan de balie. | MVP – UI aanwezig |
+| US-S4 | Als personeelslid wil ik ook zelf een manuele boeking of blokkering aan de centrale agenda kunnen toevoegen, zodat ik dit kan doen zonder de eigenaar erbij te moeten halen. | MVP (ontbreekt volledig — zie 4.9) |
 
 ### 11.4 Platformbeheerder (KinoBooking)
 
@@ -376,10 +431,11 @@ De kernwaarde van KinoBooking zit in twee dingen: **(1)** een klant kan gratis e
 | Onderdeel | Nodig voor MVP? | Status vandaag | Wat ontbreekt nog | Geschat % klaar |
 |---|---|---|---|---|
 | Klant zoekt/bekijkt zaak & diensten | Ja | UI werkt, met mockdata | Echte data uit een database, meerdere zaken beheerbaar | 40% |
-| Aanvraag met afspraak indienen | Ja (kern) | UI + berekening werkt | Backend-opslag, echte beschikbaarheidscheck | 30% |
+| **Centrale agenda** (openingsuren, capaciteit per tijdsblok, manuele boekingen/blokkades) | **Ja (kern, nieuw inzicht — zie 4.9)** | Onbestaand | Volledig datamodel (6.4/6.5) + UI voor gérant/personeel | 0% |
+| Aanvraag met afspraak indienen | Ja (kern) | UI + berekening werkt, maar op vaste tijdsloten | Backend-opslag; afhankelijk van de centrale agenda voor échte beschikbaarheid | 25% |
 | Ticket zonder afspraak (wachtrij) | Ja (kern, onderscheidend) | UI werkt | Backend, live volgnummer, echte notificatie | 25% |
-| Dashboard: aanvragen valideren/weigeren | Ja (kern) | UI werkt | Persistente data, echte login | 30% |
-| Aanbetaling verifiëren (M-Pesa) | Ja (kritiek voor het verdienmodel) | Enkel bedrag tonen | Integratie óf manueel bevestigingsproces | 5% |
+| Dashboard: aanvragen valideren/weigeren | Ja (kern, fase 1 blijft manueel — zie BR-11) | UI werkt | Persistente data, echte login | 30% |
+| Aanbetaling verifiëren (M-Pesa) | Ja (kritiek voor het verdienmodel) | Enkel bedrag tonen | Fase 1: manueel bevestigingsproces. Fase 2 (later): automatische vrijgave M-Pesa-nummer zodra de agenda plaats toont | 5% |
 | WhatsApp-notificaties (validatie, ticket, betaalherinnering) | Ja (kern voor UX) | Gesimuleerd met `alert()` | Echte koppeling (of minstens `wa.me`-links) | 5% |
 | Login/auth voor eigenaar & personeel | Ja (basisveiligheid) | Onbestaand | Volledige implementatie | 0% |
 | Catalogusbeheer (diensten toevoegen) | Ja, eenvoudig | UI werkt, maar hardcoded op 1 bedrijf | Multi-tenant, backend-opslag | 25% |
@@ -405,16 +461,19 @@ Dit betekent niet dat deze onderdelen uit de code moeten verdwijnen — ze mogen
 
 ### 12.4 Eerlijk totaalcijfer
 
-**Grofweg 15–20% van het effectieve MVP-werk is vandaag gerealiseerd.** Dat lijkt laag in verhouding tot hoe "af" de applicatie er visueel uitziet, maar dat is de valkuil van een klikbaar HTML/JS-prototype: de gebruikersinterface is doorgaans het makkelijkste deel van dit soort applicatie. Backend, database, authenticatie, betaalverificatie en messaging-integratie vertegenwoordigen typisch 70–80% van het totale ontwikkelwerk voor een applicatie als deze, en daar staat de teller momenteel nog op 0%.
+**Grofweg 10–15% van het effectieve MVP-werk is vandaag gerealiseerd** (naar beneden bijgesteld van 15–20% sinds de centrale agenda expliciet tot de kernscope is gaan behoren — de scope is dus groter geworden, niet het gerealiseerde werk kleiner). Dat lijkt laag in verhouding tot hoe "af" de applicatie er visueel uitziet, maar dat is de valkuil van een klikbaar HTML/JS-prototype: de gebruikersinterface is doorgaans het makkelijkste deel van dit soort applicatie. Backend, database, authenticatie, de centrale agenda, betaalverificatie en messaging-integratie vertegenwoordigen samen het grootste deel van het totale ontwikkelwerk voor een applicatie als deze, en daar staat de teller momenteel nog grotendeels op 0%.
 
 ### 12.5 Prioriteitenlijst om tot een lanceerbare MVP te komen
 
 1. **Backend + database** – bedrijven, diensten, aanvragen en gebruikers persistent opslaan.
-2. **Login/authenticatie** voor eigenaar en personeel.
-3. **Aanbetaling** – pragmatisch beginnen: geen volledige M-Pesa-API (traag en administratief zwaar om goedgekeurd te krijgen), maar een "ik heb betaald"-bevestiging die de eigenaar manueel afvinkt na controle in zijn eigen M-Pesa-app.
-4. **Notificaties** – starten met `wa.me`-links (opent WhatsApp met een vooraf ingevulde tekst) in plaats van de volledige WhatsApp Business API, die een goedkeuringstraject vereist.
-5. **Eén echte pilootzaak** live zetten met echte gegevens in plaats van mockdata.
-6. **Echte hosting voor de backend** – GitHub Pages volstaat enkel voor de huidige statische front-end, niet zodra er een database/API bijkomt.
+2. **Centrale agenda** (datamodel 6.4/6.5 + UI) – openingsuren, capaciteit per tijdsblok, en manuele invoer van boekingen/blokkades door gérant/personeel. Dit is een voorwaarde voor een correcte werking van punt 4 hieronder, dus vroeg in de bouwvolgorde.
+3. **Login/authenticatie** voor eigenaar en personeel.
+4. **Aanvraag met afspraak** herbouwen op basis van de agenda (dynamische beschikbaarheid i.p.v. vaste tijdsloten), met manuele validatie (fase 1, zie BR-11).
+5. **Aanbetaling** – pragmatisch beginnen: geen volledige M-Pesa-API (traag en administratief zwaar om goedgekeurd te krijgen), maar een "ik heb betaald"-bevestiging die de eigenaar manueel afvinkt na controle in zijn eigen M-Pesa-app.
+6. **Notificaties** – starten met `wa.me`-links (opent WhatsApp met een vooraf ingevulde tekst) in plaats van de volledige WhatsApp Business API, die een goedkeuringstraject vereist.
+7. **Eén echte pilootzaak** live zetten met echte gegevens in plaats van mockdata.
+8. **Echte hosting voor de backend** – GitHub Pages volstaat enkel voor de huidige statische front-end, niet zodra er een database/API bijkomt.
+9. **Fase 2 (later, na validatie bij de pilootzaak)** – automatische bevestiging + onmiddellijke M-Pesa-gegevens zodra de agenda plaats toont (BR-11, US-O15, US-C11).
 
 ---
 
@@ -496,6 +555,8 @@ flowchart LR
         UC11([Reactietermijn instellen])
         UC12([Betaling manueel bevestigen])
         UC13([Inloggen op dashboard])
+        UC17([Openingsuren en capaciteit instellen])
+        UC18([Boeking of blokkering manueel toevoegen aan agenda])
     end
 
     subgraph SysPersoneel["Beperkte zaaktoegang"]
@@ -526,29 +587,85 @@ flowchart LR
     Gerant --- UC11
     Gerant --- UC12
     Gerant --- UC13
+    Gerant --- UC17
+    Gerant --- UC18
 
     Personeel --- UC9
     Personeel --- UC13
     Personeel --- UC14
+    Personeel --- UC18
 
     Admin --- UC15
     Admin --- UC16
 
+    UC3 --- UC17
     UC5 --- WhatsAppExt
     UC6 --- MPesaExt
     UC12 --- MPesaExt
 ```
 
-> De MVP-status (aanwezig / ontbreekt / later / geschrapt) van elke use case staat niet in dit diagram om het leesbaar te houden — zie de tabellen in sectie 11 (User Stories) en sectie 12 (MVP-scope) voor dat detail per item. Bijvoorbeeld: UC13 (inloggen), UC12 (betaling manueel bevestigen) en UC15 (zaak onboarden) horen bij de MVP maar ontbreken vandaag volledig; UC14 (gemaskeerd nummer voor personeel) is bewust naar "Later" verschoven (zie BR-8 en US-O9/US-S2); UC16 (abonnementen opvolgen) is geschrapt voor v1.
+> De MVP-status (aanwezig / ontbreekt / later / geschrapt) van elke use case staat niet in dit diagram om het leesbaar te houden — zie de tabellen in sectie 11 (User Stories) en sectie 12 (MVP-scope) voor dat detail per item. Bijvoorbeeld: UC13 (inloggen), UC12 (betaling manueel bevestigen), UC15 (zaak onboarden), UC17 en UC18 (centrale agenda) horen bij de MVP maar ontbreken vandaag volledig; UC14 (gemaskeerd nummer voor personeel) is bewust naar "Later" verschoven (zie BR-8 en US-O9/US-S2); UC16 (abonnementen opvolgen) is geschrapt voor v1. De koppeling UC3 → UC17 toont dat een boekingsaanvraag (UC3) afhankelijk is van de door de gérant ingestelde beschikbaarheid (UC17) — zie ook BR-10.
 
-### 13.4 Hosting en omgevingen
+### 13.4 Data flow diagram (DFD)
+
+Waar het use case-diagram (13.3) toont *wie wat doet*, toont dit data flow diagram *hoe gegevens door het systeem stromen*: externe entiteiten (rechthoeken), verwerkingsprocessen (cirkels) en datastores (cilinders), met de gegevensstromen ertussen als gelabelde pijlen. De centrale agenda (D2) staat bewust in het midden — vrijwel elk proces leest of schrijft ernaar, wat precies weerspiegelt dat de agenda het enige punt van waarheid moet worden (BR-10).
+
+```mermaid
+flowchart LR
+    Klant["Klant"]
+    Gerant["Gérant / Personeel"]
+    WhatsAppExt["WhatsApp"]
+    MPesaExt["M-Pesa"]
+
+    P1(("P1 - Zaken en diensten doorzoeken"))
+    P2(("P2 - Boekingsaanvraag verwerken"))
+    P3(("P3 - Agenda en beschikbaarheid beheren"))
+    P4(("P4 - Aanvraag valideren of weigeren"))
+    P5(("P5 - Betaling bevestigen"))
+    P6(("P6 - Wachtrij en walk-ins beheren"))
+
+    D1[("D1 - Catalogus: Bedrijven en Diensten")]
+    D2[("D2 - Agenda: boekingen, blokkades, capaciteit")]
+    D3[("D3 - Gebruikers en rollen")]
+
+    Klant -->|zoekopdracht| P1
+    P1 -->|leest| D1
+    D1 -->|resultaten| P1
+    P1 -->|toont resultaten| Klant
+
+    Klant -->|boekingsgegevens| P2
+    P2 -->|controleert beschikbaarheid| D2
+    P2 -->|schrijft aanvraag - PENDING_APPROVAL| D2
+    P2 -->|meldt nieuwe aanvraag| Gerant
+
+    Gerant -->|beslissing| P4
+    P4 -->|leest/schrijft status| D2
+    P4 -->|rolcheck| D3
+    P4 -->|genereert wa.me-link| WhatsAppExt
+    WhatsAppExt -->|bericht met M-Pesa-nummer| Klant
+
+    Klant -->|betaalt aanbetaling| MPesaExt
+
+    Gerant -->|bevestigt betaling| P5
+    P5 -->|status naar CONFIRMED| D2
+
+    Gerant -->|openingsuren, capaciteit, manuele boekingen| P3
+    P3 -->|leest/schrijft| D2
+
+    Gerant -->|voegt walk-in toe| P6
+    P6 -->|leest/schrijft| D2
+```
+
+> **Fase 2 (later, zie BR-11):** zodra P3 (agenda) voldoende betrouwbaar is bevonden, verdwijnt de stap "Gerant → beslissing → P4" voor online aanvragen met beschikbare capaciteit: P2 raadpleegt dan rechtstreeks D2, bevestigt automatisch, en stuurt onmiddellijk het M-Pesa-nummer naar de klant zonder tussenkomst van P4.
+
+### 13.5 Hosting en omgevingen
 
 - **Netlify** host de Next.js-applicatie via de officiële Next.js Runtime (ondersteunt zowel statische pagina's als server-side rendering en API routes/serverless functions).
 - Netlify's deploy-previews per branch sluiten aan bij de bestaande git-workflow (feature branch → preview-URL → main → productie).
 - Voor de pilootfase volstaat een Netlify-subdomein (bv. `kinobooking.netlify.app`) of een subdomein van het bestaande domein waarop "KINO CONGO" draait; een volledig apart domein kan later aangeschaft worden als het product verder groeit.
 - Supabase draait als één project voor de MVP; een aparte staging-/productieomgeving kan toegevoegd worden zodra er met meerdere pilootzaken tegelijk getest wordt.
 
-### 13.5 Beveiligingsaandachtspunten
+### 13.6 Beveiligingsaandachtspunten
 
 - De in sectie 9 en 10 beschreven tekortkoming ("personeel ziet geen volledig nummer" is enkel client-side gesimuleerd) wordt in deze architectuur opgelost via **Supabase Row-Level Security (RLS)**-policies: de database zelf beslist, op basis van de ingelogde rol, of een query het volledige of het gemaskeerde telefoonnummer teruggeeft — niet enkel de front-end.
 - De Supabase *service role key* (met volledige databasetoegang) wordt uitsluitend gebruikt in server-side API routes, nooit blootgesteld aan de browser; de client gebruikt enkel de beperkte *anon key* in combinatie met RLS-policies.
@@ -567,4 +684,4 @@ flowchart LR
 
 ---
 
-*Dit document is opgesteld op basis van reverse-engineering van de broncode in `index.html` op de branch `claude/bookings-by-kino-aadqaq`, en weerspiegelt de staat van het prototype op 2026-09-07. Versie 1.1 voegt user stories en een MVP-scope-analyse toe; versie 1.2 voegt de afgesproken architectuur en technologiestack voor de MVP toe (sectie 13); versie 1.3 (eveneens 2026-09-07) vervangt het technische sequentiediagram in sectie 13.3 door een gebruikersgericht use case-diagram.*
+*Dit document is opgesteld op basis van reverse-engineering van de broncode in `index.html` op de branch `claude/bookings-by-kino-aadqaq`, en weerspiegelt de staat van het prototype op 2026-09-07. Versie 1.1 voegt user stories en een MVP-scope-analyse toe; versie 1.2 voegt de afgesproken architectuur en technologiestack voor de MVP toe (sectie 13); versie 1.3 vervangt het technische sequentiediagram in sectie 13.3 door een gebruikersgericht use case-diagram; versie 1.4 (eveneens 2026-09-07) voegt de centrale agenda toe als kernonderdeel van de MVP (fase 1: manuele validatie, fase 2: automatische bevestiging — zie BR-10/BR-11) in secties 4.9, 5, 6.4–6.5, 7.5, 11 en 12, plus een data flow diagram in sectie 13.4.*
