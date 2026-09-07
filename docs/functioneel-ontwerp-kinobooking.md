@@ -6,7 +6,7 @@
 |---|---|
 | Projectnaam | KinoBooking |
 | Documenttype | Functioneel ontwerp / Cahier des charges (Business Analyst document) |
-| Versie | 1.4 |
+| Versie | 1.5 |
 | Datum | 2026-09-07 |
 | Methode | Secties 1–10 en 14: reverse-engineering van de bestaande prototype-code (`index.html`). Secties 11–13: vooruitblikkend ontwerp (user stories, MVP-scope, architectuur — inclusief het use case- en dataflow-diagram) op basis van team-beslissingen. Enkele onderdelen van secties 4, 5, 6 en 7 zijn eveneens vooruitblikkend (de centrale agenda) en zijn inline gemarkeerd als "vooruitblikkend". |
 | Status | Beschrijft zowel de huidige werking van het **statische front-end prototype** als de **afgesproken doelarchitectuur** voor de MVP |
@@ -192,6 +192,7 @@ Elke functionele eis krijgt een ID (FR = Functional Requirement) voor latere tra
 | BR-9 | Elk bedrijf behoort tot precies **één hoofdcategorie**: Beauté óf Horeca. Deze keuze bepaalt welke velden in het reserveringsformulier zichtbaar zijn (bijv. medewerkerkeuze enkel bij Beauté). |
 | BR-10 | *(Vooruitblikkend, zie 4.9)* De centrale agenda is de enige bron van waarheid voor beschikbaarheid: elke boeking — online, telefonisch of ter plaatse — wordt erin geregistreerd, zodat de gérant nooit een apart of dubbel systeem moet bijhouden. |
 | BR-11 | *(Vooruitblikkend, zie 4.9)* De overgang van fase 1 (manuele validatie, ondanks een beschikbare agenda) naar fase 2 (automatische bevestiging zodra er plaats is) gebeurt pas nadat de betrouwbaarheid van de agenda in de praktijk bij de pilootzaak bevestigd is. Dit is een bewuste, gefaseerde uitrol — geen technische beperking. |
+| BR-12 | *(Vooruitblikkend, zie 14.2)* De introductieprijs ($9/maand basis, +$5/maand voor de QR-wachtrijoptie) geldt uitsluitend voor de **eerste 100 zaken** die zich aansluiten. Vanaf de 101e zaak geldt de standaardprijs ($49/maand, +$15/maand). Zaken die zich tijdens de introductieperiode aansloten, behouden hun introductieprijs ("founder pricing", locked-in). |
 
 ---
 
@@ -673,7 +674,11 @@ flowchart LR
 
 ---
 
-## 14. Bijlage: Overzicht prijsmodel (zoals getoond in het Admin SaaS-scherm)
+## 14. Bijlage: Prijsmodel
+
+### 14.1 Prototype-weergave (historisch, uit de mockup)
+
+Dit is het prijsmodel zoals het huidige statische prototype het toont in het Admin SaaS-scherm — pure reverse-engineering, geen actuele business-beslissing.
 
 | Onderdeel | Prijs | Toelichting |
 |---|---|---|
@@ -682,6 +687,19 @@ flowchart LR
 | Optie: Automatische WhatsApp-marketing | +$20 / maand | Automatische heractivatie van klanten na 30 dagen inactiviteit, zonder blootstelling van nummers aan personeel |
 | Optie: Discrete/VIP-reservering | Inbegrepen in Business/Pro-abonnementen | Platform ontvangt bijkomend $3 à $5 servicekost per VIP-boeking, betaald door de eindklant |
 
+### 14.2 Werkelijke lanceringsprijs (vooruitblikkend — teambeslissing)
+
+Deze prijs vervangt de mockup-waarden hierboven voor de effectieve lancering; zie ook BR-12.
+
+| Onderdeel | Introductieprijs (eerste 100 zaken) | Standaardprijs (vanaf de 101e zaak) | Toelichting |
+|---|---|---|---|
+| Basisabonnement | **$9 / maand** | $49 / maand | Bewust laag gehouden bij de start om vertrouwen te winnen en de eerste zaken te overtuigen zich aan te sluiten (zie sectie 12.1) |
+| Optie: QR-wachtrijmodule | **+$5 / maand** | +$15 / maand | Zelfde functionaliteit als 14.1, enkel de prijs verschilt |
+| Optie: Automatische WhatsApp-marketing | +$20 / maand | +$20 / maand | Ongewijzigd — geen introductieprijs voor deze optie |
+| Optie: Discrete/VIP-reservering | Inbegrepen in het abonnement | Inbegrepen in het abonnement | Platform-servicekost van $3 à $5 per VIP-boeking blijft ongewijzigd, ongeacht introductie- of standaardprijs |
+
+> **"Founder pricing".** De introductieprijs is een bewuste, tijdelijke en in aantal beperkte lanceeractie (eerste 100 zaken), geen permanente prijsverlaging. Zodra de 100 plaatsen ingevuld zijn, geldt de standaardprijs voor nieuwe zaken; zaken die zich tijdens de introductieperiode aansloten, behouden hun lagere prijs ("locked-in", zie BR-12) — dit beloont vroege klanten en ondersteunt de latere overstap naar de standaardprijs voor nieuwe aansluitingen.
+
 ---
 
-*Dit document is opgesteld op basis van reverse-engineering van de broncode in `index.html` op de branch `claude/bookings-by-kino-aadqaq`, en weerspiegelt de staat van het prototype op 2026-09-07. Versie 1.1 voegt user stories en een MVP-scope-analyse toe; versie 1.2 voegt de afgesproken architectuur en technologiestack voor de MVP toe (sectie 13); versie 1.3 vervangt het technische sequentiediagram in sectie 13.3 door een gebruikersgericht use case-diagram; versie 1.4 (eveneens 2026-09-07) voegt de centrale agenda toe als kernonderdeel van de MVP (fase 1: manuele validatie, fase 2: automatische bevestiging — zie BR-10/BR-11) in secties 4.9, 5, 6.4–6.5, 7.5, 11 en 12, plus een data flow diagram in sectie 13.4.*
+*Dit document is opgesteld op basis van reverse-engineering van de broncode in `index.html` op de branch `claude/bookings-by-kino-aadqaq`, en weerspiegelt de staat van het prototype op 2026-09-07. Versie 1.1 voegt user stories en een MVP-scope-analyse toe; versie 1.2 voegt de afgesproken architectuur en technologiestack voor de MVP toe (sectie 13); versie 1.3 vervangt het technische sequentiediagram in sectie 13.3 door een gebruikersgericht use case-diagram; versie 1.4 voegt de centrale agenda toe als kernonderdeel van de MVP (fase 1: manuele validatie, fase 2: automatische bevestiging — zie BR-10/BR-11) in secties 4.9, 5, 6.4–6.5, 7.5, 11 en 12, plus een data flow diagram in sectie 13.4; versie 1.5 (eveneens 2026-09-07) voegt de effectieve lanceringsprijs toe (BR-12, sectie 14.2): $9/maand + $5/maand QR-optie voor de eerste 100 zaken, met behoud van het oorspronkelijke prototype-prijsmodel als historische referentie in sectie 14.1.*
