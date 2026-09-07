@@ -6,12 +6,12 @@
 |---|---|
 | Projectnaam | KinoBooking |
 | Documenttype | Functioneel ontwerp / Cahier des charges (Business Analyst document) |
-| Versie | 1.0 |
+| Versie | 1.1 |
 | Datum | 2026-09-07 |
 | Methode | Reverse-engineering van de bestaande prototype-code (`index.html`) in deze repository |
 | Status | Beschrijft de huidige werking van het **statische front-end prototype**, niet van een productieklaar systeem |
 
-> **Belangrijke opmerking vooraf.** Dit document is opgesteld door de broncode van het prototype te analyseren (HTML-structuur, Tailwind-klassen en de JavaScript-logica in `index.html`). Het beschrijft dus wat de applicatie **vandaag daadwerkelijk doet**, inclusief de plekken waar functionaliteit gesimuleerd is (bijv. met een `alert()`) in plaats van echt geïmplementeerd. Sectie 10 vat deze beperkingen expliciet samen.
+> **Belangrijke opmerking vooraf.** Dit document is opgesteld door de broncode van het prototype te analyseren (HTML-structuur, Tailwind-klassen en de JavaScript-logica in `index.html`). Het beschrijft dus wat de applicatie **vandaag daadwerkelijk doet**, inclusief de plekken waar functionaliteit gesimuleerd is (bijv. met een `alert()`) in plaats van echt geïmplementeerd. Sectie 9 vat deze beperkingen expliciet samen. Versie 1.1 voegt user stories (sectie 11) en een MVP-scope- en statusanalyse (sectie 12) toe.
 
 ---
 
@@ -306,7 +306,119 @@ Op basis van bovenstaande analyse worden de volgende bouwstenen aanbevolen om va
 
 ---
 
-## 11. Bijlage: Overzicht prijsmodel (zoals getoond in het Admin SaaS-scherm)
+## 11. User Stories
+
+Deze user stories vertalen de functionele vereisten (sectie 4) naar het klassieke "Als … wil ik … zodat …"-formaat, per gebruikersrol. Elke story krijgt een status:
+
+- **MVP** = noodzakelijk voor een eerste lanceerbare versie met een echte pilootzaak.
+- **MVP (ontbreekt)** = hoort bij de MVP-scope, maar is in het huidige prototype nog niet echt geïmplementeerd (enkel UI of simulatie).
+- **Later** = wenselijk, maar bewust uitgesteld tot na de MVP.
+- **Geschrapt voor v1** = staat wel in het prototype, maar wordt aanbevolen om uit de eerste lanceerbare versie te laten.
+
+### 11.1 Eindklant (consument)
+
+| ID | User story | Status |
+|---|---|---|
+| US-C1 | Als klant wil ik zaken kunnen zoeken en filteren op categorie (Beauté/Horeca) en gemeente, zodat ik snel een relevante zaak vind. | MVP – grotendeels aanwezig |
+| US-C2 | Als klant wil ik het dienstenaanbod en de prijzen van een zaak kunnen bekijken vóór ik boek, zodat ik weet wat ik kan verwachten. | MVP – aanwezig |
+| US-C3 | Als klant wil ik een gratis, vrijblijvende boekingsaanvraag kunnen indienen voor een dienst op een gekozen datum en tijdstip, zodat ik niet vooraf moet betalen voor iets dat nog niet bevestigd is. | MVP (ontbreekt: enkel UI, geen backend) |
+| US-C4 | Als klant wil ik een virtueel ticket kunnen nemen voor de wachtrij zonder afspraak, zodat ik niet fysiek moet aanschuiven. | MVP (ontbreekt: enkel UI, geen live volgnummer) |
+| US-C5 | Als klant wil ik een WhatsApp-bevestiging krijgen zodra mijn aanvraag gevalideerd is of mijn beurt in de wachtrij nadert, zodat ik weet wanneer ik moet komen. | MVP (ontbreekt volledig – nu enkel `alert()`) |
+| US-C6 | Als klant wil ik zien hoeveel aanbetaling ik moet betalen en via welk kanaal (M-Pesa-nummer van de zaak), zodat ik mijn afspraak kan bevestigen. | MVP – UI aanwezig |
+| US-C7 | Als klant wil ik een account kunnen aanmaken en inloggen, zodat ik mijn boekingsgeschiedenis kan terugvinden. | Later – gast-boeking (naam + WhatsApp-nummer, zonder account) volstaat voor de MVP |
+| US-C8 | Als klant wil ik een discrete/VIP-reservering kunnen kiezen, zodat mijn bezoek privé blijft. | Geschrapt voor v1 |
+| US-C9 | Als klant wil ik een voorkeursmedewerker kunnen kiezen, zodat ik steeds door dezelfde persoon geholpen word. | Later |
+
+### 11.2 Zaakeigenaar / Gérant
+
+| ID | User story | Status |
+|---|---|---|
+| US-O1 | Als eigenaar wil ik kunnen inloggen op een beveiligd dashboard, zodat enkel ik en mijn personeel toegang hebben tot de gegevens van mijn zaak. | MVP (ontbreekt volledig) |
+| US-O2 | Als eigenaar wil ik alle inkomende boekingsaanvragen in één overzicht zien, zodat ik niets mis. | MVP – UI aanwezig |
+| US-O3 | Als eigenaar wil ik een aanvraag kunnen valideren of weigeren, zodat ik enkel bevestig wat ik ook effectief kan uitvoeren. | MVP (ontbreekt: UI aanwezig, geen backend) |
+| US-O4 | Als eigenaar wil ik dat de klant automatisch een WhatsApp-bericht krijgt na validatie, zodat die weet dat er betaald moet worden. | MVP (ontbreekt volledig – nu enkel `alert()`) |
+| US-O5 | Als eigenaar wil ik kunnen zien (of manueel bevestigen) welke aanbetalingen binnengekomen zijn, zodat ik weet welke boekingen definitief zijn. | MVP (ontbreekt volledig) |
+| US-O6 | Als eigenaar wil ik zelf mijn dienstenaanbod (naam, beschrijving, duur, prijs, aanbetaling) kunnen beheren, zodat ik niet afhankelijk ben van een ontwikkelaar. | MVP (ontbreekt: werkt nu enkel op één hardcoded zaak) |
+| US-O7 | Als eigenaar of personeelslid wil ik snel een walk-in-klant aan de wachtrij kunnen toevoegen, zodat ook wie ter plaatse komt mee opgenomen wordt. | MVP – UI aanwezig |
+| US-O8 | Als eigenaar wil ik zelf de maximale reactietermijn voor aanvragen instellen, zodat klanten weten wanneer ze ten laatste antwoord krijgen. | MVP – UI aanwezig |
+| US-O9 | Als eigenaar wil ik mijn personeel toegang geven tot het dashboard zonder dat zij de volledige telefoonnummers van klanten zien, zodat mijn klantenbestand beschermd is tegen diefstal. | Later (belangrijk, maar server-side afdwingen komt na de kernflow) |
+| US-O10 | Als eigenaar wil ik een QR-code kunnen ophangen aan mijn deur zodat klanten zelf een ticket kunnen nemen zonder personeel nodig te hebben. | Geschrapt voor v1 |
+| US-O11 | Als eigenaar wil ik oude klanten automatisch laten heractiveren via WhatsApp na 30 dagen, zodat ik zelf minder marketinginspanning moet leveren. | Geschrapt voor v1 |
+
+### 11.3 Personeelslid
+
+| ID | User story | Status |
+|---|---|---|
+| US-S1 | Als personeelslid wil ik dezelfde aanvragenlijst zien als de eigenaar, zodat ik klanten kan bedienen zonder de eigenaar te moeten storen. | MVP – UI aanwezig |
+| US-S2 | Als personeelslid wil ik géén volledig telefoonnummer van klanten zien, zodat ik hen niet buiten de zaak om kan contacteren. | Later (nu enkel client-side gesimuleerd, niet afgedwongen) |
+| US-S3 | Als personeelslid wil ik zelf een walk-in-klant aan de wachtrij kunnen toevoegen, zodat ik snel kan werken aan de balie. | MVP – UI aanwezig |
+
+### 11.4 Platformbeheerder (KinoBooking)
+
+| ID | User story | Status |
+|---|---|---|
+| US-A1 | Als platformbeheerder wil ik nieuwe zaken kunnen registreren/onboarden op het platform, zodat ik nieuwe klanten (zaken) kan toevoegen zonder code aan te passen. | MVP (ontbreekt volledig – nu hardcoded in de broncode) |
+| US-A2 | Als platformbeheerder wil ik zien welk abonnement en welke opties elke zaak afneemt, zodat ik mijn omzet kan opvolgen. | Geschrapt voor v1 (kan manueel opgevolgd worden, bv. in een spreadsheet) |
+| US-A3 | Als platformbeheerder wil ik automatisch kunnen factureren voor abonnementen en opties, zodat ik niet manueel moet innen. | Geschrapt voor v1 |
+
+---
+
+## 12. MVP-scope en statusanalyse
+
+Deze sectie geeft een eerlijke inschatting van hoever het huidige prototype staat ten opzichte van een lanceerbare MVP, en wat er bewust uit de scope van v1 gehaald wordt.
+
+### 12.1 Uitgangspunt
+
+De kernwaarde van KinoBooking zit in twee dingen: **(1)** een klant kan gratis een aanvraag indienen of een ticket nemen zonder aan te schuiven, en **(2)** de zaak kan die aanvragen centraal beheren en een aanbetaling afdwingen om no-shows te beperken. Een MVP moet dit kunnen bewijzen met **minstens één echte pilootzaak** in Kinshasa. Alles wat daar niet direct toe bijdraagt (monetisatie-add-ons, een intern SaaS-dashboard, marketingautomatisering) hoort niet thuis in v1.
+
+### 12.2 Status per onderdeel
+
+| Onderdeel | Nodig voor MVP? | Status vandaag | Wat ontbreekt nog | Geschat % klaar |
+|---|---|---|---|---|
+| Klant zoekt/bekijkt zaak & diensten | Ja | UI werkt, met mockdata | Echte data uit een database, meerdere zaken beheerbaar | 40% |
+| Aanvraag met afspraak indienen | Ja (kern) | UI + berekening werkt | Backend-opslag, echte beschikbaarheidscheck | 30% |
+| Ticket zonder afspraak (wachtrij) | Ja (kern, onderscheidend) | UI werkt | Backend, live volgnummer, echte notificatie | 25% |
+| Dashboard: aanvragen valideren/weigeren | Ja (kern) | UI werkt | Persistente data, echte login | 30% |
+| Aanbetaling verifiëren (M-Pesa) | Ja (kritiek voor het verdienmodel) | Enkel bedrag tonen | Integratie óf manueel bevestigingsproces | 5% |
+| WhatsApp-notificaties (validatie, ticket, betaalherinnering) | Ja (kern voor UX) | Gesimuleerd met `alert()` | Echte koppeling (of minstens `wa.me`-links) | 5% |
+| Login/auth voor eigenaar & personeel | Ja (basisveiligheid) | Onbestaand | Volledige implementatie | 0% |
+| Catalogusbeheer (diensten toevoegen) | Ja, eenvoudig | UI werkt, maar hardcoded op 1 bedrijf | Multi-tenant, backend-opslag | 25% |
+| Rol personeel vs. eigenaar (nummer maskeren) | Wenselijk, niet blokkerend | UI-simulatie werkt | Server-side afdwingen | 40%, lage prioriteit |
+| QR-wachtrijposter + PDF-download | Nee | Simulatie | Alles | Geschrapt voor v1 |
+| WhatsApp-marketing na 30 dagen | Nee | Simulatie | Alles | Geschrapt voor v1 |
+| VIP/discrete reserveringsoptie | Nee (later) | UI werkt | Backend, aparte betaallogica | Geschrapt voor v1 |
+| Admin SaaS / monetisatie-dashboard | Nee (intern, geen klantfeature) | UI werkt | Alles | Geschrapt voor v1 |
+| Voorkeur-medewerker kiezen | Wenselijk, niet blokkerend | UI werkt | Backend | Lage prioriteit |
+| Live USD/CDF-koers | Nee, hardcoded volstaat | Vast getal | API-koppeling | Lage prioriteit |
+| Meerdere steden (Lubumbashi) | Nee, focus eerst op Kinshasa | UI werkt | — | Uitstellen |
+
+### 12.3 Wat concreet uit de v1-scope moet, en waarom
+
+- **Admin SaaS-scherm** – intern hulpmiddel voor KinoBooking zelf, geen klantfeature. Omzet kan de eerste maanden manueel bijgehouden worden.
+- **WhatsApp-marketingautomatisering (30 dagen)** – een retentiefunctie die niets bewijst over de kernvraag "werkt boeken + wachtrij in de praktijk?".
+- **QR-poster/PDF-download** – kan voorlopig manueel (een geprint blad met een link) in plaats van een gebouwde functie.
+- **VIP/discrete optie** – voegt betaalcomplexiteit toe zonder de kernflow te versterken.
+- **Voorkeur-medewerker** – comfortfunctie, geen blokkade voor lancering.
+- **Meerdere steden** – onnodige complexiteit zolang er met één of enkele pilootzaken in Kinshasa gewerkt wordt.
+
+Dit betekent niet dat deze onderdelen uit de code moeten verdwijnen — ze mogen op de branch blijven staan — maar ze horen niet tot de scope die eerst afgewerkt en getest wordt.
+
+### 12.4 Eerlijk totaalcijfer
+
+**Grofweg 15–20% van het effectieve MVP-werk is vandaag gerealiseerd.** Dat lijkt laag in verhouding tot hoe "af" de applicatie er visueel uitziet, maar dat is de valkuil van een klikbaar HTML/JS-prototype: de gebruikersinterface is doorgaans het makkelijkste deel van dit soort applicatie. Backend, database, authenticatie, betaalverificatie en messaging-integratie vertegenwoordigen typisch 70–80% van het totale ontwikkelwerk voor een applicatie als deze, en daar staat de teller momenteel nog op 0%.
+
+### 12.5 Prioriteitenlijst om tot een lanceerbare MVP te komen
+
+1. **Backend + database** – bedrijven, diensten, aanvragen en gebruikers persistent opslaan.
+2. **Login/authenticatie** voor eigenaar en personeel.
+3. **Aanbetaling** – pragmatisch beginnen: geen volledige M-Pesa-API (traag en administratief zwaar om goedgekeurd te krijgen), maar een "ik heb betaald"-bevestiging die de eigenaar manueel afvinkt na controle in zijn eigen M-Pesa-app.
+4. **Notificaties** – starten met `wa.me`-links (opent WhatsApp met een vooraf ingevulde tekst) in plaats van de volledige WhatsApp Business API, die een goedkeuringstraject vereist.
+5. **Eén echte pilootzaak** live zetten met echte gegevens in plaats van mockdata.
+6. **Echte hosting voor de backend** – GitHub Pages volstaat enkel voor de huidige statische front-end, niet zodra er een database/API bijkomt.
+
+---
+
+## 13. Bijlage: Overzicht prijsmodel (zoals getoond in het Admin SaaS-scherm)
 
 | Onderdeel | Prijs | Toelichting |
 |---|---|---|
@@ -317,4 +429,4 @@ Op basis van bovenstaande analyse worden de volgende bouwstenen aanbevolen om va
 
 ---
 
-*Dit document is opgesteld op basis van reverse-engineering van de broncode in `index.html` op de branch `claude/bookings-by-kino-aadqaq`, en weerspiegelt de staat van het prototype op 2026-09-07.*
+*Dit document is opgesteld op basis van reverse-engineering van de broncode in `index.html` op de branch `claude/bookings-by-kino-aadqaq`, en weerspiegelt de staat van het prototype op 2026-09-07. Versie 1.1 (eveneens 2026-09-07) voegt user stories en een MVP-scope-analyse toe.*
