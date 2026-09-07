@@ -6,7 +6,7 @@
 |---|---|
 | Projectnaam | KinoBooking |
 | Documenttype | Functioneel ontwerp / Cahier des charges (Business Analyst document) |
-| Versie | 1.5 |
+| Versie | 1.6 |
 | Datum | 2026-09-07 |
 | Methode | Secties 1–10 en 14: reverse-engineering van de bestaande prototype-code (`index.html`). Secties 11–13: vooruitblikkend ontwerp (user stories, MVP-scope, architectuur — inclusief het use case- en dataflow-diagram) op basis van team-beslissingen. Enkele onderdelen van secties 4, 5, 6 en 7 zijn eveneens vooruitblikkend (de centrale agenda) en zijn inline gemarkeerd als "vooruitblikkend". |
 | Status | Beschrijft zowel de huidige werking van het **statische front-end prototype** als de **afgesproken doelarchitectuur** voor de MVP |
@@ -672,6 +672,28 @@ flowchart LR
 - De Supabase *service role key* (met volledige databasetoegang) wordt uitsluitend gebruikt in server-side API routes, nooit blootgesteld aan de browser; de client gebruikt enkel de beperkte *anon key* in combinatie met RLS-policies.
 - Alle geheimen (API-sleutels, service role key) worden beheerd via Netlify's environment variables, niet gecommit in de repository.
 
+#### 13.6.1 Beveiligings-checklist (amont / nu implementeren / later)
+
+**Reeds in het ontwerp verankerd:**
+- Scheiding publieke *anon key* (client) vs. geheime *service role key* (enkel server-side).
+- Server-side hervalidatie van elke klantinvoer (aanbetalingsbedrag, beschikbaarheid) — nooit blind vertrouwen op wat de browser doorstuurt.
+- Minimale opslag van persoonsgegevens (enkel wat functioneel nodig is, bv. het WhatsApp-nummer).
+
+**Te implementeren voor de MVP:**
+1. **RLS ingeschakeld op elke tabel vanaf haar aanmaak** — nooit een "open" tabel als vertrekpunt.
+2. **Rate limiting op de publieke, niet-geauthenticeerde endpoints** (boekingsaanvraag indienen, walk-in ticket nemen). Dit is specifiek belangrijk voor KinoBooking: omdat de agenda (sectie 4.9) een beperkte capaciteit per tijdsblok heeft, zou iemand met kwade bedoelingen die capaciteit kunnen opvullen met valse aanvragen om échte klanten te blokkeren — een dienstweigeringsrisico dat rechtstreeks voortvloeit uit onze eigen agenda-architectuur.
+3. **Rate limiting / bescherming tegen brute-force** op de inlogpagina van de gérant/personeel.
+4. **Gemaskeerd telefoonnummer afgedwongen door de database** (een Postgres-view/policy op basis van de rol), niet enkel door de front-end te verbergen.
+5. Geheimen enkel via environment variables (zie hierboven), nooit gecommit.
+6. HTTPS overal — automatisch via Netlify en Supabase, vereist geen extra actie.
+
+**Later (post-MVP):**
+- 2FA voor gérant-/personeelsaccounts.
+- **SOC 2 of gelijkaardige certificering** — een formeel *audit*-traject (geen techniek), enkel relevant zodra een toekomstige zakelijke partner dit contractueel zou eisen. Voor de huidige schaal (enkele pilootzaken) volledig buiten scope.
+- Extern beveiligingsonderzoek / pentest, zodra er een reëel volume aan gebruikers en gegevens is.
+- Een bewaar-/verwijderingsbeleid voor oude boekingsgegevens.
+- Gescheiden Supabase-omgevingen (dev/staging/productie) — al vermeld in sectie 13.5.
+
 ---
 
 ## 14. Bijlage: Prijsmodel
@@ -702,4 +724,4 @@ Deze prijs vervangt de mockup-waarden hierboven voor de effectieve lancering; zi
 
 ---
 
-*Dit document is opgesteld op basis van reverse-engineering van de broncode in `index.html` op de branch `claude/bookings-by-kino-aadqaq`, en weerspiegelt de staat van het prototype op 2026-09-07. Versie 1.1 voegt user stories en een MVP-scope-analyse toe; versie 1.2 voegt de afgesproken architectuur en technologiestack voor de MVP toe (sectie 13); versie 1.3 vervangt het technische sequentiediagram in sectie 13.3 door een gebruikersgericht use case-diagram; versie 1.4 voegt de centrale agenda toe als kernonderdeel van de MVP (fase 1: manuele validatie, fase 2: automatische bevestiging — zie BR-10/BR-11) in secties 4.9, 5, 6.4–6.5, 7.5, 11 en 12, plus een data flow diagram in sectie 13.4; versie 1.5 (eveneens 2026-09-07) voegt de effectieve lanceringsprijs toe (BR-12, sectie 14.2): $9/maand + $5/maand QR-optie voor de eerste 100 zaken, met behoud van het oorspronkelijke prototype-prijsmodel als historische referentie in sectie 14.1.*
+*Dit document is opgesteld op basis van reverse-engineering van de broncode in `index.html` op de branch `claude/bookings-by-kino-aadqaq`, en weerspiegelt de staat van het prototype op 2026-09-07. Versie 1.1 voegt user stories en een MVP-scope-analyse toe; versie 1.2 voegt de afgesproken architectuur en technologiestack voor de MVP toe (sectie 13); versie 1.3 vervangt het technische sequentiediagram in sectie 13.3 door een gebruikersgericht use case-diagram; versie 1.4 voegt de centrale agenda toe als kernonderdeel van de MVP (fase 1: manuele validatie, fase 2: automatische bevestiging — zie BR-10/BR-11) in secties 4.9, 5, 6.4–6.5, 7.5, 11 en 12, plus een data flow diagram in sectie 13.4; versie 1.5 voegt de effectieve lanceringsprijs toe (BR-12, sectie 14.2): $9/maand + $5/maand QR-optie voor de eerste 100 zaken, met behoud van het oorspronkelijke prototype-prijsmodel als historische referentie in sectie 14.1; versie 1.6 (eveneens 2026-09-07) voegt een beveiligings-checklist toe in sectie 13.6.1 (amont / MVP / later), inclusief de duiding van rate limiting en SOC 2.*
