@@ -6,12 +6,12 @@
 |---|---|
 | Projectnaam | KinoBooking |
 | Documenttype | Functioneel ontwerp / Cahier des charges (Business Analyst document) |
-| Versie | 1.1 |
+| Versie | 1.2 |
 | Datum | 2026-09-07 |
-| Methode | Reverse-engineering van de bestaande prototype-code (`index.html`) in deze repository |
-| Status | Beschrijft de huidige werking van het **statische front-end prototype**, niet van een productieklaar systeem |
+| Methode | Secties 1–10 en 14: reverse-engineering van de bestaande prototype-code (`index.html`). Secties 11–13: vooruitblikkend ontwerp (user stories, MVP-scope, architectuur) op basis van team-beslissingen. |
+| Status | Beschrijft zowel de huidige werking van het **statische front-end prototype** als de **afgesproken doelarchitectuur** voor de MVP |
 
-> **Belangrijke opmerking vooraf.** Dit document is opgesteld door de broncode van het prototype te analyseren (HTML-structuur, Tailwind-klassen en de JavaScript-logica in `index.html`). Het beschrijft dus wat de applicatie **vandaag daadwerkelijk doet**, inclusief de plekken waar functionaliteit gesimuleerd is (bijv. met een `alert()`) in plaats van echt geïmplementeerd. Sectie 9 vat deze beperkingen expliciet samen. Versie 1.1 voegt user stories (sectie 11) en een MVP-scope- en statusanalyse (sectie 12) toe.
+> **Belangrijke opmerking vooraf.** Secties 1 t.e.m. 10 en 14 van dit document zijn opgesteld door de broncode van het prototype te analyseren (HTML-structuur, Tailwind-klassen en de JavaScript-logica in `index.html`) en beschrijven dus wat de applicatie **vandaag daadwerkelijk doet**, inclusief de plekken waar functionaliteit gesimuleerd is (bijv. met een `alert()`) in plaats van echt geïmplementeerd — sectie 9 vat deze beperkingen expliciet samen. Secties 11 (user stories), 12 (MVP-scope) en 13 (architectuur) zijn **vooruitblikkend**: ze beschrijven wat gebouwd moet worden en met welke technologie, niet wat er vandaag al bestaat.
 
 ---
 
@@ -418,7 +418,95 @@ Dit betekent niet dat deze onderdelen uit de code moeten verdwijnen — ze mogen
 
 ---
 
-## 13. Bijlage: Overzicht prijsmodel (zoals getoond in het Admin SaaS-scherm)
+## 13. Architectuur (technologiestack voor de MVP)
+
+Deze sectie documenteert de technologiestack die werd afgesproken voor de bouw van de echte MVP (in aanvulling op secties 10 en 12, die de aanbevelingen en de prioriteiten bepaalden). Dit is geen reverse-engineering meer van het bestaande prototype, maar een **vooruitblikkend architectuurontwerp**.
+
+### 13.1 Gekozen stack en motivatie
+
+| Laag | Keuze | Motivatie |
+|---|---|---|
+| Frontend | **Next.js (React) + TypeScript**, met Tailwind CSS | Server-side rendering geeft een snellere eerste weergave op trage 3G/4G-verbindingen (belangrijk in Kinshasa); file-based routing en ingebouwde API routes verminderen het aantal te onderhouden onderdelen; TypeScript legt fouten in het datamodel (bv. de status-enum van een aanvraag) al bloot tijdens het compileren in plaats van in productie; Tailwind wordt hergebruikt uit het bestaande prototype. |
+| Backend / API | **Next.js API routes** (binnen hetzelfde project) | Geen apart backend-project nodig voor de MVP-schaal; alle server-side logica (bv. het manueel bevestigen van een betaling) leeft naast de front-end code. |
+| Database, authenticatie, realtime | **Supabase** (managed PostgreSQL + Auth + Storage + Realtime) | Eén platform combineert een relationele database (past bij het bestaande datamodel Bedrijf → Dienst → Aanvraag), login voor gérant/personeel, en realtime updates — nuttig om nieuwe aanvragen of wachtrijtickets live te tonen in het dashboard zonder zelf een websocket-server te bouwen. |
+| Hosting | **Netlify** | Reeds een bestaand account en domeinbeheer bij Netlify (waar "KINO CONGO" ook gehost wordt); ondersteunt Next.js volledig via de officiële Next.js Runtime (SSR, API routes inbegrepen); vermijdt het spreiden van infrastructuur over meerdere hostingproviders. |
+| Klantnotificaties (MVP) | **`wa.me`-links** (geen volledige WhatsApp Business API) | Vereist geen goedkeuringstraject bij Meta; de gérant verstuurt het bericht zelf met één klik op een vooraf ingevulde link — voldoende voor een pilootfase met één zaak. |
+| Aanbetaling (MVP) | **Manuele bevestiging door de gérant** (geen M-Pesa-API-integratie) | Een volledige M-Pesa-koppeling is traag en administratief zwaar om goedgekeurd te krijgen; de gérant controleert de betaling in zijn eigen M-Pesa-app en bevestigt dit met één klik in het dashboard. |
+
+### 13.2 Architectuurdiagram (componenten en deployment)
+
+```mermaid
+graph TB
+    subgraph Gebruikers
+        Klant["Klant<br/>(browser, mobiel)"]
+        Gerant["Gérant / Personeel<br/>(browser, ingelogd)"]
+    end
+
+    subgraph Netlify["Netlify — Hosting"]
+        NextApp["Next.js App<br/>React + TypeScript + Tailwind<br/>SSR-pagina's + API routes"]
+    end
+
+    subgraph Supabase["Supabase — Backend as a Service"]
+        Auth["Supabase Auth<br/>(login gérant/personeel)"]
+        DB[("PostgreSQL<br/>Bedrijf · Dienst · Aanvraag")]
+        Realtime["Supabase Realtime<br/>(live aanvragen/wachtrij)"]
+        Storage["Supabase Storage<br/>(bv. foto's zaak/diensten)"]
+    end
+
+    subgraph Extern["Externe kanalen — MVP: link-based, geen API-koppeling"]
+        WhatsApp["WhatsApp<br/>via wa.me-links"]
+        MPesa["M-Pesa<br/>manuele controle door gérant"]
+    end
+
+    Klant -->|HTTPS| NextApp
+    Gerant -->|HTTPS, ingelogd| NextApp
+    NextApp --> Auth
+    NextApp --> DB
+    NextApp --> Realtime
+    NextApp -.-> Storage
+    NextApp -.->|genereert link, geen API-call| WhatsApp
+    Gerant -.->|controleert manueel eigen M-Pesa-app| MPesa
+```
+
+### 13.3 Voorbeeldflow: aanvraag met afspraak (sequentiediagram)
+
+Dit diagram toont hoe de gekozen stack de flow uit sectie 7.1 (klant reserveert met afspraak) concreet zou afhandelen.
+
+```mermaid
+sequenceDiagram
+    actor K as Klant
+    participant W as Next.js Web App
+    participant DB as Supabase (DB + Realtime)
+    actor G as Gérant
+
+    K->>W: Vult boekingsformulier in en verstuurt
+    W->>DB: Aanvraag opslaan (status PENDING_APPROVAL)
+    DB-->>G: Realtime update: nieuwe aanvraag verschijnt in dashboard
+    G->>W: Valideert de aanvraag
+    W->>DB: Status wijzigen naar APPROVED_WAITING_PAYMENT
+    W-->>G: Genereert wa.me-link met vooraf ingevulde tekst
+    G->>K: Verstuurt WhatsApp-bericht (manueel, via de link)
+    K->>G: Betaalt aanbetaling via M-Pesa (buiten het systeem om)
+    G->>W: Bevestigt betaling manueel ("Betaling ontvangen"-knop)
+    W->>DB: Status wijzigen naar CONFIRMED
+```
+
+### 13.4 Hosting en omgevingen
+
+- **Netlify** host de Next.js-applicatie via de officiële Next.js Runtime (ondersteunt zowel statische pagina's als server-side rendering en API routes/serverless functions).
+- Netlify's deploy-previews per branch sluiten aan bij de bestaande git-workflow (feature branch → preview-URL → main → productie).
+- Voor de pilootfase volstaat een Netlify-subdomein (bv. `kinobooking.netlify.app`) of een subdomein van het bestaande domein waarop "KINO CONGO" draait; een volledig apart domein kan later aangeschaft worden als het product verder groeit.
+- Supabase draait als één project voor de MVP; een aparte staging-/productieomgeving kan toegevoegd worden zodra er met meerdere pilootzaken tegelijk getest wordt.
+
+### 13.5 Beveiligingsaandachtspunten
+
+- De in sectie 9 en 10 beschreven tekortkoming ("personeel ziet geen volledig nummer" is enkel client-side gesimuleerd) wordt in deze architectuur opgelost via **Supabase Row-Level Security (RLS)**-policies: de database zelf beslist, op basis van de ingelogde rol, of een query het volledige of het gemaskeerde telefoonnummer teruggeeft — niet enkel de front-end.
+- De Supabase *service role key* (met volledige databasetoegang) wordt uitsluitend gebruikt in server-side API routes, nooit blootgesteld aan de browser; de client gebruikt enkel de beperkte *anon key* in combinatie met RLS-policies.
+- Alle geheimen (API-sleutels, service role key) worden beheerd via Netlify's environment variables, niet gecommit in de repository.
+
+---
+
+## 14. Bijlage: Overzicht prijsmodel (zoals getoond in het Admin SaaS-scherm)
 
 | Onderdeel | Prijs | Toelichting |
 |---|---|---|
@@ -429,4 +517,4 @@ Dit betekent niet dat deze onderdelen uit de code moeten verdwijnen — ze mogen
 
 ---
 
-*Dit document is opgesteld op basis van reverse-engineering van de broncode in `index.html` op de branch `claude/bookings-by-kino-aadqaq`, en weerspiegelt de staat van het prototype op 2026-09-07. Versie 1.1 (eveneens 2026-09-07) voegt user stories en een MVP-scope-analyse toe.*
+*Dit document is opgesteld op basis van reverse-engineering van de broncode in `index.html` op de branch `claude/bookings-by-kino-aadqaq`, en weerspiegelt de staat van het prototype op 2026-09-07. Versie 1.1 voegt user stories en een MVP-scope-analyse toe; versie 1.2 (eveneens 2026-09-07) voegt de afgesproken architectuur en technologiestack voor de MVP toe (sectie 13).*
