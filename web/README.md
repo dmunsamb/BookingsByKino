@@ -33,6 +33,17 @@ Le schéma et les policies de sécurité sont versionnés dans `supabase/migrati
 
 Pour les appliquer : dans le tableau de bord Supabase → SQL Editor, exécuter les fichiers dans l'ordre, ou utiliser la Supabase CLI (`supabase db push`) si le projet local y est lié.
 
+### Vérifier que le RLS fonctionne correctement
+
+Deux options :
+
+- **`supabase/verify_rls_manual.sql`** — à coller directement dans le SQL Editor de Supabase, bloc par bloc (aucune installation nécessaire). Le bloc 2 doit échouer : c'est le comportement attendu (un visiteur anonyme ne peut pas s'auto-confirmer une réservation).
+- **`scripts/verify-supabase.mjs`** — même vérification automatisée, à exécuter en local (nécessite Node ≥ 18) :
+  ```bash
+  node --env-file=.env.local scripts/verify-supabase.mjs
+  ```
+  Note : cette vérification ne peut pas être exécutée depuis l'environnement de développement Claude Code lui-même — sa politique réseau bloque les connexions sortantes vers `*.supabase.co`. Ce n'est pas une limite de l'application, seulement de cette session de développement : Netlify et ta propre machine s'y connectent normalement.
+
 ## Structure Supabase côté code
 
 - `src/lib/supabase/client.ts` — client navigateur (anon key), pour les Client Components.
