@@ -2,11 +2,13 @@
 -- de Supabase (aucune installation locale nécessaire).
 -- Voir docs/functioneel-ontwerp-kinobooking.md, section 13.6 / 13.6.1.
 --
--- IMPORTANT : exécute les 3 blocs SÉPARÉMENT (Run bloc par bloc), pas tout
--- d'un coup — le bloc 2 doit échouer, ce qui est le comportement attendu.
+-- IMPORTANT : chaque bloc est INDÉPENDANT. Colle et exécute un bloc à la
+-- fois (Run), note son résultat, puis passe au suivant. Supabase n'affiche
+-- que le résultat de la dernière requête d'un bloc — les combiner masquerait
+-- les résultats intermédiaires.
 
 -- ============================================================
--- BLOC 1 : création des données de test (en tant que rôle par défaut,
+-- BLOC 0 : création des données de test (rôle par défaut de l'éditeur,
 -- équivalent service role — contourne le RLS, comme prévu pour l'admin)
 -- ============================================================
 
@@ -19,7 +21,13 @@ values (
   'Adresse de test',
   '+243 00 000 0000'
 )
-on conflict (id) do nothing;
+on conflict (id) do nothing
+returning id, name;
+
+-- ============================================================
+-- BLOC 0bis : une réservation existante déjà en base (créée en admin),
+-- pour tester ensuite si un visiteur anonyme peut la lire (il ne doit pas).
+-- ============================================================
 
 insert into public.agenda_entries (business_id, source, status, client_name, client_phone, start_time)
 values (
@@ -29,23 +37,38 @@ values (
   'Client Secret',
   '+243 81 123 4567',
   now()
-);
+)
+returning id, client_name, status;
 
--- Bascule vers le rôle "anon" pour simuler un visiteur non connecté.
+-- ============================================================
+-- TEST A : un visiteur anonyme doit pouvoir lire le catalogue public.
+-- Résultat attendu : 1 ligne, resultat = 1.
+-- ============================================================
+
 set role anon;
-
--- Test A — doit retourner 1 (lecture publique du catalogue autorisée)
 select 'Test A - catalogue public (attendu: 1)' as test, count(*) as resultat
 from public.businesses
 where id = '00000000-0000-0000-0000-000000000001';
+reset role;
 
--- Test B — doit retourner 0 (l'agenda ne doit JAMAIS être lisible publiquement)
+-- ============================================================
+-- TEST B : un visiteur anonyme ne doit JAMAIS pouvoir lire l'agenda.
+-- Résultat attendu : 1 ligne, resultat = 0.
+-- ============================================================
+
+set role anon;
 select 'Test B - agenda prive (attendu: 0)' as test, count(*) as resultat
 from public.agenda_entries
 where business_id = '00000000-0000-0000-0000-000000000001';
+reset role;
 
--- Test C — doit réussir (un visiteur peut soumettre une demande, qui reste
--- PENDING_APPROVAL — phase 1, voir BR-11)
+-- ============================================================
+-- TEST C : un visiteur anonyme DOIT pouvoir soumettre une demande de
+-- réservation (reste PENDING_APPROVAL, phase 1 - voir BR-11).
+-- Résultat attendu : 1 ligne renvoyée, status = pending_approval.
+-- ============================================================
+
+set role anon;
 insert into public.agenda_entries (business_id, source, status, client_name, client_phone, start_time)
 values (
   '00000000-0000-0000-0000-000000000001',
@@ -54,34 +77,35 @@ values (
   'Client Public OK',
   '+243 82 222 2222',
   now()
-);
-
+)
+returning id, client_name, status;
 reset role;
 
 -- ============================================================
--- BLOC 2 : à exécuter séparément — DOIT échouer avec une erreur du type
--- "new row violates row-level security policy". Si cette requête réussit,
--- c'est un problème de sécurité à corriger immédiatement.
+-- TEST D (fraude) : un visiteur anonyme NE DOIT PAS pouvoir s'auto-confirmer
+-- une réservation directement. Résultat attendu : une ERREUR
+-- "new row violates row-level security policy". Si ça réussit, c'est un
+-- problème de sécurité à corriger immédiatement.
 -- ============================================================
 
 set role anon;
-
 insert into public.agenda_entries (business_id, source, status, client_name, client_phone, start_time)
 values (
   '00000000-0000-0000-0000-000000000001',
   'klant_app',
-  'confirmed', -- tentative de s'auto-confirmer directement : doit être refusée
+  'confirmed', -- tentative frauduleuse
   'Tentative frauduleuse',
   '+243 80 000 0000',
   now()
-);
-
+)
+returning id;
 reset role;
 
 -- ============================================================
--- BLOC 3 : à exécuter séparément, en dernier — nettoyage des données de test
+-- NETTOYAGE : à exécuter en dernier, une fois tous les tests confirmés.
 -- ============================================================
 
 reset role;
-delete from public.businesses where id = '00000000-0000-0000-0000-000000000001';
+delete from public.businesses where id = '00000000-0000-0000-0000-000000000001'
+returning id, name;
 -- Supprime en cascade les services/availability_rules/agenda_entries liés.
