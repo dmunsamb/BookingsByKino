@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KinoBooking - Plateforme de Réservation & Files d'Attente à Kinshasa</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        kino: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            900: '#7c2d12',
+                        },
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="h-full text-slate-800 flex flex-col font-sans">
+
+    <!-- NAVIGATIEBALK / HEADER -->
+    <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('client')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-kino-500 to-amber-300 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg">
+                    K
+                </div>
+                <div>
+                    <span class="font-black text-xl tracking-tight text-white">Kino<span class="text-kino-500">Booking</span></span>
+                    <span class="block text-[10px] text-slate-400 -mt-1 font-medium">Kinshasa &bull; Lubumbashi</span>
+                </div>
+            </div>
+
+            <!-- Modus Wisselaar & Koers Indicator -->
+            <div class="flex items-center space-x-3">
+                <div class="hidden sm:flex items-center bg-slate-800 px-3 py-1 rounded-lg text-xs border border-slate-700 text-slate-300">
+                    <span class="text-slate-400 mr-1.5">Taux:</span>
+                    <span class="font-bold text-kino-500">1 USD = <span id="rate-display">2.850</span> CDF</span>
+                </div>
+
+                <div class="flex items-center bg-slate-800 p-1 rounded-lg border border-slate-700 text-xs font-medium">
+                    <button id="btn-tab-client" onclick="switchTab('client')" class="px-3 py-1.5 rounded-md transition-all bg-kino-500 text-slate-950 font-bold shadow">
+                        Vue Client
+                    </button>
+                    <button id="btn-tab-dashboard" onclick="switchTab('dashboard')" class="px-3 py-1.5 rounded-md transition-all text-slate-300 hover:text-white">
+                        Espace Salon / Horeca
+                    </button>
+                    <button id="btn-tab-admin" onclick="switchTab('admin')" class="px-3 py-1.5 rounded-md transition-all text-slate-300 hover:text-white">
+                        Admin SaaS
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- HOOFD INHOUD -->
+    <main class="flex-1 overflow-y-auto pb-12">
+
+        <!-- ================= 1. KLANTEN PORTAAL (VUE CLIENT) ================= -->
+        <section id="view-client" class="block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+
+            <!-- Hero Banner -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-kino-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl mb-8 relative overflow-hidden">
+                <div class="relative z-10 max-w-2xl">
+                    <span class="bg-kino-500/20 text-kino-400 text-xs px-3 py-1 rounded-full font-semibold border border-kino-500/30 uppercase tracking-wider mb-4 inline-block">
+                        <i class="fa-solid fa-bolt text-amber-400 mr-1"></i> Demande Gratuite &bull; Validation sous 2h
+                    </span>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">Réservez vos soins et VIP tables à Kinshasa.</h1>
+                    <p class="text-slate-300 text-sm sm:text-base mb-6">Réservez avec rendez-vous ou prenez directement un ticket virtuel pour la file sans rendez-vous !</p>
+
+                    <!-- Zoekbalk -->
+                    <div class="bg-white p-2 rounded-2xl shadow-lg flex flex-col sm:flex-row gap-2 text-slate-800">
+                        <div class="flex-1 flex items-center px-3 border-b sm:border-b-0 sm:border-r border-slate-200 py-2 sm:py-0">
+                            <i class="fa-solid fa-magnifying-glass text-slate-400 mr-2"></i>
+                            <input id="search-input" onkeyup="filterBusinesses()" type="text" placeholder="Recherche perruque, braids, restaurant, VIP..." class="w-full focus:outline-none text-sm">
+                        </div>
+                        <div class="flex items-center px-3 py-2 sm:py-0">
+                            <i class="fa-solid fa-location-dot text-slate-400 mr-2"></i>
+                            <select id="city-filter" onchange="filterBusinesses()" class="bg-transparent focus:outline-none text-sm text-slate-700 font-medium">
+                                <option value="">Toutes les communes</option>
+                                <option value="Gombe, Kinshasa">Kinshasa - Gombe</option>
+                                <option value="Ngaliema, Kinshasa">Kinshasa - Ngaliema</option>
+                                <option value="Golf, Lubumbashi">Lubumbashi - Golf</option>
+                            </select>
+                        </div>
+                        <button onclick="filterBusinesses()" class="bg-kino-500 hover:bg-kino-600 text-slate-950 font-bold px-6 py-3 rounded-xl transition shadow text-sm">
+                            Rechercher
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hoofdcategorieën Toggle -->
+            <div class="flex space-x-3 mb-8">
+                <button id="cat-btn-beauty" onclick="setActiveMainCat('Beauty')" class="flex-1 py-4 px-6 rounded-2xl bg-slate-900 text-white font-bold text-sm shadow-md flex items-center justify-center space-x-3 border-2 border-slate-900">
+                    <i class="fa-solid fa-scissors text-kino-400 text-lg"></i>
+                    <span>1. Beauté, Coiffure & Spa</span>
+                </button>
+                <button id="cat-btn-horeca" onclick="setActiveMainCat('Horeca')" class="flex-1 py-4 px-6 rounded-2xl bg-white text-slate-700 font-bold text-sm shadow-sm flex items-center justify-center space-x-3 border-2 border-slate-200 hover:bg-slate-50">
+                    <i class="fa-solid fa-utensils text-amber-500 text-lg"></i>
+                    <span>2. Horeca (Restaurants & Lounges)</span>
+                </button>
+            </div>
+
+            <!-- Bedrijven Grid -->
+            <div id="business-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamisch ingevuld via JS -->
+            </div>
+        </section>
+
+        <!-- ================= 2. ONDERNEMERS DASHBOARD (ESPACE SALON) ================= -->
+        <section id="view-dashboard" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+
+            <!-- Dashboard Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-200 gap-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-2xl font-extrabold text-slate-900" id="dash-biz-name">Glamour Beauty Salon & Spa</h2>
+                        <span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-0.5 rounded-full font-bold">Business Plan ($49/m)</span>
+                        <span class="bg-amber-100 text-amber-900 text-xs px-2.5 py-0.5 rounded-full font-bold border border-amber-200">+ Option Queue QR ($15/m)</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-location-dot mr-1"></i>Avenue Colonel Ebeya, Gombe &bull; M-Pesa Direct: <b>+243 81 888 7777</b></p>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <!-- Snelle Inloop Knop -->
+                    <button onclick="openWalkInModal()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition shadow flex items-center">
+                        <i class="fa-solid fa-person-walking mr-2 text-kino-400"></i>+ Client Sans RDV
+                    </button>
+                    <!-- QR-Wachtrij Poster Knop -->
+                    <button onclick="openQrQueueModal()" class="bg-kino-500 hover:bg-kino-600 text-slate-950 font-bold px-3 py-2.5 rounded-xl text-sm transition shadow" title="Affiche QR Porte">
+                        <i class="fa-solid fa-qrcode mr-1"></i> Poster QR
+                    </button>
+                    <!-- Instellingen Knop -->
+                    <button onclick="openSettingsModal()" class="bg-white border border-slate-300 text-slate-700 font-bold px-3 py-2.5 rounded-xl text-sm transition hover:bg-slate-50" title="Paramètres">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Role Selector: Eigenaar vs Personeel (Data Privacy Protection) -->
+            <div class="bg-slate-100 p-3 rounded-2xl border border-slate-200 my-4 flex justify-between items-center text-xs">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-user-shield text-slate-600"></i>
+                    <span class="font-bold text-slate-700">Profil de Connexion:</span>
+                    <select id="user-role-select" onchange="toggleRolePrivacy()" class="bg-white border border-slate-300 rounded-lg p-1 font-bold text-slate-800">
+                        <option value="owner">Gérant / Propriétaire (Accès CRM & Numéros)</option>
+                        <option value="staff">Personnel / Coiffeuse (Numéros Masqués)</option>
+                    </select>
+                </div>
+                <span class="text-slate-500 italic hidden sm:inline">Protège contre le vol de numéros clients par le personnel</span>
+            </div>
+
+            <!-- Dashboard Sub-Navigatie -->
+            <div class="flex space-x-2 border-b border-slate-200 mt-2 pb-2">
+                <button id="dash-subtab-requests" onclick="switchDashSubtab('requests')" class="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs shadow-sm">
+                    <i class="fa-solid fa-calendar-check mr-2"></i>Demandes & Agenda
+                </button>
+                <button id="dash-subtab-services" onclick="switchDashSubtab('services')" class="px-4 py-2 rounded-xl bg-white text-slate-600 hover:bg-slate-100 font-bold text-xs border border-slate-200">
+                    <i class="fa-solid fa-list-check mr-2 text-kino-600"></i>Gérer le Catalogue & Tarifs
+                </button>
+                <button id="dash-subtab-marketing" onclick="switchDashSubtab('marketing')" class="px-4 py-2 rounded-xl bg-white text-slate-600 hover:bg-slate-100 font-bold text-xs border border-slate-200">
+                    <i class="fa-solid fa-paper-plane mr-2 text-amber-500"></i>Relance WhatsApp Auto (+ $20/m)
+                </button>
+            </div>
+
+            <!-- SUB-VIEW 1: INKOMENDE AANVRAGEN -->
+            <div id="dash-view-requests" class="mt-6">
+                <!-- KPI Banner -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center text-xl font-bold">
+                            <i class="fa-solid fa-clock"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-amber-800 font-bold">Délai de Réponse Max</div>
+                            <div class="text-lg font-extrabold text-amber-950" id="dash-timeout-display">2 Heures par demande</div>
+                            <div class="text-[10px] text-amber-700">Max 6h selon règlement KinoBooking</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-kino-500 text-slate-950 flex items-center justify-center text-xl font-bold">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-500 font-bold">En Attente de Validation</div>
+                            <div class="text-2xl font-extrabold text-slate-900" id="dash-pending-count">1 Demande</div>
+                            <div class="text-[10px] text-kino-600 font-semibold">Validez vite pour engager le client</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 p-4 rounded-2xl flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500 text-white flex items-center justify-center text-xl font-bold">
+                            <i class="fa-solid fa-mobile-screen-button"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-500 font-bold">Acomptes Reçus Directement</div>
+                            <div class="text-xl font-extrabold text-slate-900">285.000 FC</div>
+                            <div class="text-[10px] text-slate-400">Directement sur M-Pesa du salon</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Boekingen Tabel -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between">
+                        <h3 class="font-bold text-slate-900 text-base">Demandes Entrantes & Planning</h3>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs text-slate-400"><i class="fa-solid fa-lock mr-1"></i>Statut Droits: <b id="role-status-text" class="text-emerald-600">Mode Gérant (Tout voir)</b></span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs font-bold border-b border-slate-200">
+                                    <th class="p-4">Client</th>
+                                    <th class="p-4">Service & Coiffeuse</th>
+                                    <th class="p-4">Date & Heure</th>
+                                    <th class="p-4">Acompte</th>
+                                    <th class="p-4">Statut & Timer</th>
+                                    <th class="p-4 text-right">Action du Salon</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboard-requests-tbody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Ingevuld via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 2: CATALOGUS BEHEREN -->
+            <div id="dash-view-services" class="mt-6 hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900">Catalogue & Tarifs Personnalisés</h3>
+                        <p class="text-xs text-slate-500">Configurez vos tresses, poses de perruques, soins ou tables VIP avec explications.</p>
+                    </div>
+                    <button onclick="openAddServiceModal()" class="bg-kino-500 hover:bg-kino-600 text-slate-950 font-extrabold px-4 py-2.5 rounded-xl text-xs shadow flex items-center">
+                        <i class="fa-solid fa-plus mr-2"></i>Ajouter un Service
+                    </button>
+                </div>
+
+                <div id="vendor-services-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Dynamisch ingevuld via JS -->
+                </div>
+            </div>
+
+            <!-- SUB-VIEW 3: AUTOMATISCHE MARKETING ENGINE -->
+            <div id="dash-view-marketing" class="mt-6 hidden">
+                <div class="bg-amber-50 border border-amber-200 rounded-3xl p-6 mb-6">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="bg-amber-500 text-slate-950 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">Option Active ($20/mois)</span>
+                            <h3 class="text-2xl font-extrabold text-slate-900 mt-2">Relance WhatsApp Automatique</h3>
+                            <p class="text-xs text-slate-600 mt-1 max-w-xl">Le système envoie automatiquement un message WhatsApp personnalisé après 30 jours pour réinviter vos anciennes clientes. Le personnel n'a pas accès aux numéros.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-amber-200 text-center shadow-sm">
+                            <div class="text-xs text-slate-400 font-bold uppercase">Revenu Généré ce mois</div>
+                            <div class="text-2xl font-black text-brand-600 mt-1">$ 540.00</div>
+                            <div class="text-[10px] text-slate-500">Issu de 12 relances automatiques</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= 3. PLATFORM ADMIN PORTAAL (KINOBOOKING REVENUE) ================= -->
+        <section id="view-admin" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+            <div class="mb-6">
+                <h2 class="text-2xl font-extrabold text-slate-900">Monétisation KinoBooking & Licences</h2>
+                <p class="text-slate-500 text-sm">Vue d'ensemble des abonnements SaaS, commissions VIP et options de la plateforme.</p>
+            </div>
+
+            <!-- Omzet Statistieken Breakdown -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md">
+                    <div class="text-slate-400 text-xs font-semibold mb-1">Abonnements SaaS de Base</div>
+                    <div class="text-2xl font-extrabold text-kino-500">$ 920.00 /m</div>
+                    <p class="text-[10px] text-slate-400 mt-1">18 Établissements Uniques</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="text-slate-500 text-xs font-semibold mb-1">Option Queue QR ($15/m)</div>
+                    <div class="text-2xl font-extrabold text-amber-600">$ 270.00 /m</div>
+                    <p class="text-[10px] text-slate-400 mt-1">18 salons avec affiche de porte</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="text-slate-500 text-xs font-semibold mb-1">Marketing Auto ($20/m)</div>
+                    <div class="text-2xl font-extrabold text-indigo-600">$ 160.00 /m</div>
+                    <p class="text-[10px] text-slate-400 mt-1">8 salons avec relance WhatsApp</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="text-slate-500 text-xs font-semibold mb-1">Frais de Service VIP ($3.00/vip)</div>
+                    <div class="text-2xl font-extrabold text-slate-900">$ 145.00 /m</div>
+                    <p class="text-[10px] text-emerald-600 font-bold mt-1">Revenu direct des réservations VIP</p>
+                </div>
+            </div>
+
+            <!-- Add-On Prijsmatrix -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8">
+                <h3 class="font-bold text-slate-900 text-lg mb-4">Grille Tarifaire des Options KinoBooking</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="border border-slate-200 p-4 rounded-2xl bg-slate-50">
+                        <div class="font-bold text-slate-900">Module File d'Attente QR</div>
+                        <div class="text-xl font-black text-amber-600 my-1">+$15 / mois</div>
+                        <p class="text-xs text-slate-500">Comprend l'affiche A4 imprimable et la gestion en direct de la file d'attente pour les passants.</p>
+                    </div>
+                    <div class="border border-slate-200 p-4 rounded-2xl bg-slate-50">
+                        <div class="font-bold text-slate-900">Relance Marketing WhatsApp</div>
+                        <div class="text-xl font-black text-indigo-600 my-1">+$20 / mois</div>
+                        <p class="text-xs text-slate-500">Relance automatique des clientes après 30 jours sans exposer les numéros au personnel.</p>
+                    </div>
+                    <div class="border border-slate-200 p-4 rounded-2xl bg-slate-50">
+                        <div class="font-bold text-slate-900">Option Réservation Discrète / VIP</div>
+                        <div class="text-xl font-black text-emerald-600 my-1">Inclus dans Business / Pro</div>
+                        <p class="text-xs text-slate-500">KinoBooking perçoit $3.00 à $5.00 de frais de service VIP payés par le client final.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= MODALS & POP-UPS ================= -->
+
+    <!-- MODAL 1: CUSTOM DIENST TOEVOEGEN -->
+    <div id="add-service-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-wand-magic-sparkles text-kino-500 mr-2"></i>Nouveau Service Personnalisé</h3>
+                <button onclick="closeAddServiceModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form onsubmit="handleAddServiceSubmit(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Nom du Soin / Prestation</label>
+                    <input type="text" id="new-service-title" placeholder="ex: Pose Tissage + Closure HD ou Soin Vapeur" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-kino-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Catégorie</label>
+                    <input type="text" id="new-service-cat" placeholder="ex: Perruques & Closures, Tresses, Soins" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-kino-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Description Détaillée pour le Client</label>
+                    <textarea id="new-service-desc" rows="3" placeholder="Expliquez ce qui est inclus (ex: Shampooing, massage du cuir chevelu, lissage et pose closure. Durée: 2h30)" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-kino-500 focus:outline-none"></textarea>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Durée (min)</label>
+                        <input type="number" id="new-service-duration" placeholder="120" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Prix Total ($)</label>
+                        <input type="number" id="new-service-price-usd" placeholder="50" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Acompte ($)</label>
+                        <input type="number" id="new-service-deposit-usd" placeholder="10" required class="w-full border border-slate-300 rounded-xl p-2.5 text-xs">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs transition mt-2">
+                    Enregistrer au Catalogue
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: BOEKINGSAANVRAAG INDIENEN (KLANT) -->
+    <div id="booking-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900" id="modal-biz-name">Nom de l'établissement</h3>
+                    <p class="text-xs text-slate-500" id="modal-biz-address"></p>
+                </div>
+                <button onclick="closeBookingModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Opties voor Klant: Met Afspraak OF Direct Inloop Wachtrij -->
+            <div class="grid grid-cols-2 gap-2 mb-4 bg-slate-100 p-1 rounded-2xl">
+                <button type="button" id="booking-mode-rdv" onclick="switchBookingMode('rdv')" class="py-2 text-xs font-bold rounded-xl bg-white text-slate-900 shadow">
+                    <i class="fa-solid fa-calendar-days mr-1.5 text-kino-500"></i>Avec Rendez-vous
+                </button>
+                <button type="button" id="booking-mode-walkin" onclick="switchBookingMode('walkin')" class="py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900">
+                    <i class="fa-solid fa-person-walking-arrow-right mr-1.5 text-amber-500"></i>File Sans RDV (Direct)
+                </button>
+            </div>
+
+            <!-- MODE 1: FORMULIER MET AFSPRAAK -->
+            <form id="booking-form" onsubmit="handleRequestSubmit(event)" class="space-y-4">
+
+                <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-2xl flex items-center space-x-3 text-xs text-emerald-900">
+                    <i class="fa-solid fa-circle-info text-emerald-600 text-lg"></i>
+                    <div>
+                        <b>Demande Gratuite.</b> Vous ne payez rien maintenant. Le salon vérifie d'abord la disponibilité du créneau.
+                    </div>
+                </div>
+
+                <!-- Stap 1: Dienst Selecteren -->
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1" id="label-service-type">Sélectionnez la Prestation</label>
+                    <select id="book-service" onchange="updateServiceDetails()" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-kino-500 font-medium">
+                        <!-- Opties via JS -->
+                    </select>
+                </div>
+
+                <!-- Beschrijving van de gekozen dienst -->
+                <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-xs" id="service-desc-box">
+                    <div class="font-bold text-slate-800 mb-1" id="service-desc-title">Détail du soin :</div>
+                    <p class="text-slate-600 leading-relaxed" id="service-desc-text">Choisissez un service pour voir le contenu.</p>
+                </div>
+
+                <!-- Optioneel: Stylist Keuze -->
+                <div id="staff-select-container">
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Préférence Coiffeuse / Styliste</label>
+                    <select id="book-staff" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-kino-500 font-medium">
+                        <option value="Pas de préférence">Sans préférence particulière</option>
+                        <option value="Sarah">Sarah (Spécialiste Tissage)</option>
+                        <option value="Grace">Grace (Spécialiste Closure & Braids)</option>
+                    </select>
+                </div>
+
+                <!-- VIP Toggle Feature -->
+                <div class="border border-amber-200 bg-amber-50/60 p-3 rounded-2xl flex items-center justify-between">
+                    <div>
+                        <div class="text-xs font-bold text-amber-950 flex items-center"><i class="fa-solid fa-crown text-amber-500 mr-1.5"></i>Réservation Discrète / VIP (+$10 d'acompte)</div>
+                        <div class="text-[10px] text-amber-800">Espace privé & fauteuil réservé à l'abri des regards</div>
+                    </div>
+                    <input type="checkbox" id="vip-toggle" onchange="updateServiceDetails()" class="w-4 h-4 text-amber-500 rounded focus:ring-amber-400">
+                </div>
+
+                <!-- Stap 2: Datum & Tijd -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Date Souhaitée</label>
+                        <input type="date" id="book-date" required class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-kino-500 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Heure</label>
+                        <select id="book-time" required class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-kino-500 font-medium">
+                            <option value="10:00">10:00</option>
+                            <option value="12:00">12:00</option>
+                            <option value="14:30">14:30</option>
+                            <option value="17:00">17:00</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Stap 3: Klant Gegevens -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Votre Prénom</label>
+                        <input type="text" id="book-name" placeholder="ex: Vanessa" required class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-kino-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Numéro WhatsApp</label>
+                        <input type="tel" id="book-phone" placeholder="081 000 0000" required class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-kino-500">
+                    </div>
+                </div>
+
+                <!-- Voorschot Indicatie -->
+                <div class="bg-slate-900 text-white p-3 rounded-2xl flex justify-between items-center text-xs">
+                    <span class="text-slate-300">Acompte requis après validation :</span>
+                    <span class="font-extrabold text-kino-400" id="deposit-preview">28.500 FC ($10.00)</span>
+                </div>
+
+                <button type="submit" class="w-full bg-kino-500 hover:bg-kino-600 text-slate-950 font-extrabold py-3.5 rounded-xl transition shadow-lg text-sm flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span>Envoyer la Demande Gratuite</span>
+                </button>
+            </form>
+
+            <!-- MODE 2: FORMULIER DIRECTE INLOOP WACHTRIJ (SANS RDV) -->
+            <form id="client-walkin-form" onsubmit="handleClientWalkInSubmit(event)" class="space-y-4 hidden">
+                <div class="bg-amber-50 border border-amber-200 p-3 rounded-2xl flex items-center space-x-3 text-xs text-amber-900">
+                    <i class="fa-solid fa-qrcode text-amber-600 text-xl"></i>
+                    <div>
+                        <b>File Virtuelle Sans RDV.</b> Obtenez immédiatement votre numéro de passage sans attendre debout devant le salon !
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Votre Prénom</label>
+                    <input type="text" id="client-walkin-name" placeholder="ex: Dieudonné" required class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Numéro WhatsApp (Pour l'alerte)</label>
+                    <input type="tel" id="client-walkin-phone" placeholder="081 000 0000" required class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Service Souhaité</label>
+                    <select id="client-walkin-service" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                        <!-- Dynamisch -->
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold py-3.5 rounded-xl transition shadow-lg text-sm flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-ticket"></i>
+                    <span>Prendre mon Ticket Virtuel</span>
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- MODAL 3: INLOOP / WALK-IN TOEVOEGEN (DASHBOARD ZAAN) -->
+    <div id="walkin-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-person-walking text-kino-500 mr-2"></i>Ajout Rapide Client Sans RDV</h3>
+                <button onclick="closeWalkInModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">Bloquez directement une chaise ou une table pour un client venu de la rue.</p>
+
+            <form onsubmit="handleWalkInSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Nom du Client (Optionnel)</label>
+                    <input type="text" id="walkin-name" placeholder="Client Sans RDV" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1">Service Demandé</label>
+                    <select id="walkin-service" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm">
+                        <!-- Dynamisch -->
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-slate-900 text-white font-bold py-3 rounded-xl text-sm">
+                    Bloquer le Fauteuil Maintenant
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: INLOOP QR WACHTRIJ POSTER SIMULATIE -->
+    <div id="qr-queue-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 text-white rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center border border-slate-800">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-2">
+                <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Option Active ($15/m)</span>
+                <button onclick="closeQrQueueModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <h3 class="text-xl font-black text-white mb-1">PAS DE FILE D'ATTENTE</h3>
+            <p class="text-xs text-slate-400 mb-4">Scannez pour réserver votre tour sans attendre !</p>
+
+            <div class="bg-white p-4 rounded-2xl inline-block mb-4 shadow-xl">
+                <!-- Visual QR Pattern -->
+                <div class="w-36 h-36 bg-slate-900 rounded-lg p-2 flex flex-col justify-between">
+                    <div class="flex justify-between">
+                        <div class="w-10 h-10 border-4 border-white bg-slate-900 flex items-center justify-center"><div class="w-4 h-4 bg-white"></div></div>
+                        <div class="w-10 h-10 border-4 border-white bg-slate-900 flex items-center justify-center"><div class="w-4 h-4 bg-white"></div></div>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div class="w-10 h-10 border-4 border-white bg-slate-900 flex items-center justify-center"><div class="w-4 h-4 bg-white"></div></div>
+                        <div class="w-6 h-6 bg-kino-500 rounded-sm"></div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-[11px] text-slate-300 mb-3">Le client scanne à l'entrée, entre son nom et voit en direct sur son téléphone son numéro de passage.</p>
+            <button onclick="alert('Téléchargement de l\'affiche A4 KinoBooking prête à imprimer !'); closeQrQueueModal();" class="w-full bg-kino-500 hover:bg-kino-600 text-slate-950 font-extrabold py-2.5 rounded-xl text-xs">
+                Télécharger la Version A4 Imprimable (PDF)
+            </button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGICA -->
+    <script>
+        let usdToCdfRate = 2850;
+        let activeMainCat = 'Beauty';
+        let currentRole = 'owner';
+
+        // MOCK DATA BEDRIJVEN EN HUN CATALOGUS
+        let businesses = [
+            {
+                id: 'biz1',
+                name: "Glamour Beauty Salon & Spa",
+                mainCat: "Beauty",
+                subCat: "Coiffure & Perruques",
+                city: "Gombe, Kinshasa",
+                address: "Avenue Colonel Ebeya",
+                depositUsd: 10,
+                image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=600&q=80",
+                timeoutHours: 2,
+                services: [
+                    {
+                        id: 's1',
+                        name: "Pose Tissage + Closure HD",
+                        cat: "Perruques & Closures",
+                        desc: "Pose complète de tissage avec finition professionnelle d'une closure HD. Shampooing préalable, massage du cuir chevelu et lissage inclus.",
+                        duration: 150,
+                        priceUsd: 65,
+                        depositUsd: 15
+                    },
+                    {
+                        id: 's2',
+                        name: "Tresses Africaines / Braids Pro",
+                        cat: "Tresses & Braids",
+                        desc: "Tresses classiques ou knotless braids. Shampooing préalable, bain d'huile hydratant et traçage précis inclus.",
+                        duration: 180,
+                        priceUsd: 45,
+                        depositUsd: 10
+                    },
+                    {
+                        id: 's3',
+                        name: "Soin Capillaire & Brushing Complet",
+                        cat: "Soins",
+                        desc: "Soin vapeur profond, masque protéiné, shampooing traitant et brushing au sèche-cheveux.",
+                        duration: 60,
+                        priceUsd: 25,
+                        depositUsd: 5
+                    }
+                ]
+            },
+            {
+                id: 'biz2',
+                name: "Chez Maman Congo Restaurant",
+                mainCat: "Horeca",
+                subCat: "Restaurant & Lounge",
+                city: "Gombe, Kinshasa",
+                address: "Avenue de la Justice 45",
+                depositUsd: 10,
+                image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+                timeoutHours: 2,
+                services: [
+                    {
+                        id: 's4',
+                        name: "Table Terrasse (2-4 Personnes)",
+                        cat: "Espace Terrasse",
+                        desc: "Table réservée en terrasse extérieure avec vue. Cocktail de bienvenue inclus. Réservation valable pour 2 heures.",
+                        duration: 120,
+                        priceUsd: 40,
+                        depositUsd: 10
+                    },
+                    {
+                        id: 's5',
+                        name: "Salon VIP & Bouteille Champagne",
+                        cat: "Espace VIP",
+                        desc: "Salon VIP privé pour groupes jusqu'à 8 personnes. Bouteille de champagne fraîche et tapas offerts.",
+                        duration: 180,
+                        priceUsd: 150,
+                        depositUsd: 30
+                    }
+                ]
+            }
+        ];
+
+        // MOCK AANVRAGEN
+        let requests = [
+            { id: "KINO-801", clientName: "Vanessa Lokange", rawPhone: "081 999 8888", service: "Pose Tissage + Closure HD", date: "2026-08-22", time: "14:30", status: "PENDING_APPROVAL", depositCdf: 42750, ref: "", isVip: true },
+            { id: "KINO-802", clientName: "Kapinga Tshilombo", rawPhone: "089 333 4444", service: "Tresses Africaines Pro", date: "2026-08-22", time: "10:00", status: "APPROVED_WAITING_PAYMENT", depositCdf: 28500, ref: "", isVip: false }
+        ];
+
+        let selectedBiz = null;
+
+        window.onload = function() {
+            renderBusinesses();
+            renderDashboardRequests();
+            renderVendorServices();
+
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('book-date').value = today;
+        };
+
+        function formatCDF(num) {
+            return num.toLocaleString('fr-FR') + " FC";
+        }
+
+        function toggleRolePrivacy() {
+            currentRole = document.getElementById('user-role-select').value;
+            const statusText = document.getElementById('role-status-text');
+            if(currentRole === 'owner') {
+                statusText.innerText = "Mode Gérant (Tout voir & CRM)";
+                statusText.className = "text-emerald-600 font-bold";
+            } else {
+                statusText.innerText = "Mode Personnel (Numéros Masqués)";
+                statusText.className = "text-amber-600 font-bold";
+            }
+            renderDashboardRequests();
+        }
+
+        function switchTab(tab) {
+            document.getElementById('view-client').classList.add('hidden');
+            document.getElementById('view-dashboard').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+
+            document.getElementById('btn-tab-client').className = "px-3 py-1.5 rounded-md transition-all text-slate-300 hover:text-white";
+            document.getElementById('btn-tab-dashboard').className = "px-3 py-1.5 rounded-md transition-all text-slate-300 hover:text-white";
+            document.getElementById('btn-tab-admin').className = "px-3 py-1.5 rounded-md transition-all text-slate-300 hover:text-white";
+
+            if(tab === 'client') {
+                document.getElementById('view-client').classList.remove('hidden');
+                document.getElementById('btn-tab-client').className = "px-3 py-1.5 rounded-md transition-all bg-kino-500 text-slate-950 font-bold shadow";
+            } else if(tab === 'dashboard') {
+                document.getElementById('view-dashboard').classList.remove('hidden');
+                document.getElementById('btn-tab-dashboard').className = "px-3 py-1.5 rounded-md transition-all bg-kino-500 text-slate-950 font-bold shadow";
+            } else if(tab === 'admin') {
+                document.getElementById('view-admin').classList.remove('hidden');
+                document.getElementById('btn-tab-admin').className = "px-3 py-1.5 rounded-md transition-all bg-kino-500 text-slate-950 font-bold shadow";
+            }
+        }
+
+        function switchDashSubtab(sub) {
+            document.getElementById('dash-view-requests').classList.add('hidden');
+            document.getElementById('dash-view-services').classList.add('hidden');
+            document.getElementById('dash-view-marketing').classList.add('hidden');
+
+            document.getElementById('dash-subtab-requests').className = "px-4 py-2 rounded-xl bg-white text-slate-600 hover:bg-slate-100 font-bold text-xs border border-slate-200";
+            document.getElementById('dash-subtab-services').className = "px-4 py-2 rounded-xl bg-white text-slate-600 hover:bg-slate-100 font-bold text-xs border border-slate-200";
+            document.getElementById('dash-subtab-marketing').className = "px-4 py-2 rounded-xl bg-white text-slate-600 hover:bg-slate-100 font-bold text-xs border border-slate-200";
+
+            if(sub === 'requests') {
+                document.getElementById('dash-view-requests').classList.remove('hidden');
+                document.getElementById('dash-subtab-requests').className = "px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs shadow-sm";
+            } else if(sub === 'services') {
+                document.getElementById('dash-view-services').classList.remove('hidden');
+                document.getElementById('dash-subtab-services').className = "px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs shadow-sm";
+            } else if(sub === 'marketing') {
+                document.getElementById('dash-view-marketing').classList.remove('hidden');
+                document.getElementById('dash-subtab-marketing').className = "px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-extrabold text-xs shadow-sm";
+            }
+        }
+
+        function setActiveMainCat(cat) {
+            activeMainCat = cat;
+            if(cat === 'Beauty') {
+                document.getElementById('cat-btn-beauty').className = "flex-1 py-4 px-6 rounded-2xl bg-slate-900 text-white font-bold text-sm shadow-md flex items-center justify-center space-x-3 border-2 border-slate-900";
+                document.getElementById('cat-btn-horeca').className = "flex-1 py-4 px-6 rounded-2xl bg-white text-slate-700 font-bold text-sm shadow-sm flex items-center justify-center space-x-3 border-2 border-slate-200 hover:bg-slate-50";
+            } else {
+                document.getElementById('cat-btn-horeca').className = "flex-1 py-4 px-6 rounded-2xl bg-slate-900 text-white font-bold text-sm shadow-md flex items-center justify-center space-x-3 border-2 border-slate-900";
+                document.getElementById('cat-btn-beauty').className = "flex-1 py-4 px-6 rounded-2xl bg-white text-slate-700 font-bold text-sm shadow-sm flex items-center justify-center space-x-3 border-2 border-slate-200 hover:bg-slate-50";
+            }
+            renderBusinesses();
+        }
+
+        function renderBusinesses() {
+            const grid = document.getElementById('business-grid');
+            grid.innerHTML = '';
+
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const cityFilter = document.getElementById('city-filter').value;
+
+            const filtered = businesses.filter(b => {
+                const matchesMainCat = b.mainCat === activeMainCat;
+                const matchesSearch = b.name.toLowerCase().includes(searchTerm) || b.subCat.toLowerCase().includes(searchTerm) || b.services.some(s => s.name.toLowerCase().includes(searchTerm));
+                const matchesCity = cityFilter === '' || b.city === cityFilter;
+                return matchesMainCat && matchesSearch && matchesCity;
+            });
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400">Aucun établissement trouvé dans cette catégorie.</div>`;
+                return;
+            }
+
+            filtered.forEach(b => {
+                const servicesList = b.services.slice(0, 2).map(s => `<li class="text-[11px] text-slate-600 flex justify-between"><span>• ${s.name}</span> <b class="text-slate-800">$${s.priceUsd}</b></li>`).join('');
+
+                const card = `
+                    <div class="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col">
+                        <div class="h-48 relative overflow-hidden">
+                            <img src="${b.image}" alt="${b.name}" class="w-full h-full object-cover">
+                            <span class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full font-medium">
+                                ${b.subCat}
+                            </span>
+                            <span class="absolute top-3 right-3 bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-1 rounded-full shadow">
+                                Réponse < ${b.timeoutHours}h
+                            </span>
+                        </div>
+                        <div class="p-5 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-900 mb-1">${b.name}</h3>
+                                <p class="text-xs text-slate-500 mb-3"><i class="fa-solid fa-location-dot mr-1"></i>${b.address}, ${b.city}</p>
+
+                                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 mb-4">
+                                    <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1">Prestations Populaires :</span>
+                                    <ul class="space-y-1">
+                                        ${servicesList}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="pt-3 border-t border-slate-100 flex flex-col gap-2">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-[10px] uppercase font-bold text-slate-400">Acompte à partir de</span>
+                                    <span class="text-sm font-extrabold text-kino-600">${formatCDF(b.depositUsd * usdToCdfRate)}</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button onclick="openBookingModal('${b.id}', 'rdv')" class="bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 px-2 rounded-xl text-xs transition shadow text-center">
+                                        <i class="fa-solid fa-calendar-days mr-1 text-kino-400"></i>Avec RDV
+                                    </button>
+                                    <button onclick="openBookingModal('${b.id}', 'walkin')" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 px-2 rounded-xl text-xs transition shadow text-center">
+                                        <i class="fa-solid fa-person-walking mr-1"></i>Sans RDV
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        function filterBusinesses() { renderBusinesses(); }
+
+        function openBookingModal(bizId, initialMode = 'rdv') {
+            selectedBiz = businesses.find(b => b.id === bizId);
+            document.getElementById('modal-biz-name').innerText = selectedBiz.name;
+            document.getElementById('modal-biz-address').innerText = selectedBiz.address + ", " + selectedBiz.city;
+
+            const serviceSelect = document.getElementById('book-service');
+            const clientWalkinSelect = document.getElementById('client-walkin-service');
+
+            serviceSelect.innerHTML = '';
+            if(clientWalkinSelect) clientWalkinSelect.innerHTML = '';
+
+            selectedBiz.services.forEach(s => {
+                const cdfVal = s.depositUsd * usdToCdfRate;
+                serviceSelect.innerHTML += `<option value="${s.id}">${s.name} - $${s.priceUsd} (Acompte ${formatCDF(cdfVal)})</option>`;
+                if(clientWalkinSelect) {
+                    clientWalkinSelect.innerHTML += `<option value="${s.name}">${s.name} ($${s.priceUsd})</option>`;
+                }
+            });
+
+            if(selectedBiz.mainCat === 'Horeca') {
+                document.getElementById('label-service-type').innerText = "Sélectionnez la Table ou l'Espace";
+                document.getElementById('staff-select-container').classList.add('hidden');
+            } else {
+                document.getElementById('label-service-type').innerText = "Sélectionnez la Prestation";
+                document.getElementById('staff-select-container').classList.remove('hidden');
+            }
+
+            switchBookingMode(initialMode);
+            updateServiceDetails();
+            document.getElementById('booking-modal').classList.remove('hidden');
+        }
+
+        function switchBookingMode(mode) {
+            const rdvBtn = document.getElementById('booking-mode-rdv');
+            const walkinBtn = document.getElementById('booking-mode-walkin');
+            const rdvForm = document.getElementById('booking-form');
+            const walkinForm = document.getElementById('client-walkin-form');
+
+            if(mode === 'rdv') {
+                rdvBtn.className = "py-2 text-xs font-bold rounded-xl bg-white text-slate-900 shadow";
+                walkinBtn.className = "py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900";
+                rdvForm.classList.remove('hidden');
+                walkinForm.classList.add('hidden');
+            } else {
+                walkinBtn.className = "py-2 text-xs font-bold rounded-xl bg-white text-slate-900 shadow";
+                rdvBtn.className = "py-2 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900";
+                walkinForm.classList.remove('hidden');
+                rdvForm.classList.add('hidden');
+            }
+        }
+
+        function closeBookingModal() {
+            document.getElementById('booking-modal').classList.add('hidden');
+        }
+
+        function updateServiceDetails() {
+            if(!selectedBiz) return;
+            const select = document.getElementById('book-service');
+            const serviceId = select.value;
+            const service = selectedBiz.services.find(s => s.id === serviceId) || selectedBiz.services[0];
+            const isVip = document.getElementById('vip-toggle').checked;
+
+            if(service) {
+                let depositUsd = service.depositUsd;
+                if(isVip) depositUsd += 10;
+
+                document.getElementById('service-desc-title').innerText = `${service.name} ($${service.priceUsd} - ${service.duration} min) :`;
+                document.getElementById('service-desc-text').innerText = service.desc + (isVip ? " (Espace privé VIP réservé)" : "");
+                document.getElementById('deposit-preview').innerText = formatCDF(depositUsd * usdToCdfRate) + ` ($${depositUsd}.00)`;
+            }
+        }
+
+        function handleRequestSubmit(e) {
+            e.preventDefault();
+
+            const refId = "KINO-" + Math.floor(100 + Math.random() * 900);
+            const name = document.getElementById('book-name').value;
+            const phone = document.getElementById('book-phone').value;
+            const date = document.getElementById('book-date').value;
+            const time = document.getElementById('book-time').value;
+            const isVip = document.getElementById('vip-toggle').checked;
+
+            const select = document.getElementById('book-service');
+            const serviceObj = selectedBiz.services.find(s => s.id === select.value);
+
+            let depositUsd = serviceObj ? serviceObj.depositUsd : 10;
+            if(isVip) depositUsd += 10;
+
+            const newReq = {
+                id: refId,
+                clientName: name,
+                rawPhone: phone,
+                service: (serviceObj ? serviceObj.name : "Prestation") + (isVip ? " [VIP]" : ""),
+                date: date,
+                time: time,
+                status: "PENDING_APPROVAL",
+                depositCdf: depositUsd * usdToCdfRate,
+                ref: "",
+                isVip: isVip
+            };
+
+            requests.unshift(newReq);
+            closeBookingModal();
+            alert(`Demande pour "${newReq.service}" envoyée avec succès ! Le salon valide la disponibilité.`);
+            renderDashboardRequests();
+        }
+
+        // KLANT INLOOP SANS RDV SUBMIT
+        function handleClientWalkInSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('client-walkin-name').value;
+            const phone = document.getElementById('client-walkin-phone').value;
+            const service = document.getElementById('client-walkin-service').value;
+
+            const ticketNumber = Math.floor(1 + Math.random() * 8);
+
+            requests.unshift({
+                id: "KINO-WALK",
+                clientName: name,
+                rawPhone: phone,
+                service: service + " (Sans RDV)",
+                date: "Aujourd'hui",
+                time: "File d'attente",
+                status: "CONFIRMED",
+                depositCdf: 0,
+                ref: "TICKET-N" + ticketNumber,
+                isVip: false
+            });
+
+            closeBookingModal();
+            alert(`Succès ! Vous êtes le N°${ticketNumber} dans la file sans rendez-vous de ${selectedBiz.name}. Vous recevrez une alerte WhatsApp dès que votre tour approche !`);
+            renderDashboardRequests();
+        }
+
+        function renderVendorServices() {
+            const grid = document.getElementById('vendor-services-grid');
+            grid.innerHTML = '';
+
+            const biz = businesses[0];
+
+            biz.services.forEach(s => {
+                const card = `
+                    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-slate-200">${s.cat}</span>
+                                <span class="text-xs font-bold text-slate-400"><i class="fa-solid fa-clock mr-1"></i>${s.duration} min</span>
+                            </div>
+                            <h4 class="font-extrabold text-slate-900 text-sm mb-1">${s.name}</h4>
+                            <p class="text-xs text-slate-500 leading-relaxed mb-3">${s.desc}</p>
+                        </div>
+                        <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
+                            <div>
+                                <span class="text-[10px] text-slate-400 block">Prix Total</span>
+                                <span class="font-extrabold text-slate-900 text-sm">$${s.priceUsd}.00</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] text-slate-400 block">Acompte Requis</span>
+                                <span class="font-extrabold text-kino-600 text-sm">$${s.depositUsd}.00</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+
+            const walkinSelect = document.getElementById('walkin-service');
+            if(walkinSelect) {
+                walkinSelect.innerHTML = '';
+                biz.services.forEach(s => {
+                    walkinSelect.innerHTML += `<option value="${s.name}">${s.name} ($${s.priceUsd})</option>`;
+                });
+            }
+        }
+
+        function openAddServiceModal() { document.getElementById('add-service-modal').classList.remove('hidden'); }
+        function closeAddServiceModal() { document.getElementById('add-service-modal').classList.add('hidden'); }
+
+        function handleAddServiceSubmit(e) {
+            e.preventDefault();
+
+            const title = document.getElementById('new-service-title').value;
+            const cat = document.getElementById('new-service-cat').value;
+            const desc = document.getElementById('new-service-desc').value;
+            const duration = parseInt(document.getElementById('new-service-duration').value) || 60;
+            const price = parseFloat(document.getElementById('new-service-price-usd').value) || 30;
+            const deposit = parseFloat(document.getElementById('new-service-deposit-usd').value) || 10;
+
+            const newService = {
+                id: 's' + (businesses[0].services.length + 10),
+                name: title,
+                cat: cat,
+                desc: desc,
+                duration: duration,
+                priceUsd: price,
+                depositUsd: deposit
+            };
+
+            businesses[0].services.unshift(newService);
+            renderVendorServices();
+            renderBusinesses();
+            closeAddServiceModal();
+            alert("Nouveau service ajouté au catalogue !");
+        }
+
+        function renderDashboardRequests() {
+            const tbody = document.getElementById('dashboard-requests-tbody');
+            tbody.innerHTML = '';
+
+            let pendingCount = 0;
+
+            requests.forEach(r => {
+                let statusBadge = '';
+                let actionButtons = '';
+
+                let displayPhone = r.rawPhone;
+                if(currentRole === 'staff') {
+                    displayPhone = r.rawPhone.substring(0, 3) + " *** **" + r.rawPhone.slice(-2);
+                }
+
+                if(r.status === 'PENDING_APPROVAL') {
+                    pendingCount++;
+                    statusBadge = `<span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-1 rounded-full font-bold"><i class="fa-solid fa-clock mr-1"></i>En attente de validation</span>`;
+                    actionButtons = `
+                        <button onclick="approveRequest('${r.id}')" class="bg-kino-500 hover:bg-kino-600 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs shadow mr-1">
+                            <i class="fa-solid fa-check mr-1"></i>Valider
+                        </button>
+                        <button onclick="rejectRequest('${r.id}')" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-2.5 py-1.5 rounded-lg text-xs">
+                            Refuser
+                        </button>
+                    `;
+                } else if(r.status === 'APPROVED_WAITING_PAYMENT') {
+                    statusBadge = `<span class="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full font-bold"><i class="fa-solid fa-stopwatch mr-1"></i>Validé (Timer Paiement: 30m)</span>`;
+                    actionButtons = `<span class="text-xs text-slate-400 italic">Le client envoie M-Pesa</span>`;
+                } else {
+                    statusBadge = `<span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-bold"><i class="fa-solid fa-circle-check mr-1"></i>Confirmé</span>`;
+                    actionButtons = `<span class="text-xs text-slate-400 font-mono">Ref: ${r.ref || 'OK'}</span>`;
+                }
+
+                const vipBadge = r.isVip ? `<span class="bg-amber-500 text-slate-950 text-[9px] font-black px-1.5 py-0.5 rounded ml-1">VIP</span>` : '';
+
+                const row = `
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="p-4 font-bold text-slate-900">${r.clientName} ${vipBadge}<div class="text-xs text-slate-400 font-normal">${displayPhone}</div></td>
+                        <td class="p-4 font-medium text-slate-700">${r.service}</td>
+                        <td class="p-4">${r.date} à ${r.time}</td>
+                        <td class="p-4 font-bold text-kino-600">${formatCDF(r.depositCdf)}</td>
+                        <td class="p-4">${statusBadge}</td>
+                        <td class="p-4 text-right">${actionButtons}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            document.getElementById('dash-pending-count').innerText = pendingCount + " Demande";
+        }
+
+        function approveRequest(id) {
+            const req = requests.find(r => r.id === id);
+            if(req) {
+                req.status = 'APPROVED_WAITING_PAYMENT';
+                renderDashboardRequests();
+                alert(`Demande pour ${req.service} validée ! Le client reçoit un message WhatsApp et dispose de 30 minutes pour envoyer son acompte sur votre M-Pesa.`);
+            }
+        }
+
+        function rejectRequest(id) {
+            requests = requests.filter(r => r.id !== id);
+            renderDashboardRequests();
+        }
+
+        // WALK-IN MODAL ZAAN DASHBOARD
+        function openWalkInModal() { document.getElementById('walkin-modal').classList.remove('hidden'); }
+        function closeWalkInModal() { document.getElementById('walkin-modal').classList.add('hidden'); }
+
+        function handleWalkInSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('walkin-name').value || "Client Sans RDV";
+            const service = document.getElementById('walkin-service').value;
+
+            requests.unshift({
+                id: "KINO-WALK",
+                clientName: name,
+                rawPhone: "Sans RDV (Direct)",
+                service: service,
+                date: "Aujourd'hui",
+                time: "Maintenant",
+                status: "CONFIRMED",
+                depositCdf: 0,
+                ref: "SUR-PLACE",
+                isVip: false
+            });
+
+            closeWalkInModal();
+            renderDashboardRequests();
+        }
+
+        // QR QUEUE MODAL
+        function openQrQueueModal() { document.getElementById('qr-queue-modal').classList.remove('hidden'); }
+        function closeQrQueueModal() { document.getElementById('qr-queue-modal').classList.add('hidden'); }
+
+        function openSettingsModal() {
+            const newHours = prompt("Définir le délai de réponse max pour votre établissement (en heures, max 6h) :", "2");
+            if(newHours && parseInt(newHours) <= 6) {
+                document.getElementById('dash-timeout-display').innerText = newHours + " Heures par demande";
+                alert("Paramètre enregistré !");
+            } else if(parseInt(newHours) > 6) {
+                alert("Règlement KinoBooking : Le délai ne peut pas dépasser 6 heures.");
+            }
+        }
+    </script>
+</body>
+</html>
