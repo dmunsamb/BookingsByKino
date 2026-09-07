@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center bg-slate-50 px-6 py-24 text-center dark:bg-slate-950">
@@ -12,6 +14,12 @@ export default function Home() {
         statique reste disponible sur GitHub Pages en attendant la mise en
         production de cette version.
       </p>
+      <Link
+        href="/login"
+        className="mt-6 text-xs font-bold text-kino-600 underline-offset-4 hover:underline dark:text-kino-500"
+      >
+        Accès professionnel (gérant / personnel)
+      </Link>
     </div>
   );
 }

@@ -37,7 +37,23 @@ export async function proxy(request: NextRequest) {
   // Force le rafraîchissement du token si nécessaire — à appeler avant toute
   // réponse, sinon un token rafraîchi après coup serait perdu (voir le
   // commentaire dans @supabase/ssr sur setAll).
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Contrôle "optimiste" (présence de session uniquement, pas de requête
+  // supplémentaire en base) — voir le guide Next.js sur l'authentification.
+  // Le contrôle "sécurisé" (rôle réel, via la table profiles) se fait dans
+  // le Data Access Layer (src/lib/auth/dal.ts), au plus près des données.
+  const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith("/dashboard") && !user) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  if (pathname === "/login" && user) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
 
   return response;
 }
