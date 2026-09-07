@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Profile } from "@/lib/auth/dal";
 import { getCurrentProfile } from "@/lib/auth/dal";
 import { logout } from "./actions";
@@ -48,10 +49,23 @@ export default async function DashboardPage() {
         </form>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900">
-        Le tableau de bord (agenda, aanvragen, catalogue) reste à
-        construire — voir docs/functioneel-ontwerp-kinobooking.md, section
-        12.
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Link
+          href="/dashboard/agenda"
+          className="rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+        >
+          <span className="font-bold text-slate-900 dark:text-white">
+            Horaires et capacité
+          </span>
+          <p className="mt-1 text-slate-500 dark:text-slate-400">
+            Configurer l&apos;agenda centrale de votre zaak.
+          </p>
+        </Link>
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-900">
+          Aanvragen, catalogue et le reste du tableau de bord restent à
+          construire — voir docs/functioneel-ontwerp-kinobooking.md,
+          section 12.
+        </div>
       </div>
     </div>
   );
