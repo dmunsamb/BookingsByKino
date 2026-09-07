@@ -29,9 +29,10 @@ Copiez `.env.local.example` en `.env.local` et remplissez les clés Supabase une
 Le schéma et les policies de sécurité sont versionnés dans `supabase/migrations/` :
 
 - `0001_init_schema.sql` — tables (`businesses`, `services`, `availability_rules`, `agenda_entries`, `profiles`) et la fonction de rate limiting.
-- `0002_rls_policies.sql` — Row Level Security sur chaque table, plus les vues `agenda_entries_for_dashboard` (numéro masqué pour le personnel) et `agenda_capacity_public` (disponibilité agrégée, sans données personnelles).
+- `0002_rls_policies.sql` — Row Level Security sur chaque table, plus la vue `agenda_entries_for_dashboard` (numéro masqué pour le personnel).
+- `0003_security_advisor_fixes.sql` — corrections suite à l'audit de sécurité automatique de Supabase (`get_advisors`) : `is_owner_of`/`is_staff_of` passées en `SECURITY INVOKER`, et la disponibilité agrégée publique exposée via une fonction `get_agenda_capacity(business_id)` (RPC) plutôt qu'une vue `SECURITY DEFINER` (signalée en ERROR par l'advisor).
 
-Pour les appliquer : dans le tableau de bord Supabase → SQL Editor, exécuter les fichiers dans l'ordre, ou utiliser la Supabase CLI (`supabase db push`) si le projet local y est lié.
+Pour les appliquer : dans le tableau de bord Supabase → SQL Editor, exécuter les fichiers dans l'ordre, ou utiliser la Supabase CLI (`supabase db push`) si le projet local y est lié. Après toute modification du schéma, relancer l'audit (`get_advisors` côté MCP, ou Database → Advisors dans le tableau de bord) pour repérer les policies manquantes ou les fonctions trop permissives.
 
 ### Vérifier que le RLS fonctionne correctement
 
