@@ -65,7 +65,12 @@ reset role;
 -- ============================================================
 -- TEST C : un visiteur anonyme DOIT pouvoir soumettre une demande de
 -- réservation (reste PENDING_APPROVAL, phase 1 - voir BR-11).
--- Résultat attendu : 1 ligne renvoyée, status = pending_approval.
+--
+-- Pas de "returning" ici : anon n'a (volontairement) aucun droit de LECTURE
+-- sur agenda_entries, donc même relire la ligne qu'on vient d'insérer
+-- échouerait avec une (fausse) erreur RLS. On vérifie le succès séparément
+-- ci-dessous (Test C - vérification), avec le rôle par défaut qui peut lire.
+-- Résultat attendu : "Success. No rows returned" (pas d'erreur).
 -- ============================================================
 
 set role anon;
@@ -77,9 +82,15 @@ values (
   'Client Public OK',
   '+243 82 222 2222',
   now()
-)
-returning id, client_name, status;
+);
 reset role;
+
+-- Test C - vérification (rôle par défaut, qui peut lire) :
+-- Résultat attendu : 1 ligne, client_name = 'Client Public OK'.
+select id, client_name, status
+from public.agenda_entries
+where business_id = '00000000-0000-0000-0000-000000000001'
+  and client_name = 'Client Public OK';
 
 -- ============================================================
 -- TEST D (fraude) : un visiteur anonyme NE DOIT PAS pouvoir s'auto-confirmer
@@ -97,8 +108,7 @@ values (
   'Tentative frauduleuse',
   '+243 80 000 0000',
   now()
-)
-returning id;
+);
 reset role;
 
 -- ============================================================
