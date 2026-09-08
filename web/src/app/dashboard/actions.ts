@@ -53,6 +53,8 @@ export async function updateBookingStatus(formData: FormData) {
   revalidatePath("/dashboard");
 }
 
+export type MobileMoneyFormState = { success?: boolean; error?: string };
+
 /**
  * Numéros mobile money de l'établissement — plusieurs opérateurs peuvent
  * être actifs en même temps (ex. M-Pesa ET Orange Money), chacun avec son
@@ -63,10 +65,17 @@ export async function updateBookingStatus(formData: FormData) {
  * charge). Un opérateur décoché voit son numéro effacé, même s'il en
  * reste un dans le champ texte : la case à cocher fait foi.
  */
-export async function updateMobileMoneyInfo(formData: FormData) {
+export async function updateMobileMoneyInfo(
+  _prevState: MobileMoneyFormState,
+  formData: FormData
+): Promise<MobileMoneyFormState> {
   const profile = await getCurrentProfile();
-  if (!profile?.business_id) return;
-  if (profile.role !== "owner") return;
+  if (!profile?.business_id) {
+    return { error: "Aucun établissement associé à votre compte." };
+  }
+  if (profile.role !== "owner") {
+    return { error: "Seul le gérant peut modifier ces informations." };
+  }
 
   function fieldValue(enabledField: string, numberField: string) {
     const enabled = formData.get(enabledField) === "on";
@@ -76,7 +85,7 @@ export async function updateMobileMoneyInfo(formData: FormData) {
   }
 
   const supabase = await createClient();
-  await supabase
+  const { error } = await supabase
     .from("businesses")
     .update({
       mpesa_number: fieldValue("mpesa_enabled", "mpesa_number"),
@@ -91,5 +100,10 @@ export async function updateMobileMoneyInfo(formData: FormData) {
     })
     .eq("id", profile.business_id);
 
+  if (error) {
+    return { error: "Erreur lors de l'enregistrement. Merci de réessayer." };
+  }
+
   revalidatePath("/dashboard");
+  return { success: true };
 }

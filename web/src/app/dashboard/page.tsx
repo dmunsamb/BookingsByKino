@@ -5,12 +5,12 @@ import { getCurrentProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { formatCdf } from "@/lib/currency";
-import { logout, updateBookingStatus, updateMobileMoneyInfo } from "./actions";
+import { logout, updateBookingStatus } from "./actions";
 import { ValidateWithWhatsAppButton } from "./validate-with-whatsapp-button";
+import { MobileMoneyForm } from "./mobile-money-form";
 import {
   buildWhatsAppLink,
   formatMobileMoneyAccounts,
-  mobileMoneyProviderLabels,
   type MobileMoneyAccount,
   type MobileMoneyProvider,
 } from "@/lib/whatsapp";
@@ -559,56 +559,7 @@ export default async function DashboardPage() {
             </p>
           </Link>
           {profile.business_id && profile.role === "owner" && (
-            <form
-              action={updateMobileMoneyInfo}
-              className="rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:col-span-2"
-            >
-              <label className="font-bold text-slate-900 dark:text-white">
-                Mobile money
-              </label>
-              <p className="mt-1 mb-3 text-slate-500 dark:text-slate-400">
-                Cochez chaque opérateur que vous utilisez et renseignez son
-                numéro. Plusieurs peuvent être actifs en même temps — tous
-                seront indiqués au client.
-              </p>
-              <div className="space-y-3">
-                {(
-                  Object.entries(mobileMoneyProviderLabels) as [
-                    MobileMoneyProvider,
-                    string,
-                  ][]
-                ).map(([provider, label]) => {
-                  const account = mobileMoneyAccounts.find(
-                    (a) => a.provider === provider
-                  );
-                  return (
-                    <div key={provider} className="flex items-center gap-2">
-                      <label className="flex w-40 shrink-0 items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
-                        <input
-                          type="checkbox"
-                          name={`${provider}_enabled`}
-                          defaultChecked={!!account}
-                        />
-                        {label}
-                      </label>
-                      <input
-                        type="tel"
-                        name={`${provider}_number`}
-                        defaultValue={account?.number ?? ""}
-                        placeholder="081 000 0000"
-                        className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-              <button
-                type="submit"
-                className="mt-3 rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
-              >
-                Enregistrer
-              </button>
-            </form>
+            <MobileMoneyForm accounts={mobileMoneyAccounts} />
           )}
         </div>
       </section>
