@@ -58,7 +58,6 @@ function BookingCard({
   editHref,
   statusLabel,
   showDeposit,
-  mobileMoneyLabel,
 }: {
   entry: BookingRow;
   services: Map<string, ServiceInfo>;
@@ -66,7 +65,6 @@ function BookingCard({
   editHref?: string;
   statusLabel?: string;
   showDeposit?: boolean;
-  mobileMoneyLabel?: string | null;
 }) {
   const service = entry.service_id ? services.get(entry.service_id) : undefined;
 
@@ -93,16 +91,7 @@ function BookingCard({
         {service && showDeposit && (
           <p className="mt-1 text-sm font-bold text-kino-600">
             Acompte attendu : ${service.deposit_usd.toFixed(2)} (
-            {formatCdf(service.deposit_usd)}){" "}
-            {mobileMoneyLabel ? (
-              <span className="font-normal text-slate-500 dark:text-slate-400">
-                · {mobileMoneyLabel}
-              </span>
-            ) : (
-              <span className="font-normal text-red-600">
-                · aucun numéro mobile money configuré
-              </span>
-            )}
+            {formatCdf(service.deposit_usd)})
           </p>
         )}
       </div>
@@ -262,7 +251,6 @@ export default async function DashboardPage() {
       }));
   }
 
-  const mobileMoneyLabel = formatMobileMoneyAccounts(mobileMoneyAccounts);
   const mobileMoneyLabelForMessage = formatMobileMoneyAccounts(
     mobileMoneyAccounts,
     " ou "
@@ -487,7 +475,6 @@ export default async function DashboardPage() {
                   entry={entry}
                   services={serviceInfo}
                   showDeposit
-                  mobileMoneyLabel={mobileMoneyLabel}
                   editHref={
                     profile.role === "owner"
                       ? `/dashboard/reservations/${entry.id}`
