@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
+import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { AvailabilityForm } from "./availability-form";
 import { deleteAvailabilityRule } from "./actions";
 
@@ -104,12 +105,7 @@ export default async function AgendaPage() {
                   <td className="p-3 text-right">
                     <form action={deleteAvailabilityRule}>
                       <input type="hidden" name="id" value={rule.id} />
-                      <button
-                        type="submit"
-                        className="text-xs font-bold text-red-600 hover:underline"
-                      >
-                        Supprimer
-                      </button>
+                      <ConfirmDeleteButton />
                     </form>
                   </td>
                 )}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
+import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { ServiceForm } from "./service-form";
 import { deleteService } from "./actions";
 
@@ -105,12 +106,7 @@ export default async function CataloguePage() {
               {profile.role === "owner" && (
                 <form action={deleteService}>
                   <input type="hidden" name="id" value={service.id} />
-                  <button
-                    type="submit"
-                    className="text-xs font-bold text-red-600 hover:underline"
-                  >
-                    Supprimer
-                  </button>
+                  <ConfirmDeleteButton />
                 </form>
               )}
             </div>
