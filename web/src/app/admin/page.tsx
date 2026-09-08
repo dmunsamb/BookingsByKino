@@ -7,8 +7,9 @@ import {
   subscriptionStatusLabels,
   type SubscriptionStatus,
 } from "@/lib/subscription";
-import { rejectBusiness, updateSubscriptionPrices } from "./actions";
+import { rejectBusiness } from "./actions";
 import { SubscriptionPaymentDialog } from "./subscription-payment-dialog";
+import { SubscriptionPricesForm } from "./subscription-prices-form";
 
 const statusLabels: Record<string, string> = {
   pending_approval: "En attente",
@@ -126,37 +127,7 @@ export default async function AdminPage() {
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Tarifs d&apos;abonnement
         </h2>
-        <form
-          action={updateSubscriptionPrices}
-          className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-end sm:gap-4"
-        >
-          {DURATION_MONTHS.map((m) => (
-            <div key={m} className="flex-1">
-              <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
-                {m === 12 ? "1 an" : `${m} mois`} ($)
-              </label>
-              <input
-                name={`price_${m}`}
-                type="number"
-                min="0"
-                step="0.01"
-                defaultValue={priceByDuration[m]}
-                className="w-full rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-              />
-            </div>
-          ))}
-          <button
-            type="submit"
-            className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
-          >
-            Enregistrer les tarifs
-          </button>
-        </form>
-        <p className="mt-2 text-xs text-slate-400">
-          Ces montants apparaissent en présélection lors de
-          l&apos;enregistrement d&apos;un paiement gérant, avec toujours la
-          possibilité de saisir un autre montant.
-        </p>
+        <SubscriptionPricesForm initialPrices={priceByDuration} />
       </section>
 
       <section className="mb-8">

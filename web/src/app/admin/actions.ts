@@ -141,17 +141,20 @@ export async function rejectBusiness(formData: FormData) {
  */
 export async function updateSubscriptionPrices(formData: FormData) {
   const admin = await requirePlatformAdmin();
-  if (!admin) return;
+  if (!admin) throw new Error("Accès réservé à l'équipe KinoBooking.");
 
   const supabase = await createClient();
   for (const months of ALLOWED_DURATION_MONTHS) {
     const raw = formData.get(`price_${months}`);
     const amount = Number(raw);
-    if (!Number.isFinite(amount) || amount < 0) continue;
-    await supabase
+    if (!Number.isFinite(amount) || amount < 0) {
+      throw new Error("Montant invalide.");
+    }
+    const { error } = await supabase
       .from("subscription_prices")
       .update({ amount_usd: amount, updated_at: new Date().toISOString() })
       .eq("duration_months", months);
+    if (error) throw new Error("Erreur lors de l'enregistrement des tarifs.");
   }
 
   revalidatePath("/admin");
