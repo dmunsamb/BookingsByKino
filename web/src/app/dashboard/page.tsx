@@ -9,7 +9,9 @@ import { logout, updateBookingStatus, updateMobileMoneyInfo } from "./actions";
 import { ValidateWithWhatsAppButton } from "./validate-with-whatsapp-button";
 import {
   buildWhatsAppLink,
+  formatMobileMoneyAccounts,
   mobileMoneyProviderLabels,
+  type MobileMoneyAccount,
   type MobileMoneyProvider,
 } from "@/lib/whatsapp";
 
@@ -145,8 +147,7 @@ export default async function DashboardPage() {
   let history: HistoryRow[] = [];
   let serviceInfo = new Map<string, ServiceInfo>();
   let businessName = "";
-  let mobileMoneyNumber: string | null = null;
-  let mobileMoneyProvider: MobileMoneyProvider | null = null;
+  let mobileMoneyAccounts: MobileMoneyAccount[] = [];
 
   if (profile.business_id) {
     const supabase = await createClient();
@@ -215,7 +216,9 @@ export default async function DashboardPage() {
         .eq("business_id", profile.business_id),
       supabase
         .from("businesses")
-        .select("name, mobile_money_number, mobile_money_provider")
+        .select(
+          "name, mpesa_number, orange_money_number, airtel_money_number"
+        )
         .eq("id", profile.business_id)
         .maybeSingle(),
     ]);
@@ -232,14 +235,18 @@ export default async function DashboardPage() {
       ])
     );
     businessName = businessData?.name ?? "";
-    mobileMoneyNumber = businessData?.mobile_money_number ?? null;
-    mobileMoneyProvider = businessData?.mobile_money_provider ?? null;
+    mobileMoneyAccounts = (
+      [
+        ["mpesa", businessData?.mpesa_number],
+        ["orange_money", businessData?.orange_money_number],
+        ["airtel_money", businessData?.airtel_money_number],
+      ] as [MobileMoneyProvider, string | null | undefined][]
+    )
+      .filter(([, number]) => !!number)
+      .map(([provider, number]) => ({ provider, number: number as string }));
   }
 
-  const mobileMoneyLabel =
-    mobileMoneyNumber && mobileMoneyProvider
-      ? `${mobileMoneyProviderLabels[mobileMoneyProvider]} ${mobileMoneyNumber}`
-      : null;
+  const mobileMoneyLabel = formatMobileMoneyAccounts(mobileMoneyAccounts);
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
@@ -560,48 +567,47 @@ export default async function DashboardPage() {
                 Mobile money
               </label>
               <p className="mt-1 mb-3 text-slate-500 dark:text-slate-400">
-                Communiqué au client pour le paiement de l&apos;acompte.
+                Cochez chaque opérateur que vous utilisez et renseignez son
+                numéro. Plusieurs peuvent être actifs en même temps — tous
+                seront indiqués au client.
               </p>
-              <div className="mb-3 flex flex-wrap gap-4">
+              <div className="space-y-3">
                 {(
                   Object.entries(mobileMoneyProviderLabels) as [
                     MobileMoneyProvider,
                     string,
                   ][]
-                ).map(([value, label]) => (
-                  <label
-                    key={value}
-                    className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200"
-                  >
-                    <input
-                      type="radio"
-                      name="mobile_money_provider"
-                      value={value}
-                      defaultChecked={
-                        mobileMoneyProvider
-                          ? mobileMoneyProvider === value
-                          : value === "mpesa"
-                      }
-                    />
-                    {label}
-                  </label>
-                ))}
+                ).map(([provider, label]) => {
+                  const account = mobileMoneyAccounts.find(
+                    (a) => a.provider === provider
+                  );
+                  return (
+                    <div key={provider} className="flex items-center gap-2">
+                      <label className="flex w-40 shrink-0 items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+                        <input
+                          type="checkbox"
+                          name={`${provider}_enabled`}
+                          defaultChecked={!!account}
+                        />
+                        {label}
+                      </label>
+                      <input
+                        type="tel"
+                        name={`${provider}_number`}
+                        defaultValue={account?.number ?? ""}
+                        placeholder="081 000 0000"
+                        className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                      />
+                    </div>
+                  );
+                })}
               </div>
-              <div className="flex gap-2">
-                <input
-                  type="tel"
-                  name="mobile_money_number"
-                  defaultValue={mobileMoneyNumber ?? ""}
-                  placeholder="081 000 0000"
-                  className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                />
-                <button
-                  type="submit"
-                  className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
-                >
-                  Enregistrer
-                </button>
-              </div>
+              <button
+                type="submit"
+                className="mt-3 rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
+              >
+                Enregistrer
+              </button>
             </form>
           )}
         </div>

@@ -14,6 +14,21 @@ export const mobileMoneyProviderLabels: Record<MobileMoneyProvider, string> = {
   airtel_money: "Airtel Money",
 };
 
+export type MobileMoneyAccount = {
+  provider: MobileMoneyProvider;
+  number: string;
+};
+
+/** Plusieurs comptes mobile money peuvent être actifs en même temps (ex. M-Pesa ET Orange Money). */
+export function formatMobileMoneyAccounts(
+  accounts: MobileMoneyAccount[]
+): string | null {
+  if (accounts.length === 0) return null;
+  return accounts
+    .map((a) => `${mobileMoneyProviderLabels[a.provider]} ${a.number}`)
+    .join(" · ");
+}
+
 /** Normalise un numéro local RDC ("081 000 0000") vers le format international attendu par wa.me. */
 function toWhatsAppDigits(phone: string): string {
   const digits = phone.replace(/\D/g, "");

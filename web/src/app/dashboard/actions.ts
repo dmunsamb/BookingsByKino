@@ -53,41 +53,41 @@ export async function updateBookingStatus(formData: FormData) {
   revalidatePath("/dashboard");
 }
 
-const ALLOWED_MOBILE_MONEY_PROVIDERS = [
-  "mpesa",
-  "orange_money",
-  "airtel_money",
-] as const;
-
 /**
- * Numéro mobile money de l'établissement (M-Pesa, Orange Money ou Airtel
- * Money — un seul actif à la fois), communiqué manuellement par le gérant
- * au client une fois la demande validée (BR-3 : l'acompte est payé
- * directement au gérant, hors plateforme — phase 1, pas d'intégration
- * de paiement réelle, voir section 12.2 du cahier de charge).
+ * Numéros mobile money de l'établissement — plusieurs opérateurs peuvent
+ * être actifs en même temps (ex. M-Pesa ET Orange Money), chacun avec son
+ * propre numéro et sa propre case à cocher. Communiqués manuellement par
+ * le gérant au client une fois la demande validée (BR-3 : l'acompte est
+ * payé directement au gérant, hors plateforme — phase 1, pas
+ * d'intégration de paiement réelle, voir section 12.2 du cahier de
+ * charge). Un opérateur décoché voit son numéro effacé, même s'il en
+ * reste un dans le champ texte : la case à cocher fait foi.
  */
 export async function updateMobileMoneyInfo(formData: FormData) {
   const profile = await getCurrentProfile();
   if (!profile?.business_id) return;
   if (profile.role !== "owner") return;
 
-  const momoNumber = formData.get("mobile_money_number");
-  const provider = formData.get("mobile_money_provider");
-  if (typeof momoNumber !== "string" || typeof provider !== "string") return;
-  if (
-    !ALLOWED_MOBILE_MONEY_PROVIDERS.includes(
-      provider as (typeof ALLOWED_MOBILE_MONEY_PROVIDERS)[number]
-    )
-  ) {
-    return;
+  function fieldValue(enabledField: string, numberField: string) {
+    const enabled = formData.get(enabledField) === "on";
+    const value = formData.get(numberField);
+    if (!enabled || typeof value !== "string" || !value.trim()) return null;
+    return value.trim();
   }
 
   const supabase = await createClient();
   await supabase
     .from("businesses")
     .update({
-      mobile_money_number: momoNumber.trim() || null,
-      mobile_money_provider: provider,
+      mpesa_number: fieldValue("mpesa_enabled", "mpesa_number"),
+      orange_money_number: fieldValue(
+        "orange_money_enabled",
+        "orange_money_number"
+      ),
+      airtel_money_number: fieldValue(
+        "airtel_money_enabled",
+        "airtel_money_number"
+      ),
     })
     .eq("id", profile.business_id);
 
