@@ -55,6 +55,12 @@ export async function updateBookingStatus(formData: FormData) {
 
 export type MobileMoneyFormState = { success?: boolean; error?: string };
 
+const MOBILE_MONEY_PROVIDER_INFO = [
+  { key: "mpesa", label: "M-Pesa" },
+  { key: "orange_money", label: "Orange Money" },
+  { key: "airtel_money", label: "Airtel Money" },
+] as const;
+
 /**
  * Numéros mobile money de l'établissement — plusieurs opérateurs peuvent
  * être actifs en même temps (ex. M-Pesa ET Orange Money), chacun avec son
@@ -62,8 +68,12 @@ export type MobileMoneyFormState = { success?: boolean; error?: string };
  * le gérant au client une fois la demande validée (BR-3 : l'acompte est
  * payé directement au gérant, hors plateforme — phase 1, pas
  * d'intégration de paiement réelle, voir section 12.2 du cahier de
- * charge). Un opérateur décoché voit son numéro effacé, même s'il en
- * reste un dans le champ texte : la case à cocher fait foi.
+ * charge). Un opérateur décoché voit son numéro et son titulaire effacés,
+ * même s'il en reste dans les champs texte : la case à cocher fait foi.
+ *
+ * Le nom du titulaire est obligatoire pour tout opérateur activé (évite
+ * les litiges lors du transfert, voir demande du gérant) : revérifié ici
+ * même si le formulaire l'empêche déjà côté client.
  */
 export async function updateMobileMoneyInfo(
   _prevState: MobileMoneyFormState,
@@ -77,36 +87,48 @@ export async function updateMobileMoneyInfo(
     return { error: "Seul le gérant peut modifier ces informations." };
   }
 
-  function fieldValue(enabledField: string, field: string) {
-    const enabled = formData.get(enabledField) === "on";
-    const value = formData.get(field);
-    if (!enabled || typeof value !== "string" || !value.trim()) return null;
-    return value.trim();
+  const updates: Record<string, string | null> = {};
+  const missingNumber: string[] = [];
+  const missingHolderName: string[] = [];
+
+  for (const { key, label } of MOBILE_MONEY_PROVIDER_INFO) {
+    const enabled = formData.get(`${key}_enabled`) === "on";
+
+    if (!enabled) {
+      updates[`${key}_number`] = null;
+      updates[`${key}_holder_name`] = null;
+      continue;
+    }
+
+    const numberRaw = formData.get(`${key}_number`);
+    const holderNameRaw = formData.get(`${key}_holder_name`);
+    const number = typeof numberRaw === "string" ? numberRaw.trim() : "";
+    const holderName =
+      typeof holderNameRaw === "string" ? holderNameRaw.trim() : "";
+
+    if (!number) missingNumber.push(label);
+    if (!holderName) missingHolderName.push(label);
+    if (!number || !holderName) continue;
+
+    updates[`${key}_number`] = number;
+    updates[`${key}_holder_name`] = holderName;
+  }
+
+  if (missingNumber.length > 0 || missingHolderName.length > 0) {
+    const parts: string[] = [];
+    if (missingNumber.length > 0) {
+      parts.push(`numéro manquant (${missingNumber.join(", ")})`);
+    }
+    if (missingHolderName.length > 0) {
+      parts.push(`nom du titulaire manquant (${missingHolderName.join(", ")})`);
+    }
+    return { error: `Merci de compléter : ${parts.join(" · ")}.` };
   }
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("businesses")
-    .update({
-      mpesa_number: fieldValue("mpesa_enabled", "mpesa_number"),
-      mpesa_holder_name: fieldValue("mpesa_enabled", "mpesa_holder_name"),
-      orange_money_number: fieldValue(
-        "orange_money_enabled",
-        "orange_money_number"
-      ),
-      orange_money_holder_name: fieldValue(
-        "orange_money_enabled",
-        "orange_money_holder_name"
-      ),
-      airtel_money_number: fieldValue(
-        "airtel_money_enabled",
-        "airtel_money_number"
-      ),
-      airtel_money_holder_name: fieldValue(
-        "airtel_money_enabled",
-        "airtel_money_holder_name"
-      ),
-    })
+    .update(updates)
     .eq("id", profile.business_id);
 
   if (error) {

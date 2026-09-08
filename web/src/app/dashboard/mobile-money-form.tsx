@@ -57,6 +57,25 @@ export function MobileMoneyForm({
       values[provider].holderName !== saved[provider].holderName
   );
 
+  // Un opérateur activé doit avoir son numéro ET son titulaire renseignés
+  // (évite les litiges lors du transfert) — vérifié aussi côté serveur.
+  function rowError(provider: MobileMoneyProvider): string | null {
+    const v = values[provider];
+    if (!v.enabled) return null;
+    const missingNumber = !v.number.trim();
+    const missingHolderName = !v.holderName.trim();
+    if (missingNumber && missingHolderName) {
+      return "Numéro et nom du titulaire requis";
+    }
+    if (missingNumber) return "Numéro requis";
+    if (missingHolderName) return "Nom du titulaire requis";
+    return null;
+  }
+
+  const hasRowErrors = (Object.keys(values) as MobileMoneyProvider[]).some(
+    (provider) => rowError(provider) !== null
+  );
+
   return (
     <form
       action={formAction}
@@ -66,10 +85,10 @@ export function MobileMoneyForm({
         Mobile money
       </label>
       <p className="mt-1 mb-3 text-slate-500 dark:text-slate-400">
-        Cochez chaque opérateur que vous utilisez et renseignez son numéro et
-        le nom du titulaire (affiché au client pour éviter tout litige au
-        moment du transfert). Plusieurs opérateurs peuvent être actifs en
-        même temps.
+        Cochez chaque opérateur que vous utilisez. Le numéro et le nom du
+        titulaire sont tous les deux obligatoires (affichés au client pour
+        éviter tout litige au moment du transfert). Plusieurs opérateurs
+        peuvent être actifs en même temps.
       </p>
       <div className="space-y-3">
         {(
@@ -77,64 +96,77 @@ export function MobileMoneyForm({
             MobileMoneyProvider,
             string,
           ][]
-        ).map(([provider, label]) => (
-          <div
-            key={provider}
-            className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"
-          >
-            <label className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
-              <input
-                type="checkbox"
-                name={`${provider}_enabled`}
-                checked={values[provider].enabled}
-                onChange={(e) =>
-                  setValues((v) => ({
-                    ...v,
-                    [provider]: { ...v[provider], enabled: e.target.checked },
-                  }))
-                }
-              />
-              {label}
-            </label>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <input
-                type="tel"
-                name={`${provider}_number`}
-                value={values[provider].number}
-                onChange={(e) =>
-                  setValues((v) => ({
-                    ...v,
-                    [provider]: { ...v[provider], number: e.target.value },
-                  }))
-                }
-                placeholder="Numéro (ex: 081 234 5678)"
-                className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-              />
-              <input
-                type="text"
-                name={`${provider}_holder_name`}
-                value={values[provider].holderName}
-                onChange={(e) =>
-                  setValues((v) => ({
-                    ...v,
-                    [provider]: {
-                      ...v[provider],
-                      holderName: e.target.value,
-                    },
-                  }))
-                }
-                placeholder="Nom du titulaire"
-                className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-              />
+        ).map(([provider, label]) => {
+          const error = rowError(provider);
+          const invalidClass = error
+            ? "border-red-400 focus:border-red-500"
+            : "border-slate-300 dark:border-slate-700";
+
+          return (
+            <div
+              key={provider}
+              className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"
+            >
+              <label className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
+                <input
+                  type="checkbox"
+                  name={`${provider}_enabled`}
+                  checked={values[provider].enabled}
+                  onChange={(e) =>
+                    setValues((v) => ({
+                      ...v,
+                      [provider]: {
+                        ...v[provider],
+                        enabled: e.target.checked,
+                      },
+                    }))
+                  }
+                />
+                {label}
+              </label>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <input
+                  type="tel"
+                  name={`${provider}_number`}
+                  value={values[provider].number}
+                  onChange={(e) =>
+                    setValues((v) => ({
+                      ...v,
+                      [provider]: { ...v[provider], number: e.target.value },
+                    }))
+                  }
+                  placeholder="Numéro (ex: 081 234 5678)"
+                  className={`w-full rounded-xl border p-3 text-sm dark:bg-slate-800 dark:text-white ${invalidClass}`}
+                />
+                <input
+                  type="text"
+                  name={`${provider}_holder_name`}
+                  value={values[provider].holderName}
+                  onChange={(e) =>
+                    setValues((v) => ({
+                      ...v,
+                      [provider]: {
+                        ...v[provider],
+                        holderName: e.target.value,
+                      },
+                    }))
+                  }
+                  placeholder="Nom du titulaire (obligatoire)"
+                  className={`w-full rounded-xl border p-3 text-sm dark:bg-slate-800 dark:text-white ${invalidClass}`}
+                />
+              </div>
+              {error && (
+                <p className="mt-1 text-xs font-bold text-red-600">{error}</p>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="mt-3 flex items-center gap-3">
         <button
           type="submit"
-          disabled={!isDirty || pending}
+          disabled={!isDirty || pending || hasRowErrors}
           className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {pending ? "Enregistrement..." : "Enregistrer"}
