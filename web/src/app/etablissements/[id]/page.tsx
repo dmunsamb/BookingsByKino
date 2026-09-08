@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/server";
 import {
   generateSlotsForDate,
@@ -19,10 +19,18 @@ export default async function BusinessPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ date?: string; confirmed?: string }>;
+  searchParams: Promise<{
+    date?: string;
+    service?: string;
+    confirmed?: string;
+  }>;
 }) {
   const { id } = await params;
-  const { date: dateParam, confirmed } = await searchParams;
+  const {
+    date: dateParam,
+    service: serviceIdParam,
+    confirmed,
+  } = await searchParams;
   const date = dateParam || todayIso();
 
   const supabase = await createClient();
@@ -34,7 +42,11 @@ export default async function BusinessPage({
     .maybeSingle();
 
   if (!business) {
-    notFound();
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16 text-center text-sm text-slate-500">
+        Cet établissement n&apos;existe pas ou plus.
+      </div>
+    );
   }
 
   const { data: services } = await supabase
@@ -45,33 +57,97 @@ export default async function BusinessPage({
     .eq("business_id", id)
     .order("created_at");
 
-  // 0 = dimanche ... 6 = samedi, même convention que Date.getDay() et nos
-  // availability_rules (voir docs section 6.4).
-  const weekday = new Date(`${date}T12:00:00+01:00`).getDay();
+  const selectedService = serviceIdParam
+    ? services?.find((s) => s.id === serviceIdParam)
+    : undefined;
 
-  const { data: rules } = await supabase
-    .from("availability_rules")
-    .select("weekday, start_time, end_time, slot_duration_minutes, capacity")
-    .eq("business_id", id)
-    .eq("weekday", weekday);
+  let bookingSection: ReactNode = null;
 
-  const { data: capacities } = await supabase.rpc("get_agenda_capacity", {
-    p_business_id: id,
-  });
+  if (!selectedService) {
+    bookingSection = (
+      <>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          {business.main_category === "horeca"
+            ? "Tables et espaces"
+            : "Nos prestations"}
+        </h2>
+        {(!services || services.length === 0) && (
+          <p className="text-sm text-slate-400">
+            Aucun service au catalogue pour l&apos;instant.
+          </p>
+        )}
+        <div className="grid gap-3 sm:grid-cols-2">
+          {services?.map((s) => (
+            <Link
+              key={s.id}
+              href={`/etablissements/${id}?service=${s.id}`}
+              className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+            >
+              <div>
+                <div className="mb-2 flex items-start justify-between gap-2">
+                  {s.category && (
+                    <span className="rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      {s.category}
+                    </span>
+                  )}
+                  <span className="whitespace-nowrap text-xs font-bold text-slate-400">
+                    {s.duration_minutes} min
+                  </span>
+                </div>
+                <h3 className="mb-1 text-sm font-extrabold text-slate-900 dark:text-white">
+                  {s.name}
+                </h3>
+                {s.description && (
+                  <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                    {s.description}
+                  </p>
+                )}
+              </div>
+              <span className="text-sm font-extrabold text-kino-600">
+                ${s.price_usd.toFixed(2)}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </>
+    );
+  } else {
+    const weekday = new Date(`${date}T12:00:00+01:00`).getDay();
 
-  const slots = generateSlotsForDate(
-    (rules ?? []) as AvailabilityRule[],
-    date,
-    (capacities ?? []) as SlotCapacity[]
-  );
+    const { data: rules } = await supabase
+      .from("availability_rules")
+      .select("weekday, start_time, end_time, slot_duration_minutes, capacity")
+      .eq("business_id", id)
+      .eq("weekday", weekday);
+
+    const { data: capacities } = await supabase.rpc("get_agenda_capacity", {
+      p_business_id: id,
+    });
+
+    const slots = generateSlotsForDate(
+      (rules ?? []) as AvailabilityRule[],
+      date,
+      (capacities ?? []) as SlotCapacity[]
+    );
+
+    bookingSection = (
+      <BookingForm
+        businessId={id}
+        mainCategory={business.main_category}
+        service={selectedService}
+        date={date}
+        slots={slots}
+      />
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10">
       <Link
-        href="/"
+        href={selectedService ? `/etablissements/${id}` : "/"}
         className="mb-4 inline-block text-xs font-bold text-slate-500 hover:underline dark:text-slate-400"
       >
-        ← Retour à la recherche
+        ← {selectedService ? "Retour aux prestations" : "Retour à la recherche"}
       </Link>
 
       <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">
@@ -89,13 +165,7 @@ export default async function BusinessPage({
         </div>
       )}
 
-      <BookingForm
-        businessId={business.id}
-        mainCategory={business.main_category}
-        services={services ?? []}
-        date={date}
-        slots={slots}
-      />
+      {bookingSection}
     </div>
   );
 }

@@ -1,10 +1,10 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { createBookingRequest, type BookingFormState } from "./actions";
 import type { Slot } from "@/lib/availability";
 
-type Service = {
+export type Service = {
   id: string;
   name: string;
   category: string | null;
@@ -27,13 +27,13 @@ function formatCdf(usd: number) {
 export function BookingForm({
   businessId,
   mainCategory,
-  services,
+  service,
   date,
   slots,
 }: {
   businessId: string;
   mainCategory: string;
-  services: Service[];
+  service: Service;
   date: string;
   slots: Slot[];
 }) {
@@ -41,8 +41,6 @@ export function BookingForm({
     createBookingRequest,
     initialState
   );
-  const [serviceId, setServiceId] = useState(services[0]?.id ?? "");
-  const selectedService = services.find((s) => s.id === serviceId);
   const hasAvailableSlot = slots.some((s) => s.available);
 
   return (
@@ -67,37 +65,24 @@ export function BookingForm({
         </button>
       </form>
 
-      {services.length === 0 ? (
-        <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
-          Aucun service au catalogue pour l&apos;instant.
-        </p>
-      ) : (
-        <form
-          action={formAction}
-          className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
-        >
+      <form
+        action={formAction}
+        className="space-y-4 rounded-3xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
+      >
           <input type="hidden" name="business_id" value={businessId} />
           <input type="hidden" name="date" value={date} />
+          <input type="hidden" name="service_id" value={service.id} />
 
           <div>
             <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
               {mainCategory === "horeca" ? "Table ou espace" : "Prestation"}
             </label>
-            <select
-              name="service_id"
-              value={serviceId}
-              onChange={(e) => setServiceId(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 p-3 text-sm font-medium dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-            >
-              {services.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name} — ${s.price_usd.toFixed(2)}
-                </option>
-              ))}
-            </select>
-            {selectedService?.description && (
+            <p className="rounded-xl bg-slate-50 p-3 text-sm font-bold text-slate-900 dark:bg-slate-800 dark:text-white">
+              {service.name} — ${service.price_usd.toFixed(2)}
+            </p>
+            {service.description && (
               <p className="mt-2 rounded-xl bg-slate-50 p-3 text-xs leading-relaxed text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                {selectedService.description}
+                {service.description}
               </p>
             )}
           </div>
@@ -162,17 +147,15 @@ export function BookingForm({
             </div>
           </div>
 
-          {selectedService && (
-            <div className="flex items-center justify-between rounded-2xl bg-slate-900 p-3 text-xs text-white">
-              <span className="text-slate-300">
-                Acompte requis après validation :
-              </span>
-              <span className="font-extrabold text-kino-400">
-                {formatCdf(selectedService.deposit_usd)} ($
-                {selectedService.deposit_usd.toFixed(2)})
-              </span>
-            </div>
-          )}
+          <div className="flex items-center justify-between rounded-2xl bg-slate-900 p-3 text-xs text-white">
+            <span className="text-slate-300">
+              Acompte requis après validation :
+            </span>
+            <span className="font-extrabold text-kino-400">
+              {formatCdf(service.deposit_usd)} ($
+              {service.deposit_usd.toFixed(2)})
+            </span>
+          </div>
 
           {state.error && (
             <p className="rounded-xl bg-red-50 p-3 text-xs text-red-700 dark:bg-red-950 dark:text-red-300">
@@ -187,8 +170,7 @@ export function BookingForm({
           >
             {pending ? "Envoi..." : "Envoyer la demande gratuite"}
           </button>
-        </form>
-      )}
+      </form>
     </div>
   );
 }
