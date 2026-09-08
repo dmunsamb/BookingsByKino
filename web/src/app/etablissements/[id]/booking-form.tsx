@@ -27,12 +27,14 @@ export function BookingForm({
   mainCategory,
   service,
   date,
+  minDate,
   slots,
 }: {
   businessId: string;
   mainCategory: string;
   service: Service;
   date: string;
+  minDate: string;
   slots: Slot[];
 }) {
   const [state, formAction, pending] = useActionState(
@@ -52,9 +54,13 @@ export function BookingForm({
           type="date"
           name="date"
           defaultValue={date}
+          min={minDate}
           onChange={(e) => e.currentTarget.form?.requestSubmit()}
           className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
         />
+        <p className="mt-1 text-xs text-slate-400">
+          Réservation possible à partir de demain.
+        </p>
       </form>
 
       <form

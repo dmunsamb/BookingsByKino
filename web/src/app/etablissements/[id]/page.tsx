@@ -3,16 +3,11 @@ import type { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/server";
 import {
   generateSlotsForDate,
+  minBookableDateIso,
   type AvailabilityRule,
   type SlotCapacity,
 } from "@/lib/availability";
 import { BookingForm } from "./booking-form";
-
-function todayIso(): string {
-  return new Date().toLocaleDateString("en-CA", {
-    timeZone: "Africa/Kinshasa",
-  });
-}
 
 export default async function BusinessPage({
   params,
@@ -31,7 +26,12 @@ export default async function BusinessPage({
     service: serviceIdParam,
     confirmed,
   } = await searchParams;
-  const date = dateParam || todayIso();
+  const minDate = minBookableDateIso();
+  // Jamais le jour même : une date passée/aujourd'hui envoyée via l'URL
+  // (lien partagé, retour en arrière du navigateur...) est ramenée au
+  // premier jour réservable plutôt que de proposer des créneaux invalides.
+  const date =
+    dateParam && dateParam >= minDate ? dateParam : minDate;
 
   const supabase = await createClient();
 
@@ -137,6 +137,7 @@ export default async function BusinessPage({
         mainCategory={business.main_category}
         service={selectedService}
         date={date}
+        minDate={minDate}
         slots={slots}
       />
     );

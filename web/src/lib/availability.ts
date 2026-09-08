@@ -50,6 +50,22 @@ export function localSlotToIso(dateStr: string, time: string): string {
   return `${dateStr}T${time}:00${BUSINESS_UTC_OFFSET}`;
 }
 
+/**
+ * Première date réservable par un client (BR-x) : jamais le jour même,
+ * toujours à partir du lendemain (heure de Kinshasa). Revérifié aussi côté
+ * base par le trigger enforce_agenda_capacity (0008).
+ */
+export function minBookableDateIso(): string {
+  const tomorrowInKinshasa = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Africa/Kinshasa" })
+  );
+  tomorrowInKinshasa.setDate(tomorrowInKinshasa.getDate() + 1);
+  const y = tomorrowInKinshasa.getFullYear();
+  const m = (tomorrowInKinshasa.getMonth() + 1).toString().padStart(2, "0");
+  const d = tomorrowInKinshasa.getDate().toString().padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 function timeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
