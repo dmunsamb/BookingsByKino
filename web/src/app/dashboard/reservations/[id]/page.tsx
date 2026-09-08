@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentProfile } from "@/lib/auth/dal";
+import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import {
   generateSlotsForDate,
@@ -43,7 +43,7 @@ export default async function EditReservationPage({
     );
   }
 
-  if (profile.role !== "owner") {
+  if (!canManageBusiness(profile)) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-slate-500 dark:text-slate-400">
         Seul le gérant peut modifier manuellement une réservation.

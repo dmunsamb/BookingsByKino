@@ -51,3 +51,24 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
 
   return profile;
 });
+
+/**
+ * platform_admin agit comme propriétaire universel de n'importe quel
+ * établissement (même règle déjà appliquée côté RLS par is_owner_of,
+ * voir migration 0002) — un même compte peut donc être à la fois
+ * gérant d'un établissement précis ET super-administrateur KinoBooking.
+ * À utiliser partout où l'UI ne réservait jusqu'ici une action qu'au
+ * rôle "owner" strict.
+ */
+export function canManageBusiness(profile: Profile): boolean {
+  return profile.role === "owner" || profile.role === "platform_admin";
+}
+
+/** owner, staff, ou platform_admin — toute personne autorisée à gérer l'agenda au quotidien. */
+export function isStaffMember(profile: Profile): boolean {
+  return (
+    profile.role === "owner" ||
+    profile.role === "staff" ||
+    profile.role === "platform_admin"
+  );
+}

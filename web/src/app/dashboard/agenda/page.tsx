@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentProfile } from "@/lib/auth/dal";
+import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { AvailabilityForm } from "./availability-form";
@@ -64,7 +64,7 @@ export default async function AgendaPage() {
         </p>
       </div>
 
-      {profile.role === "owner" && <AvailabilityForm />}
+      {canManageBusiness(profile) && <AvailabilityForm />}
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
         <table className="w-full text-left text-sm">
@@ -74,7 +74,7 @@ export default async function AgendaPage() {
               <th className="p-3">Horaire</th>
               <th className="p-3">Durée créneau</th>
               <th className="p-3">Capacité</th>
-              {profile.role === "owner" && (
+              {canManageBusiness(profile) && (
                 <th className="p-3 text-right">Action</th>
               )}
             </tr>
@@ -101,7 +101,7 @@ export default async function AgendaPage() {
                 <td className="p-3 text-slate-600 dark:text-slate-300">
                   {rule.capacity}
                 </td>
-                {profile.role === "owner" && (
+                {canManageBusiness(profile) && (
                   <td className="p-3 text-right">
                     <form action={deleteAvailabilityRule}>
                       <input type="hidden" name="id" value={rule.id} />

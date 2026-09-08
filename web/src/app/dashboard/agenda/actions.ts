@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile } from "@/lib/auth/dal";
+import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 
 /**
  * Gestion des créneaux de disponibilité (FR-9.2, US-O13). L'écriture est
@@ -21,7 +21,7 @@ export async function createAvailabilityRule(
   if (!profile?.business_id) {
     return { error: "Aucun établissement associé à votre compte." };
   }
-  if (profile.role !== "owner") {
+  if (!canManageBusiness(profile)) {
     return { error: "Seul le gérant peut modifier les horaires." };
   }
 
@@ -75,7 +75,7 @@ export async function createAvailabilityRule(
 
 export async function deleteAvailabilityRule(formData: FormData) {
   const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "owner") return;
+  if (!profile || !canManageBusiness(profile)) return;
 
   const id = formData.get("id");
   if (typeof id !== "string") return;

@@ -3,7 +3,11 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile } from "@/lib/auth/dal";
+import {
+  getCurrentProfile,
+  canManageBusiness,
+  isStaffMember,
+} from "@/lib/auth/dal";
 
 export async function logout() {
   const supabase = await createClient();
@@ -29,7 +33,7 @@ const ALLOWED_BOOKING_STATUSES = [
 export async function updateBookingStatus(formData: FormData) {
   const profile = await getCurrentProfile();
   if (!profile?.business_id) return;
-  if (profile.role !== "owner" && profile.role !== "staff") return;
+  if (!isStaffMember(profile)) return;
 
   const id = formData.get("id");
   const status = formData.get("status");
@@ -83,7 +87,7 @@ export async function updateMobileMoneyInfo(
   if (!profile?.business_id) {
     return { error: "Aucun établissement associé à votre compte." };
   }
-  if (profile.role !== "owner") {
+  if (!canManageBusiness(profile)) {
     return { error: "Seul le gérant peut modifier ces informations." };
   }
 

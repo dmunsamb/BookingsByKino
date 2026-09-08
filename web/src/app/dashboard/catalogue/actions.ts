@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile } from "@/lib/auth/dal";
+import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 
 /**
  * Gestion du catalogue de services (FR-5.1/5.2/5.3, US-O6). L'écriture est
@@ -22,7 +22,7 @@ export async function createService(
   if (!profile?.business_id) {
     return { error: "Aucun établissement associé à votre compte." };
   }
-  if (profile.role !== "owner") {
+  if (!canManageBusiness(profile)) {
     return { error: "Seul le gérant peut modifier le catalogue." };
   }
 
@@ -76,7 +76,7 @@ export async function createService(
 
 export async function deleteService(formData: FormData) {
   const profile = await getCurrentProfile();
-  if (!profile || profile.role !== "owner") return;
+  if (!profile || !canManageBusiness(profile)) return;
 
   const id = formData.get("id");
   if (typeof id !== "string") return;

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentProfile } from "@/lib/auth/dal";
+import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { ServiceForm } from "./service-form";
@@ -53,7 +53,7 @@ export default async function CataloguePage() {
         </p>
       </div>
 
-      {profile.role === "owner" && <ServiceForm />}
+      {canManageBusiness(profile) && <ServiceForm />}
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {(!services || services.length === 0) && (
@@ -103,7 +103,7 @@ export default async function CataloguePage() {
                   ${Number(service.deposit_usd).toFixed(2)}
                 </span>
               </div>
-              {profile.role === "owner" && (
+              {canManageBusiness(profile) && (
                 <form action={deleteService}>
                   <input type="hidden" name="id" value={service.id} />
                   <ConfirmDeleteButton />

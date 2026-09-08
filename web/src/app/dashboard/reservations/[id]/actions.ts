@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile } from "@/lib/auth/dal";
+import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 import { localSlotToIso } from "@/lib/availability";
 
 /**
@@ -25,7 +25,7 @@ export async function updateBooking(
   if (!profile?.business_id) {
     return { error: "Aucun établissement associé à votre compte." };
   }
-  if (profile.role !== "owner") {
+  if (!canManageBusiness(profile)) {
     return { error: "Seul le gérant peut modifier manuellement une réservation." };
   }
 

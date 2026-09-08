@@ -1,7 +1,12 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Profile } from "@/lib/auth/dal";
-import { getCurrentProfile } from "@/lib/auth/dal";
+import {
+  getCurrentProfile,
+  canManageBusiness,
+  isStaffMember,
+} from "@/lib/auth/dal";
+import { getSubscriptionStatus } from "@/lib/subscription";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { formatCdf } from "@/lib/currency";
@@ -113,8 +118,13 @@ function BookingCard({
   );
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ login_email?: string }>;
+}) {
   const profile = await getCurrentProfile();
+  const { login_email: loginEmail } = await searchParams;
 
   if (!profile) {
     return (
@@ -140,13 +150,14 @@ export default async function DashboardPage() {
   let serviceInfo = new Map<string, ServiceInfo>();
   let businessName = "";
   let mobileMoneyAccounts: MobileMoneyAccount[] = [];
+  let subscriptionStatus: ReturnType<typeof getSubscriptionStatus> = "actif";
 
   if (profile.business_id) {
     const supabase = await createClient();
 
     const { data: businessStatusCheck } = await supabase
       .from("businesses")
-      .select("signup_status")
+      .select("signup_status, subscription_paid_until")
       .eq("id", profile.business_id)
       .maybeSingle();
 
@@ -166,6 +177,14 @@ export default async function DashboardPage() {
                 valider votre établissement sous peu. Vous recevrez un
                 accès complet dès que ce sera fait.
               </p>
+              {loginEmail && (
+                <p className="mt-3 rounded-xl bg-slate-50 p-3 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  Comme vous n&apos;avez pas donné d&apos;email, votre
+                  identifiant de connexion est :{" "}
+                  <span className="font-bold">{loginEmail}</span>. Notez-le
+                  pour vous reconnecter.
+                </p>
+              )}
             </>
           ) : (
             <>
@@ -178,6 +197,37 @@ export default async function DashboardPage() {
               </p>
             </>
           )}
+          <form action={logout} className="mt-6">
+            <button
+              type="submit"
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200"
+            >
+              Se déconnecter
+            </button>
+          </form>
+        </div>
+      );
+    }
+
+    subscriptionStatus = getSubscriptionStatus(
+      businessStatusCheck?.subscription_paid_until ?? null
+    );
+
+    // platform_admin garde toujours accès (support/gestion), même sur un
+    // établissement qu'il ne fait que superviser. Le blocage ne vise que
+    // le gérant/personnel de l'établissement concerné.
+    if (subscriptionStatus === "inactif" && isStaffMember(profile) && profile.role !== "platform_admin") {
+      return (
+        <div className="mx-auto w-full max-w-lg px-4 py-16 text-center">
+          <h1 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">
+            Compte suspendu
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Votre compte est inactif. Veuillez régulariser votre abonnement
+            KinoBooking pour retrouver l&apos;accès à votre tableau de bord.
+            Les demandes de réservation continuent d&apos;arriver le temps
+            que vous régularisiez.
+          </p>
           <form action={logout} className="mt-6">
             <button
               type="submit"
@@ -327,6 +377,14 @@ export default async function DashboardPage() {
         </form>
       </div>
 
+      {profile.business_id && subscriptionStatus === "en_attente" && (
+        <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+          <span className="font-bold">Abonnement en attente de paiement.</span>{" "}
+          Régularisez sous peu pour éviter la suspension de votre accès au
+          tableau de bord.
+        </div>
+      )}
+
       {!profile.business_id ? (
         profile.role === "platform_admin" ? (
           <Link
@@ -368,7 +426,7 @@ export default async function DashboardPage() {
                   ? serviceInfo.get(entry.service_id)
                   : undefined;
                 const whatsAppLink =
-                  profile.role === "owner" &&
+                  canManageBusiness(profile) &&
                   entry.client_phone_display &&
                   service
                     ? buildWhatsAppLink(
@@ -395,7 +453,7 @@ export default async function DashboardPage() {
                   entry={entry}
                   services={serviceInfo}
                   editHref={
-                    profile.role === "owner"
+                    canManageBusiness(profile)
                       ? `/dashboard/reservations/${entry.id}`
                       : undefined
                   }
@@ -482,7 +540,7 @@ export default async function DashboardPage() {
                   entry={entry}
                   services={serviceInfo}
                   editHref={
-                    profile.role === "owner"
+                    canManageBusiness(profile)
                       ? `/dashboard/reservations/${entry.id}`
                       : undefined
                   }
@@ -518,7 +576,7 @@ export default async function DashboardPage() {
                   ? serviceInfo.get(entry.service_id)
                   : undefined;
                 const resendLink =
-                  profile.role === "owner" &&
+                  canManageBusiness(profile) &&
                   entry.client_phone_display &&
                   service
                     ? buildWhatsAppLink(
@@ -544,7 +602,7 @@ export default async function DashboardPage() {
                   services={serviceInfo}
                   showDeposit
                   editHref={
-                    profile.role === "owner"
+                    canManageBusiness(profile)
                       ? `/dashboard/reservations/${entry.id}`
                       : undefined
                   }
@@ -610,6 +668,22 @@ export default async function DashboardPage() {
         </>
       )}
 
+      {profile.role === "platform_admin" && profile.business_id && (
+        <section className="mb-8">
+          <Link
+            href="/admin"
+            className="block rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+          >
+            <span className="font-bold text-slate-900 dark:text-white">
+              Administration KinoBooking
+            </span>
+            <p className="mt-1 text-slate-500 dark:text-slate-400">
+              Valider les inscriptions et gérer les établissements.
+            </p>
+          </Link>
+        </section>
+      )}
+
       <section>
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Réglages de l&apos;établissement
@@ -637,7 +711,7 @@ export default async function DashboardPage() {
               Gérer les services proposés aux clients.
             </p>
           </Link>
-          {profile.business_id && profile.role === "owner" && (
+          {profile.business_id && canManageBusiness(profile) && (
             <MobileMoneyForm accounts={mobileMoneyAccounts} />
           )}
         </div>
