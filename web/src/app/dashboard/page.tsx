@@ -217,7 +217,7 @@ export default async function DashboardPage() {
       supabase
         .from("businesses")
         .select(
-          "name, mpesa_number, orange_money_number, airtel_money_number"
+          "name, mpesa_number, mpesa_holder_name, orange_money_number, orange_money_holder_name, airtel_money_number, airtel_money_holder_name"
         )
         .eq("id", profile.business_id)
         .maybeSingle(),
@@ -237,16 +237,36 @@ export default async function DashboardPage() {
     businessName = businessData?.name ?? "";
     mobileMoneyAccounts = (
       [
-        ["mpesa", businessData?.mpesa_number],
-        ["orange_money", businessData?.orange_money_number],
-        ["airtel_money", businessData?.airtel_money_number],
-      ] as [MobileMoneyProvider, string | null | undefined][]
+        ["mpesa", businessData?.mpesa_number, businessData?.mpesa_holder_name],
+        [
+          "orange_money",
+          businessData?.orange_money_number,
+          businessData?.orange_money_holder_name,
+        ],
+        [
+          "airtel_money",
+          businessData?.airtel_money_number,
+          businessData?.airtel_money_holder_name,
+        ],
+      ] as [
+        MobileMoneyProvider,
+        string | null | undefined,
+        string | null | undefined,
+      ][]
     )
       .filter(([, number]) => !!number)
-      .map(([provider, number]) => ({ provider, number: number as string }));
+      .map(([provider, number, holderName]) => ({
+        provider,
+        number: number as string,
+        holderName: holderName ?? null,
+      }));
   }
 
   const mobileMoneyLabel = formatMobileMoneyAccounts(mobileMoneyAccounts);
+  const mobileMoneyLabelForMessage = formatMobileMoneyAccounts(
+    mobileMoneyAccounts,
+    " ou "
+  );
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
@@ -305,11 +325,13 @@ export default async function DashboardPage() {
                           service.name
                         }" le ${formatDateTime(entry.start_time)} chez ${
                           businessName
-                        } est validée ! Merci d'envoyer l'acompte de $${service.deposit_usd.toFixed(
+                        } a bien été reçue et validée ! Pour bloquer cette réservation, merci d'envoyer l'acompte de $${service.deposit_usd.toFixed(
                           2
                         )} (${formatCdf(service.deposit_usd)})${
-                          mobileMoneyLabel ? ` via ${mobileMoneyLabel}` : ""
-                        }, puis de nous le confirmer ici. Merci !`
+                          mobileMoneyLabelForMessage
+                            ? ` via ${mobileMoneyLabelForMessage}`
+                            : ""
+                        } puis de nous le confirmer ici une fois fait. Merci !`
                       )
                     : null;
 
@@ -447,13 +469,15 @@ export default async function DashboardPage() {
                   service
                     ? buildWhatsAppLink(
                         entry.client_phone_display,
-                        `Bonjour ${entry.client_name ?? ""}, pour rappel : l'acompte de $${service.deposit_usd.toFixed(
-                          2
-                        )} (${formatCdf(service.deposit_usd)}) pour "${
+                        `Bonjour ${entry.client_name ?? ""}, pour rappel : pour bloquer votre réservation "${
                           service.name
-                        }" chez ${businessName}${
-                          mobileMoneyLabel ? ` se paie via ${mobileMoneyLabel}` : ""
-                        }. Merci !`
+                        }" chez ${businessName}, merci d'envoyer l'acompte de $${service.deposit_usd.toFixed(
+                          2
+                        )} (${formatCdf(service.deposit_usd)})${
+                          mobileMoneyLabelForMessage
+                            ? ` via ${mobileMoneyLabelForMessage}`
+                            : ""
+                        } puis de nous le confirmer ici une fois fait. Merci !`
                       )
                     : null;
 

@@ -17,16 +17,26 @@ export const mobileMoneyProviderLabels: Record<MobileMoneyProvider, string> = {
 export type MobileMoneyAccount = {
   provider: MobileMoneyProvider;
   number: string;
+  holderName: string | null;
 };
 
-/** Plusieurs comptes mobile money peuvent être actifs en même temps (ex. M-Pesa ET Orange Money). */
+/**
+ * Plusieurs comptes mobile money peuvent être actifs en même temps (ex.
+ * M-Pesa ET Orange Money). Le nom du titulaire est inclus entre
+ * parenthèses quand renseigné, pour que le client puisse vérifier à qui
+ * il envoie son argent avant de payer (évite les litiges).
+ */
 export function formatMobileMoneyAccounts(
-  accounts: MobileMoneyAccount[]
+  accounts: MobileMoneyAccount[],
+  separator = " · "
 ): string | null {
   if (accounts.length === 0) return null;
   return accounts
-    .map((a) => `${mobileMoneyProviderLabels[a.provider]} ${a.number}`)
-    .join(" · ");
+    .map((a) => {
+      const base = `${mobileMoneyProviderLabels[a.provider]} ${a.number}`;
+      return a.holderName ? `${base} (${a.holderName})` : base;
+    })
+    .join(separator);
 }
 
 /** Normalise un numéro local RDC ("081 000 0000") vers le format international attendu par wa.me. */

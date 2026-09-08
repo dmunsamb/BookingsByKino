@@ -77,9 +77,9 @@ export async function updateMobileMoneyInfo(
     return { error: "Seul le gérant peut modifier ces informations." };
   }
 
-  function fieldValue(enabledField: string, numberField: string) {
+  function fieldValue(enabledField: string, field: string) {
     const enabled = formData.get(enabledField) === "on";
-    const value = formData.get(numberField);
+    const value = formData.get(field);
     if (!enabled || typeof value !== "string" || !value.trim()) return null;
     return value.trim();
   }
@@ -89,13 +89,22 @@ export async function updateMobileMoneyInfo(
     .from("businesses")
     .update({
       mpesa_number: fieldValue("mpesa_enabled", "mpesa_number"),
+      mpesa_holder_name: fieldValue("mpesa_enabled", "mpesa_holder_name"),
       orange_money_number: fieldValue(
         "orange_money_enabled",
         "orange_money_number"
       ),
+      orange_money_holder_name: fieldValue(
+        "orange_money_enabled",
+        "orange_money_holder_name"
+      ),
       airtel_money_number: fieldValue(
         "airtel_money_enabled",
         "airtel_money_number"
+      ),
+      airtel_money_holder_name: fieldValue(
+        "airtel_money_enabled",
+        "airtel_money_holder_name"
       ),
     })
     .eq("id", profile.business_id);
