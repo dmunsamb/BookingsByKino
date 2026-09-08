@@ -127,7 +127,8 @@ export default async function BusinessPage({
     const slots = generateSlotsForDate(
       (rules ?? []) as AvailabilityRule[],
       date,
-      (capacities ?? []) as SlotCapacity[]
+      (capacities ?? []) as SlotCapacity[],
+      selectedService.duration_minutes
     );
 
     bookingSection = (

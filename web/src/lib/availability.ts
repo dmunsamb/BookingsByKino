@@ -7,6 +7,18 @@
  * Toutes les heures sont traitées en heure de Kinshasa (WAT, UTC+1, sans
  * changement d'heure saisonnier) — un décalage fixe suffit, pas besoin
  * d'une librairie de fuseaux horaires.
+ *
+ * slot_duration_minutes (règle) n'est que le pas de la grille des heures de
+ * début proposées (ex. un service peut démarrer toutes les 30 min) ; la
+ * durée réellement bloquée est celle du service choisi. Un créneau n'est
+ * proposé que si le service a le temps de se terminer avant la fermeture.
+ *
+ * Limite connue : la capacité (get_agenda_capacity) ne compare que des
+ * horaires de début strictement identiques, elle ne détecte donc pas un
+ * chevauchement entre deux services de durées différentes démarrant à des
+ * heures voisines. Acceptable à l'échelle d'un pilote avec peu de
+ * réservations simultanées ; à revoir si plusieurs services longs et
+ * courts coexistent sur la même grille.
  */
 
 const BUSINESS_UTC_OFFSET = "+01:00";
@@ -54,7 +66,8 @@ function minutesToTime(minutes: number): string {
 export function generateSlotsForDate(
   rules: AvailabilityRule[],
   dateStr: string,
-  capacities: SlotCapacity[]
+  capacities: SlotCapacity[],
+  serviceDurationMinutes: number
 ): Slot[] {
   const slots: Slot[] = [];
 
@@ -64,7 +77,10 @@ export function generateSlotsForDate(
 
     for (
       let t = start;
-      t + rule.slot_duration_minutes <= end;
+      // Le service doit pouvoir se terminer avant la fermeture, pas
+      // seulement démarrer avant : sinon un service de 120 min réservé
+      // 30 min avant la fermeture déborderait sur les heures fermées.
+      t + serviceDurationMinutes <= end;
       t += rule.slot_duration_minutes
     ) {
       const time = minutesToTime(t);
@@ -77,7 +93,7 @@ export function generateSlotsForDate(
 
       slots.push({
         time,
-        slotDurationMinutes: rule.slot_duration_minutes,
+        slotDurationMinutes: serviceDurationMinutes,
         capacity: rule.capacity,
         bookedCount,
         available: bookedCount < rule.capacity,

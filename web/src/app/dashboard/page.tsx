@@ -39,10 +39,12 @@ function BookingCard({
   entry,
   services,
   actions,
+  editHref,
 }: {
   entry: BookingRow;
   services: Map<string, ServiceInfo>;
   actions?: ReactNode;
+  editHref?: string;
 }) {
   const service = entry.service_id ? services.get(entry.service_id) : undefined;
 
@@ -62,7 +64,17 @@ function BookingCard({
           </p>
         )}
       </div>
-      {actions && <div className="flex items-center gap-3">{actions}</div>}
+      <div className="flex items-center gap-3">
+        {editHref && (
+          <Link
+            href={editHref}
+            className="text-xs font-bold text-slate-500 hover:underline dark:text-slate-400"
+          >
+            Modifier
+          </Link>
+        )}
+        {actions}
+      </div>
     </div>
   );
 }
@@ -203,6 +215,11 @@ export default async function DashboardPage() {
                   key={entry.id}
                   entry={entry}
                   services={serviceInfo}
+                  editHref={
+                    profile.role === "owner"
+                      ? `/dashboard/reservations/${entry.id}`
+                      : undefined
+                  }
                   actions={
                     <>
                       <form action={updateBookingStatus}>
@@ -246,6 +263,11 @@ export default async function DashboardPage() {
                   key={entry.id}
                   entry={entry}
                   services={serviceInfo}
+                  editHref={
+                    profile.role === "owner"
+                      ? `/dashboard/reservations/${entry.id}`
+                      : undefined
+                  }
                   actions={
                     <form action={updateBookingStatus}>
                       <input type="hidden" name="id" value={entry.id} />
@@ -273,6 +295,11 @@ export default async function DashboardPage() {
                   key={entry.id}
                   entry={entry}
                   services={serviceInfo}
+                  editHref={
+                    profile.role === "owner"
+                      ? `/dashboard/reservations/${entry.id}`
+                      : undefined
+                  }
                   actions={
                     <>
                       <form action={updateBookingStatus}>
