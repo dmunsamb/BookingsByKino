@@ -27,22 +27,28 @@ export function AvailabilityForm() {
   return (
     <form
       action={formAction}
-      className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-5 dark:border-slate-800 dark:bg-slate-900"
+      className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-4 dark:border-slate-800 dark:bg-slate-900"
     >
-      <div className="col-span-2 sm:col-span-1">
+      <div className="col-span-full">
         <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
-          Jour
+          Jours (plusieurs choix possibles)
         </label>
-        <select
-          name="weekday"
-          className="w-full rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-        >
+        <div className="flex flex-wrap gap-2">
           {weekdayOptions.map((d) => (
-            <option key={d.value} value={d.value}>
+            <label
+              key={d.value}
+              className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-300 px-3 py-2 text-sm has-[:checked]:border-kino-500 has-[:checked]:bg-kino-50 has-[:checked]:font-bold dark:border-slate-700 dark:has-[:checked]:bg-kino-950"
+            >
+              <input
+                type="checkbox"
+                name="weekday"
+                value={d.value}
+                className="accent-kino-500"
+              />
               {d.label}
-            </option>
+            </label>
           ))}
-        </select>
+        </div>
       </div>
 
       <div>

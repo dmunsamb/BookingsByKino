@@ -25,14 +25,15 @@ export async function createAvailabilityRule(
     return { error: "Seul le gérant peut modifier les horaires." };
   }
 
-  const weekday = Number(formData.get("weekday"));
+  const weekdays = formData.getAll("weekday").map(Number);
   const startTime = formData.get("start_time");
   const endTime = formData.get("end_time");
   const slotDuration = Number(formData.get("slot_duration_minutes"));
   const capacity = Number(formData.get("capacity"));
 
   if (
-    Number.isNaN(weekday) ||
+    weekdays.length === 0 ||
+    weekdays.some((weekday) => Number.isNaN(weekday)) ||
     typeof startTime !== "string" ||
     typeof endTime !== "string" ||
     !startTime ||
@@ -42,7 +43,10 @@ export async function createAvailabilityRule(
     Number.isNaN(capacity) ||
     capacity <= 0
   ) {
-    return { error: "Veuillez remplir tous les champs correctement." };
+    return {
+      error:
+        "Sélectionnez au moins un jour et remplissez tous les champs correctement.",
+    };
   }
 
   if (endTime <= startTime) {
@@ -50,14 +54,16 @@ export async function createAvailabilityRule(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from("availability_rules").insert({
-    business_id: profile.business_id,
-    weekday,
-    start_time: startTime,
-    end_time: endTime,
-    slot_duration_minutes: slotDuration,
-    capacity,
-  });
+  const { error } = await supabase.from("availability_rules").insert(
+    weekdays.map((weekday) => ({
+      business_id: profile.business_id,
+      weekday,
+      start_time: startTime,
+      end_time: endTime,
+      slot_duration_minutes: slotDuration,
+      capacity,
+    }))
+  );
 
   if (error) {
     return { error: `Erreur lors de l'enregistrement : ${error.message}` };
