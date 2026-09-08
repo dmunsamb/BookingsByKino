@@ -94,7 +94,14 @@ export default async function DashboardPage() {
 
   if (profile.business_id) {
     const supabase = await createClient();
-    const nowIso = new Date().toISOString();
+    // Depuis le début de la journée locale (Africa/Kinshasa), pas
+    // "maintenant" : sinon un rendez-vous confirmé plus tôt dans la
+    // journée disparaîtrait de la liste sans avoir été annulé ni
+    // marqué comme passé.
+    const todayLocal = new Date().toLocaleDateString("en-CA", {
+      timeZone: "Africa/Kinshasa",
+    });
+    const startOfTodayIso = `${todayLocal}T00:00:00+01:00`;
 
     const [
       { data: pendingData },
@@ -118,7 +125,7 @@ export default async function DashboardPage() {
         )
         .eq("business_id", profile.business_id)
         .eq("status", "confirmed")
-        .gte("start_time", nowIso)
+        .gte("start_time", startOfTodayIso)
         .order("start_time")
         .limit(20),
       supabase
@@ -226,12 +233,12 @@ export default async function DashboardPage() {
 
           <section className="mb-8">
             <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Réservations confirmées à venir
+              Réservations confirmées (aujourd&apos;hui et à venir)
             </h2>
             <div className="space-y-3">
               {confirmedUpcoming.length === 0 && (
                 <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
-                  Aucune réservation confirmée à venir.
+                  Aucune réservation confirmée pour aujourd&apos;hui ou à venir.
                 </p>
               )}
               {confirmedUpcoming.map((entry) => (
