@@ -61,10 +61,20 @@ export default async function DashboardPage() {
             Configurer l&apos;agenda centrale de votre zaak.
           </p>
         </Link>
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-900">
-          Aanvragen, catalogue et le reste du tableau de bord restent à
-          construire — voir docs/functioneel-ontwerp-kinobooking.md,
-          section 12.
+        <Link
+          href="/dashboard/catalogue"
+          className="rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+        >
+          <span className="font-bold text-slate-900 dark:text-white">
+            Catalogue &amp; tarifs
+          </span>
+          <p className="mt-1 text-slate-500 dark:text-slate-400">
+            Gérer les services proposés aux clients.
+          </p>
+        </Link>
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-900 sm:col-span-2">
+          Aanvragen et le reste du tableau de bord restent à construire —
+          voir docs/functioneel-ontwerp-kinobooking.md, section 12.
         </div>
       </div>
     </div>
