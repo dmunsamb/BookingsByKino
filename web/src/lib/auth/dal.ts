@@ -34,7 +34,7 @@ export const requireUser = cache(async () => {
 });
 
 /**
- * Renvoie le profil KinoBooking (rôle, zaak) de l'utilisateur connecté.
+ * Renvoie le profil KinoBooking (rôle, établissement) de l'utilisateur connecté.
  * `null` signifie : connecté, mais sans profil KinoBooking associé (compte
  * mal configuré) — distinct du cas "pas connecté", qui redirige déjà vers
  * /login via requireUser().

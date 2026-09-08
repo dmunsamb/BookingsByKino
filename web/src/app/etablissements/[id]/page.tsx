@@ -161,7 +161,7 @@ export default async function BusinessPage({
 
       {confirmed && (
         <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
-          Demande envoyée avec succès ! La zaak va valider la disponibilité.
+          Demande envoyée avec succès ! L&apos;établissement va valider la disponibilité.
         </div>
       )}
 

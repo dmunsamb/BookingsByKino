@@ -29,7 +29,7 @@ export default async function AgendaPage() {
   if (!profile.business_id) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-slate-500 dark:text-slate-400">
-        Aucune zaak n&apos;est encore associée à votre compte. Contactez
+        Aucun établissement n&apos;est encore associé à votre compte. Contactez
         l&apos;administrateur KinoBooking.
       </div>
     );

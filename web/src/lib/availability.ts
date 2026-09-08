@@ -1,5 +1,5 @@
 /**
- * Calcul des créneaux réellement disponibles pour une zaak à une date
+ * Calcul des créneaux réellement disponibles pour un établissement à une date
  * donnée, à partir de ses règles de disponibilité (FR-9.2) et des
  * réservations déjà existantes (via la fonction get_agenda_capacity,
  * voir supabase/migrations/0002 et 0003).

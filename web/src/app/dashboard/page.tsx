@@ -58,7 +58,7 @@ export default async function DashboardPage() {
             Horaires et capacité
           </span>
           <p className="mt-1 text-slate-500 dark:text-slate-400">
-            Configurer l&apos;agenda centrale de votre zaak.
+            Configurer l&apos;agenda central de votre établissement.
           </p>
         </Link>
         <Link

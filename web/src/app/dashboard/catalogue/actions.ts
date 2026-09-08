@@ -20,7 +20,7 @@ export async function createService(
 ): Promise<ServiceFormState> {
   const profile = await getCurrentProfile();
   if (!profile?.business_id) {
-    return { error: "Aucune zaak associée à votre compte." };
+    return { error: "Aucun établissement associé à votre compte." };
   }
   if (profile.role !== "owner") {
     return { error: "Seul le gérant peut modifier le catalogue." };

@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
  * Voir docs/functioneel-ontwerp-kinobooking.md, section 13.6.1 : indispensable
  * sur les endpoints publics sans authentification (soumettre une réservation,
  * prendre un ticket walk-in) pour empêcher qu'on sature artificiellement la
- * capacité limitée de l'agenda d'une zaak.
+ * capacité limitée de l'agenda d'un établissement.
  *
  * @param key Identifiant de la limite, ex. `booking:${ip}` ou `login:${ip}`.
  * @param maxHits Nombre de requêtes autorisées dans la fenêtre de temps.

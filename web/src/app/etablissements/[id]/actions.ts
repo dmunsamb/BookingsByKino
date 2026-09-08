@@ -9,7 +9,7 @@ import { localSlotToIso } from "@/lib/availability";
  * (FR-2.8, US-C3). Insertion via le client Supabase "anon" — la policy
  * public_insert_klant_bookings n'autorise que source=klant_app avec
  * status=pending_approval (BR-2 : gratuit et non engageant tant que la
- * zaak n'a pas validé). La capacité réelle est vérifiée côté base par le
+ * établissement n'a pas validé). La capacité réelle est vérifiée côté base par le
  * trigger enforce_agenda_capacity (0004_enforce_agenda_capacity.sql).
  */
 

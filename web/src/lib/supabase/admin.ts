@@ -6,7 +6,7 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
  *
  * À utiliser UNIQUEMENT dans du code serveur (API routes / Route Handlers) qui
  * doit effectuer une opération que RLS interdirait volontairement à
- * l'utilisateur courant (ex. : onboarding d'une nouvelle zaak par le
+ * l'utilisateur courant (ex. : onboarding d'un nouvel établissement par le
  * platformbeheerder, création d'un profil). Ne jamais exposer ce client ou sa
  * clé au navigateur (voir docs/functioneel-ontwerp-kinobooking.md, section 13.6).
  *
