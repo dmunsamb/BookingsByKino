@@ -9,6 +9,7 @@ import {
 } from "@/lib/availability";
 import { BookingForm } from "./booking-form";
 import { formatBookingReference } from "@/lib/booking-reference";
+import { getSubscriptionStatus } from "@/lib/subscription";
 
 export default async function BusinessPage({
   params,
@@ -40,7 +41,9 @@ export default async function BusinessPage({
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id, name, main_category, sub_category, city, address")
+    .select(
+      "id, name, main_category, sub_category, city, address, subscription_paid_until"
+    )
     .eq("id", id)
     .maybeSingle();
 
@@ -52,13 +55,22 @@ export default async function BusinessPage({
     );
   }
 
-  const { data: services } = await supabase
-    .from("services")
-    .select(
-      "id, name, category, description, duration_minutes, price_usd, deposit_usd"
-    )
-    .eq("business_id", id)
-    .order("created_at");
+  // Un établissement inactif (abonnement KinoBooking non régularisé)
+  // reste listé dans le catalogue mais sa fiche ne montre plus ses
+  // coordonnées ni la réservation — seul le gérant, via son dashboard,
+  // voit le vrai statut de son compte.
+  const isInactive =
+    getSubscriptionStatus(business.subscription_paid_until) === "inactif";
+
+  const { data: services } = isInactive
+    ? { data: [] }
+    : await supabase
+        .from("services")
+        .select(
+          "id, name, category, description, duration_minutes, price_usd, deposit_usd"
+        )
+        .eq("business_id", id)
+        .order("created_at");
 
   const selectedService = serviceIdParam
     ? services?.find((s) => s.id === serviceIdParam)
@@ -66,7 +78,18 @@ export default async function BusinessPage({
 
   let bookingSection: ReactNode = null;
 
-  if (!selectedService) {
+  if (isInactive) {
+    bookingSection = (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+        <p className="font-bold">Établissement temporairement indisponible</p>
+        <p className="mt-1">
+          Cet établissement est en attente d&apos;activation et ne peut pas
+          accepter de nouvelles réservations pour le moment. Merci de
+          réessayer plus tard.
+        </p>
+      </div>
+    );
+  } else if (!selectedService) {
     bookingSection = (
       <>
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -158,11 +181,12 @@ export default async function BusinessPage({
       <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">
         {business.name}
       </h1>
-      {(business.address || business.city) && (
+      {!isInactive && (business.address || business.city) && (
         <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
           {[business.address, business.city].filter(Boolean).join(", ")}
         </p>
       )}
+      {isInactive && <div className="mb-4" />}
 
       {confirmed && (
         <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">

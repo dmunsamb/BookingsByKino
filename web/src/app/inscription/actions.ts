@@ -16,23 +16,16 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * migration 0014) : invisible du catalogue public tant que KinoBooking
  * ne l'a pas validé manuellement.
  *
- * Email et numéro WhatsApp sont tous les deux optionnels à l'affichage,
- * mais au moins un des deux est obligatoire. Supabase Auth a cependant
- * besoin d'un email pour la connexion par mot de passe (pas
- * d'authentification par téléphone configurée sur ce projet) : si le
- * gérant ne donne qu'un numéro WhatsApp, un identifiant de connexion est
- * généré à partir de ce numéro et affiché clairement après l'inscription
- * (voir dashboard/page.tsx) pour qu'il puisse s'en resservir.
+ * L'email est obligatoire (c'est l'identifiant de connexion Supabase
+ * Auth — pas d'authentification par téléphone sur ce projet). Le numéro
+ * WhatsApp reste optionnel : c'est une simple coordonnée de contact,
+ * utilisée notamment pour les rappels de paiement d'abonnement envoyés
+ * par KinoBooking (voir /admin).
  */
 
 export type SignupState = { error?: string };
 
 const BUSINESS_TYPES = ["Salon de coiffure", "Salon de beauté"] as const;
-
-function toLoginEmail(whatsapp: string): string {
-  const digits = whatsapp.replace(/\D/g, "");
-  return `wa${digits}@kinobooking.app`;
-}
 
 export async function signup(
   _prevState: SignupState,
@@ -54,6 +47,7 @@ export async function signup(
   if (
     typeof ownerName !== "string" ||
     !ownerName.trim() ||
+    !email ||
     typeof password !== "string" ||
     typeof businessName !== "string" ||
     !businessName.trim() ||
@@ -63,25 +57,16 @@ export async function signup(
     return { error: "Veuillez remplir tous les champs obligatoires." };
   }
 
-  if (!email && !whatsapp) {
-    return {
-      error: "Renseignez au moins un email ou un numéro WhatsApp.",
-    };
-  }
-
   if (password.length < 8) {
     return {
       error: "Le mot de passe doit contenir au moins 8 caractères.",
     };
   }
 
-  const loginEmail = email || toLoginEmail(whatsapp);
-  const usedSyntheticEmail = !email;
-
   const admin = createAdminClient();
 
   const { data: userData, error: userError } = await admin.auth.admin.createUser({
-    email: loginEmail,
+    email,
     password,
     email_confirm: true,
   });
@@ -92,9 +77,7 @@ export async function signup(
       /already.*registered|already.*exists/i.test(userError?.message ?? "");
     return {
       error: alreadyExists
-        ? usedSyntheticEmail
-          ? "Un compte existe déjà avec ce numéro WhatsApp."
-          : "Un compte existe déjà avec cet email."
+        ? "Un compte existe déjà avec cet email."
         : "Une erreur est survenue. Merci de réessayer.",
     };
   }
@@ -125,7 +108,7 @@ export async function signup(
       city: typeof city === "string" ? city.trim() || null : null,
       image_url: logoUrl,
       signup_status: "pending_approval",
-      owner_email: email || null,
+      owner_email: email,
       owner_whatsapp: whatsapp || null,
     })
     .select("id")
@@ -157,11 +140,7 @@ export async function signup(
   // arrive sur son dashboard, même en attente de validation — plus
   // transparent que de le renvoyer se reconnecter manuellement.
   const supabase = await createClient();
-  await supabase.auth.signInWithPassword({ email: loginEmail, password });
+  await supabase.auth.signInWithPassword({ email, password });
 
-  redirect(
-    usedSyntheticEmail
-      ? `/dashboard?login_email=${encodeURIComponent(loginEmail)}`
-      : "/dashboard"
-  );
+  redirect("/dashboard");
 }

@@ -30,6 +30,13 @@ function parseDurationMonths(formData: FormData): number | null {
   return months;
 }
 
+function parseAmountUsd(formData: FormData): number | null {
+  const raw = formData.get("amount_usd");
+  const amount = Number(raw);
+  if (!Number.isFinite(amount) || amount < 0) return null;
+  return amount;
+}
+
 function addMonths(date: Date, months: number): Date {
   const result = new Date(date);
   result.setMonth(result.getMonth() + months);
@@ -47,7 +54,8 @@ export async function approveBusiness(formData: FormData) {
 
   const id = formData.get("id");
   const months = parseDurationMonths(formData);
-  if (typeof id !== "string" || months === null) return;
+  const amountUsd = parseAmountUsd(formData);
+  if (typeof id !== "string" || months === null || amountUsd === null) return;
 
   const supabase = await createClient();
   await supabase
@@ -57,6 +65,13 @@ export async function approveBusiness(formData: FormData) {
       subscription_paid_until: addMonths(new Date(), months).toISOString(),
     })
     .eq("id", id);
+
+  await supabase.from("subscription_payments").insert({
+    business_id: id,
+    amount_usd: amountUsd,
+    duration_months: months,
+    recorded_by: admin.id,
+  });
 
   revalidatePath("/admin");
 }
@@ -73,7 +88,8 @@ export async function recordSubscriptionPayment(formData: FormData) {
 
   const id = formData.get("id");
   const months = parseDurationMonths(formData);
-  if (typeof id !== "string" || months === null) return;
+  const amountUsd = parseAmountUsd(formData);
+  if (typeof id !== "string" || months === null || amountUsd === null) return;
 
   const supabase = await createClient();
   const { data: business } = await supabase
@@ -93,6 +109,13 @@ export async function recordSubscriptionPayment(formData: FormData) {
     .update({ subscription_paid_until: addMonths(base, months).toISOString() })
     .eq("id", id);
 
+  await supabase.from("subscription_payments").insert({
+    business_id: id,
+    amount_usd: amountUsd,
+    duration_months: months,
+    recorded_by: admin.id,
+  });
+
   revalidatePath("/admin");
 }
 
@@ -108,6 +131,28 @@ export async function rejectBusiness(formData: FormData) {
     .from("businesses")
     .update({ signup_status: "rejected" })
     .eq("id", id);
+
+  revalidatePath("/admin");
+}
+
+/**
+ * Met à jour les tarifs d'abonnement (1/3/12 mois) affichés en
+ * pré-sélection lors de l'enregistrement d'un paiement gérant.
+ */
+export async function updateSubscriptionPrices(formData: FormData) {
+  const admin = await requirePlatformAdmin();
+  if (!admin) return;
+
+  const supabase = await createClient();
+  for (const months of ALLOWED_DURATION_MONTHS) {
+    const raw = formData.get(`price_${months}`);
+    const amount = Number(raw);
+    if (!Number.isFinite(amount) || amount < 0) continue;
+    await supabase
+      .from("subscription_prices")
+      .update({ amount_usd: amount, updated_at: new Date().toISOString() })
+      .eq("duration_months", months);
+  }
 
   revalidatePath("/admin");
 }

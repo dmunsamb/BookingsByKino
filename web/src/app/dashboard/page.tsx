@@ -118,13 +118,8 @@ function BookingCard({
   );
 }
 
-export default async function DashboardPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ login_email?: string }>;
-}) {
+export default async function DashboardPage() {
   const profile = await getCurrentProfile();
-  const { login_email: loginEmail } = await searchParams;
 
   if (!profile) {
     return (
@@ -177,14 +172,6 @@ export default async function DashboardPage({
                 valider votre établissement sous peu. Vous recevrez un
                 accès complet dès que ce sera fait.
               </p>
-              {loginEmail && (
-                <p className="mt-3 rounded-xl bg-slate-50 p-3 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                  Comme vous n&apos;avez pas donné d&apos;email, votre
-                  identifiant de connexion est :{" "}
-                  <span className="font-bold">{loginEmail}</span>. Notez-le
-                  pour vous reconnecter.
-                </p>
-              )}
             </>
           ) : (
             <>

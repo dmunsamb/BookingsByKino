@@ -1,16 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { signup, type SignupState } from "./actions";
 
 const initialState: SignupState = {};
 
 export default function SignupPage() {
   const [state, formAction, pending] = useActionState(signup, initialState);
-  const [email, setEmail] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
-  const hasContact = email.trim() !== "" || whatsapp.trim() !== "";
 
   return (
     <div className="flex flex-1 items-center justify-center bg-slate-50 px-4 py-12 dark:bg-slate-950">
@@ -41,46 +38,42 @@ export default function SignupPage() {
             />
           </div>
 
-          <div>
-            <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
-              Email ou numéro WhatsApp (au moins un des deux)
-            </label>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+                Email
+              </label>
               <input
                 name="email"
                 type="email"
+                required
                 autoComplete="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-              />
-              <input
-                name="whatsapp"
-                type="tel"
-                placeholder="Numéro WhatsApp"
-                value={whatsapp}
-                onChange={(e) => setWhatsapp(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
               />
             </div>
-            {!hasContact && (
-              <p className="mt-1 text-xs text-red-600">
-                Renseignez au moins l&apos;un des deux.
-              </p>
-            )}
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+                Mot de passe
+              </label>
+              <input
+                name="password"
+                type="password"
+                required
+                minLength={8}
+                autoComplete="new-password"
+                className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              />
+            </div>
           </div>
 
           <div>
             <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
-              Mot de passe
+              Numéro WhatsApp (optionnel)
             </label>
             <input
-              name="password"
-              type="password"
-              required
-              minLength={8}
-              autoComplete="new-password"
+              name="whatsapp"
+              type="tel"
+              placeholder="ex: 081 000 0000"
               className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
             />
           </div>
@@ -163,8 +156,8 @@ export default function SignupPage() {
 
           <button
             type="submit"
-            disabled={pending || !hasContact}
-            className="w-full rounded-xl bg-kino-500 py-3 text-sm font-extrabold text-slate-950 transition hover:bg-kino-600 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={pending}
+            className="w-full rounded-xl bg-kino-500 py-3 text-sm font-extrabold text-slate-950 transition hover:bg-kino-600 disabled:opacity-60"
           >
             {pending ? "Création..." : "Créer mon compte"}
           </button>

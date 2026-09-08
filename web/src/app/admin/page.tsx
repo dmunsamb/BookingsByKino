@@ -7,7 +7,8 @@ import {
   subscriptionStatusLabels,
   type SubscriptionStatus,
 } from "@/lib/subscription";
-import { approveBusiness, rejectBusiness, recordSubscriptionPayment } from "./actions";
+import { rejectBusiness, updateSubscriptionPrices } from "./actions";
+import { SubscriptionPaymentDialog } from "./subscription-payment-dialog";
 
 const statusLabels: Record<string, string> = {
   pending_approval: "En attente",
@@ -23,25 +24,13 @@ const statusBadgeClasses: Record<SubscriptionStatus, string> = {
   inactif: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300",
 };
 
-function DurationRadios({ name }: { name: string }) {
+const DURATION_MONTHS = [1, 3, 12] as const;
+
+function TestBadge() {
   return (
-    <div className="flex gap-3 text-xs text-slate-600 dark:text-slate-300">
-      {[
-        { value: 1, label: "1 mois" },
-        { value: 3, label: "3 mois" },
-        { value: 12, label: "1 an" },
-      ].map((opt) => (
-        <label key={opt.value} className="flex items-center gap-1">
-          <input
-            type="radio"
-            name={name}
-            value={opt.value}
-            defaultChecked={opt.value === 1}
-          />
-          {opt.label}
-        </label>
-      ))}
-    </div>
+    <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-bold uppercase text-purple-700 dark:bg-purple-950 dark:text-purple-300">
+      Test
+    </span>
   );
 }
 
@@ -61,9 +50,20 @@ export default async function AdminPage() {
   const { data: businesses } = await supabase
     .from("businesses")
     .select(
-      "id, name, main_category, sub_category, address, city, signup_status, subscription_paid_until, owner_whatsapp, created_at"
+      "id, name, main_category, sub_category, address, city, signup_status, subscription_paid_until, owner_whatsapp, is_test, created_at"
     )
     .order("created_at", { ascending: false });
+
+  const { data: prices } = await supabase
+    .from("subscription_prices")
+    .select("duration_months, amount_usd");
+
+  const priceByDuration = Object.fromEntries(
+    DURATION_MONTHS.map((m) => [
+      m,
+      prices?.find((p) => p.duration_months === m)?.amount_usd ?? 0,
+    ])
+  ) as Record<(typeof DURATION_MONTHS)[number], number>;
 
   const businessIds = (businesses ?? []).map((b) => b.id);
   const { data: owners } = businessIds.length
@@ -124,6 +124,43 @@ export default async function AdminPage() {
 
       <section className="mb-8">
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Tarifs d&apos;abonnement
+        </h2>
+        <form
+          action={updateSubscriptionPrices}
+          className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-end sm:gap-4"
+        >
+          {DURATION_MONTHS.map((m) => (
+            <div key={m} className="flex-1">
+              <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+                {m === 12 ? "1 an" : `${m} mois`} ($)
+              </label>
+              <input
+                name={`price_${m}`}
+                type="number"
+                min="0"
+                step="0.01"
+                defaultValue={priceByDuration[m]}
+                className="w-full rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              />
+            </div>
+          ))}
+          <button
+            type="submit"
+            className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
+          >
+            Enregistrer les tarifs
+          </button>
+        </form>
+        <p className="mt-2 text-xs text-slate-400">
+          Ces montants apparaissent en présélection lors de
+          l&apos;enregistrement d&apos;un paiement gérant, avec toujours la
+          possibilité de saisir un autre montant.
+        </p>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Inscriptions en attente de validation
         </h2>
         <div className="space-y-3">
@@ -141,7 +178,8 @@ export default async function AdminPage() {
                 {b.name}{" "}
                 <span className="text-xs font-normal text-slate-400">
                   ({b.sub_category ?? b.main_category})
-                </span>
+                </span>{" "}
+                {b.is_test && <TestBadge />}
               </p>
               <p className="mb-3 text-sm text-slate-500 dark:text-slate-400">
                 Gérant : {ownerNameByBusiness.get(b.id) ?? "—"}
@@ -150,16 +188,13 @@ export default async function AdminPage() {
                 )}
               </p>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <form action={approveBusiness} className="flex items-center gap-3">
-                  <input type="hidden" name="id" value={b.id} />
-                  <DurationRadios name="months" />
-                  <button
-                    type="submit"
-                    className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
-                  >
-                    Approuver
-                  </button>
-                </form>
+                <SubscriptionPaymentDialog
+                  businessId={b.id}
+                  businessName={b.name}
+                  prices={priceByDuration}
+                  mode="approve"
+                  triggerLabel="Approuver"
+                />
                 <form action={rejectBusiness}>
                   <input type="hidden" name="id" value={b.id} />
                   <ConfirmDeleteButton label="Refuser" />
@@ -175,9 +210,9 @@ export default async function AdminPage() {
           Abonnements à régulariser
         </h2>
         <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
-          Un établissement inactif reste ouvert aux réservations pendant un
-          mois de plus — les demandes qui arrivent pendant ce temps restent
-          bloquées tant que le gérant n&apos;a pas régularisé.
+          Un établissement inactif reste visible dans le catalogue, mais sa
+          fiche masque ses coordonnées et n&apos;accepte plus de nouvelles
+          réservations tant que le gérant n&apos;a pas régularisé.
         </p>
         <div className="space-y-3">
           {needsAttention.length === 0 && (
@@ -211,7 +246,7 @@ export default async function AdminPage() {
               >
                 <div className="mb-2 flex items-center justify-between">
                   <p className="font-bold text-slate-900 dark:text-white">
-                    {b.name}
+                    {b.name} {b.is_test && <TestBadge />}
                   </p>
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusBadgeClasses[b.subscriptionStatus]}`}
@@ -227,19 +262,13 @@ export default async function AdminPage() {
                   </p>
                 )}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <form
-                    action={recordSubscriptionPayment}
-                    className="flex items-center gap-3"
-                  >
-                    <input type="hidden" name="id" value={b.id} />
-                    <DurationRadios name="months" />
-                    <button
-                      type="submit"
-                      className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
-                    >
-                      Marquer payé
-                    </button>
-                  </form>
+                  <SubscriptionPaymentDialog
+                    businessId={b.id}
+                    businessName={b.name}
+                    prices={priceByDuration}
+                    mode="renew"
+                    triggerLabel="Ils ont payé leur abonnement"
+                  />
                   {reminderLink ? (
                     <a
                       href={reminderLink}
@@ -285,7 +314,7 @@ export default async function AdminPage() {
               {approvedWithStatus.map((b) => (
                 <tr key={b.id}>
                   <td className="p-3 font-medium text-slate-900 dark:text-white">
-                    {b.name}
+                    {b.name} {b.is_test && <TestBadge />}
                   </td>
                   <td className="p-3 text-slate-600 dark:text-slate-300">
                     {ownerNameByBusiness.get(b.id) ?? "—"}
@@ -302,7 +331,7 @@ export default async function AdminPage() {
               {rejected.map((b) => (
                 <tr key={b.id}>
                   <td className="p-3 font-medium text-slate-900 dark:text-white">
-                    {b.name}
+                    {b.name} {b.is_test && <TestBadge />}
                   </td>
                   <td className="p-3 text-slate-600 dark:text-slate-300">
                     {ownerNameByBusiness.get(b.id) ?? "—"}
