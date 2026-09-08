@@ -53,6 +53,22 @@ export async function createBookingRequest(
   endDate.setUTCMinutes(endDate.getUTCMinutes() + slotDurationMinutes);
 
   const supabase = await createClient();
+
+  // Réservé via une fonction dédiée (pas un INSERT ... RETURNING) : le
+  // client anonyme n'a aucune policy SELECT sur agenda_entries (vie
+  // privée, voir 0002), donc RETURNING échouerait. On récupère le
+  // numéro avant l'insertion pour pouvoir l'afficher tout de suite sur
+  // la page de remerciement (US demandée : suivi sans compte client).
+  const { data: referenceNumber, error: refError } = await supabase.rpc(
+    "next_booking_reference"
+  );
+
+  if (refError || referenceNumber == null) {
+    return {
+      error: "Une erreur est survenue. Merci de réessayer.",
+    };
+  }
+
   const { error } = await supabase.from("agenda_entries").insert({
     business_id: businessId,
     service_id: serviceId,
@@ -62,6 +78,7 @@ export async function createBookingRequest(
     client_phone: clientPhone.trim(),
     start_time: startIso,
     end_time: endDate.toISOString(),
+    reference_number: referenceNumber,
   });
 
   if (error) {
@@ -71,5 +88,5 @@ export async function createBookingRequest(
     };
   }
 
-  redirect(`/etablissements/${businessId}?confirmed=1`);
+  redirect(`/etablissements/${businessId}?confirmed=1&ref=${referenceNumber}`);
 }

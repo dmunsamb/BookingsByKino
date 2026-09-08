@@ -7,6 +7,7 @@ import {
   type SlotCapacity,
 } from "@/lib/availability";
 import { EditBookingForm } from "./edit-form";
+import { formatBookingReference } from "@/lib/booking-reference";
 
 function localDateFromIso(iso: string): string {
   return new Date(iso).toLocaleDateString("en-CA", {
@@ -54,7 +55,9 @@ export default async function EditReservationPage({
 
   const { data: booking } = await supabase
     .from("agenda_entries")
-    .select("id, business_id, service_id, start_time, end_time, client_name")
+    .select(
+      "id, business_id, service_id, start_time, end_time, client_name, reference_number"
+    )
     .eq("id", bookingId)
     .eq("business_id", profile.business_id)
     .maybeSingle();
@@ -136,9 +139,12 @@ export default async function EditReservationPage({
         ← Retour au tableau de bord
       </Link>
 
-      <h1 className="mb-6 text-xl font-bold text-slate-900 dark:text-white">
+      <h1 className="text-xl font-bold text-slate-900 dark:text-white">
         Modifier la réservation
       </h1>
+      <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+        Réf. {formatBookingReference(booking.reference_number)}
+      </p>
 
       {!service ? (
         <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">

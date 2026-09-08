@@ -14,6 +14,7 @@ import {
   type MobileMoneyAccount,
   type MobileMoneyProvider,
 } from "@/lib/whatsapp";
+import { formatBookingReference } from "@/lib/booking-reference";
 
 const roleLabels: Record<Profile["role"], string> = {
   owner: "Gérant / Propriétaire",
@@ -34,6 +35,7 @@ type BookingRow = {
   client_phone_display: string | null;
   start_time: string;
   end_time: string | null;
+  reference_number: number;
 };
 
 type HistoryRow = BookingRow & { status: string };
@@ -81,7 +83,8 @@ function BookingCard({
           )}
         </p>
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          {formatDateTime(entry.start_time)} · {entry.client_phone_display}
+          {formatDateTime(entry.start_time)} · {entry.client_phone_display} ·
+          Réf. {formatBookingReference(entry.reference_number)}
         </p>
         {service && !showDeposit && (
           <p className="mt-1 text-sm font-bold text-kino-600">
@@ -154,7 +157,7 @@ export default async function DashboardPage() {
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number"
         )
         .eq("business_id", profile.business_id)
         .eq("status", "pending_approval")
@@ -165,7 +168,7 @@ export default async function DashboardPage() {
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number"
         )
         .eq("business_id", profile.business_id)
         .eq("status", "confirmed")
@@ -175,7 +178,7 @@ export default async function DashboardPage() {
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number"
         )
         .eq("business_id", profile.business_id)
         .eq("status", "confirmed")
@@ -185,7 +188,7 @@ export default async function DashboardPage() {
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number"
         )
         .eq("business_id", profile.business_id)
         .eq("status", "approved_waiting_payment")
@@ -193,7 +196,7 @@ export default async function DashboardPage() {
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time, status"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, status"
         )
         .eq("business_id", profile.business_id)
         .in("status", ["geannuleerd", "termine", "no_show"])
@@ -319,7 +322,9 @@ export default async function DashboardPage() {
                           mobileMoneyLabelForMessage
                             ? ` via ${mobileMoneyLabelForMessage}`
                             : ""
-                        } puis de nous le confirmer ici une fois fait. Merci !`
+                        } puis de nous le confirmer ici une fois fait. Référence : ${formatBookingReference(
+                          entry.reference_number
+                        )}. Merci !`
                       )
                     : null;
 
@@ -465,7 +470,9 @@ export default async function DashboardPage() {
                           mobileMoneyLabelForMessage
                             ? ` via ${mobileMoneyLabelForMessage}`
                             : ""
-                        } puis de nous le confirmer ici une fois fait. Merci !`
+                        } puis de nous le confirmer ici une fois fait. Référence : ${formatBookingReference(
+                          entry.reference_number
+                        )}. Merci !`
                       )
                     : null;
 

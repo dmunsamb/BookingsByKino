@@ -8,6 +8,7 @@ import {
   type SlotCapacity,
 } from "@/lib/availability";
 import { BookingForm } from "./booking-form";
+import { formatBookingReference } from "@/lib/booking-reference";
 
 export default async function BusinessPage({
   params,
@@ -18,6 +19,7 @@ export default async function BusinessPage({
     date?: string;
     service?: string;
     confirmed?: string;
+    ref?: string;
   }>;
 }) {
   const { id } = await params;
@@ -25,6 +27,7 @@ export default async function BusinessPage({
     date: dateParam,
     service: serviceIdParam,
     confirmed,
+    ref,
   } = await searchParams;
   const minDate = minBookableDateIso();
   // Jamais le jour même : une date passée/aujourd'hui envoyée via l'URL
@@ -163,7 +166,25 @@ export default async function BusinessPage({
 
       {confirmed && (
         <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
-          Demande envoyée avec succès ! L&apos;établissement va valider la disponibilité.
+          <p className="font-bold">
+            Demande envoyée avec succès ! L&apos;établissement va valider la
+            disponibilité.
+          </p>
+          {ref && !Number.isNaN(Number(ref)) && (
+            <>
+              <p className="mt-3 text-xs uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+                Votre numéro de suivi
+              </p>
+              <p className="text-2xl font-extrabold tracking-wide">
+                {formatBookingReference(Number(ref))}
+              </p>
+              <p className="mt-1 text-xs text-emerald-800 dark:text-emerald-300">
+                Faites-en une capture d&apos;écran : ce numéro vous permet de
+                suivre votre demande auprès de l&apos;établissement en cas de
+                question.
+              </p>
+            </>
+          )}
         </div>
       )}
 
