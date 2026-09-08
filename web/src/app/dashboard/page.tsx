@@ -143,6 +143,53 @@ export default async function DashboardPage() {
 
   if (profile.business_id) {
     const supabase = await createClient();
+
+    const { data: businessStatusCheck } = await supabase
+      .from("businesses")
+      .select("signup_status")
+      .eq("id", profile.business_id)
+      .maybeSingle();
+
+    if (
+      businessStatusCheck &&
+      businessStatusCheck.signup_status !== "approved"
+    ) {
+      return (
+        <div className="mx-auto w-full max-w-lg px-4 py-16 text-center">
+          {businessStatusCheck.signup_status === "pending_approval" ? (
+            <>
+              <h1 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">
+                Inscription en attente de validation
+              </h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Merci de votre inscription ! L&apos;équipe KinoBooking va
+                valider votre établissement sous peu. Vous recevrez un
+                accès complet dès que ce sera fait.
+              </p>
+            </>
+          ) : (
+            <>
+              <h1 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">
+                Inscription non validée
+              </h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Votre inscription n&apos;a pas été validée par KinoBooking.
+                Contactez-nous pour plus d&apos;informations.
+              </p>
+            </>
+          )}
+          <form action={logout} className="mt-6">
+            <button
+              type="submit"
+              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200"
+            >
+              Se déconnecter
+            </button>
+          </form>
+        </div>
+      );
+    }
+
     const nowIso = new Date().toISOString();
 
     const [
@@ -281,10 +328,24 @@ export default async function DashboardPage() {
       </div>
 
       {!profile.business_id ? (
-        <p className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-          Aucun établissement n&apos;est encore associé à votre compte.
-          Contactez l&apos;administrateur KinoBooking.
-        </p>
+        profile.role === "platform_admin" ? (
+          <Link
+            href="/admin"
+            className="block rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+          >
+            <span className="font-bold text-slate-900 dark:text-white">
+              Administration KinoBooking
+            </span>
+            <p className="mt-1 text-slate-500 dark:text-slate-400">
+              Valider les inscriptions et gérer les établissements.
+            </p>
+          </Link>
+        ) : (
+          <p className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+            Aucun établissement n&apos;est encore associé à votre compte.
+            Contactez l&apos;administrateur KinoBooking.
+          </p>
+        )
       ) : (
         <>
           <section className="mb-8">
