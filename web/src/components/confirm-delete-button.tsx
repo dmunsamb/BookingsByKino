@@ -8,7 +8,13 @@ import { useState } from "react";
  * soumet réellement le formulaire parent. Doit être utilisé à l'intérieur
  * d'un <form action={...}> — voir dashboard/agenda et dashboard/catalogue.
  */
-export function ConfirmDeleteButton({ label = "Supprimer" }: { label?: string }) {
+export function ConfirmDeleteButton({
+  label = "Supprimer",
+  dismissLabel = "Annuler",
+}: {
+  label?: string;
+  dismissLabel?: string;
+}) {
   const [confirming, setConfirming] = useState(false);
 
   if (confirming) {
@@ -25,7 +31,7 @@ export function ConfirmDeleteButton({ label = "Supprimer" }: { label?: string })
           onClick={() => setConfirming(false)}
           className="text-xs font-bold text-slate-400 hover:underline"
         >
-          Annuler
+          {dismissLabel}
         </button>
       </span>
     );
