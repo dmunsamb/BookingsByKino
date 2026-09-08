@@ -43,25 +43,18 @@ export function BookingForm({
 
   return (
     <div className="space-y-6">
-      <form method="GET" className="flex items-end gap-3">
+      <form method="GET">
         <input type="hidden" name="service" value={service.id} />
-        <div className="flex-1">
-          <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
-            Date souhaitée
-          </label>
-          <input
-            type="date"
-            name="date"
-            defaultValue={date}
-            className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-          />
-        </div>
-        <button
-          type="submit"
-          className="rounded-xl border border-slate-300 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200"
-        >
-          Changer de date
-        </button>
+        <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+          Date souhaitée
+        </label>
+        <input
+          type="date"
+          name="date"
+          defaultValue={date}
+          onChange={(e) => e.currentTarget.form?.requestSubmit()}
+          className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+        />
       </form>
 
       <form

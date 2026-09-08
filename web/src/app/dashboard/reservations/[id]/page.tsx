@@ -27,10 +27,10 @@ export default async function EditReservationPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ service?: string; date?: string }>;
+  searchParams: Promise<{ date?: string }>;
 }) {
   const { id: bookingId } = await params;
-  const { service: serviceParam, date: dateParam } = await searchParams;
+  const { date: dateParam } = await searchParams;
 
   const profile = await getCurrentProfile();
 
@@ -54,9 +54,7 @@ export default async function EditReservationPage({
 
   const { data: booking } = await supabase
     .from("agenda_entries")
-    .select(
-      "id, business_id, service_id, start_time, end_time, client_name, client_phone"
-    )
+    .select("id, business_id, service_id, start_time, end_time, client_name")
     .eq("id", bookingId)
     .eq("business_id", profile.business_id)
     .maybeSingle();
@@ -69,21 +67,20 @@ export default async function EditReservationPage({
     );
   }
 
-  const { data: services } = await supabase
-    .from("services")
-    .select("id, name, duration_minutes, price_usd")
-    .eq("business_id", profile.business_id)
-    .order("created_at");
+  const { data: service } = booking.service_id
+    ? await supabase
+        .from("services")
+        .select("id, name, duration_minutes")
+        .eq("id", booking.service_id)
+        .maybeSingle()
+    : { data: null };
 
   const originalDate = localDateFromIso(booking.start_time);
-  const originalServiceId = booking.service_id ?? services?.[0]?.id ?? "";
   const date = dateParam || originalDate;
-  const selectedServiceId = serviceParam || originalServiceId;
-  const selectedService = services?.find((s) => s.id === selectedServiceId);
 
   let slots: ReturnType<typeof generateSlotsForDate> = [];
 
-  if (selectedService) {
+  if (service) {
     const weekday = new Date(`${date}T12:00:00+01:00`).getDay();
 
     const { data: rules } = await supabase
@@ -121,15 +118,13 @@ export default async function EditReservationPage({
       (rules ?? []) as AvailabilityRule[],
       date,
       capacities,
-      selectedService.duration_minutes
+      service.duration_minutes
     );
   }
 
   const currentSlotValue =
-    date === originalDate && selectedServiceId === originalServiceId
-      ? `${localTimeFromIso(booking.start_time)}|${
-          selectedService?.duration_minutes ?? 0
-        }`
+    date === originalDate
+      ? `${localTimeFromIso(booking.start_time)}|${service?.duration_minutes ?? 0}`
       : null;
 
   return (
@@ -145,20 +140,18 @@ export default async function EditReservationPage({
         Modifier la réservation
       </h1>
 
-      {!services || services.length === 0 ? (
+      {!service ? (
         <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
-          Aucun service au catalogue pour l&apos;instant.
+          Service introuvable pour cette réservation.
         </p>
       ) : (
         <EditBookingForm
           bookingId={booking.id}
-          services={services}
-          selectedServiceId={selectedServiceId}
+          serviceName={service.name}
+          clientName={booking.client_name ?? "Client"}
           date={date}
           slots={slots}
           currentSlotValue={currentSlotValue}
-          clientName={booking.client_name ?? ""}
-          clientPhone={booking.client_phone ?? ""}
         />
       )}
     </div>

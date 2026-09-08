@@ -6,8 +6,10 @@ import { getCurrentProfile } from "@/lib/auth/dal";
 import { localSlotToIso } from "@/lib/availability";
 
 /**
- * Édition manuelle d'une réservation par le gérant uniquement (US-O14) :
- * changer le service, la date/le créneau, ou les coordonnées du client.
+ * Édition manuelle de la date/du créneau d'une réservation par le gérant
+ * uniquement (US-O14). Le service, le nom et le téléphone du client ne se
+ * modifient pas ici volontairement : un changement de prestation ou de
+ * client, c'est une autre réservation — on annule et on en recrée une.
  * La capacité réelle du nouveau créneau est revérifiée côté base par le
  * trigger enforce_agenda_capacity (0005_enforce_capacity_on_update.sql),
  * exactement comme pour une nouvelle demande client.
@@ -28,25 +30,15 @@ export async function updateBooking(
   }
 
   const id = formData.get("id");
-  const serviceId = formData.get("service_id");
   const date = formData.get("date");
   const slot = formData.get("slot");
-  const clientName = formData.get("client_name");
-  const clientPhone = formData.get("client_phone");
 
   if (
     typeof id !== "string" ||
-    typeof serviceId !== "string" ||
     typeof date !== "string" ||
-    typeof slot !== "string" ||
-    typeof clientName !== "string" ||
-    !clientName.trim() ||
-    typeof clientPhone !== "string" ||
-    !clientPhone.trim()
+    typeof slot !== "string"
   ) {
-    return {
-      error: "Veuillez remplir tous les champs et choisir un créneau.",
-    };
+    return { error: "Veuillez choisir un créneau." };
   }
 
   const [time, slotDurationRaw] = slot.split("|");
@@ -64,9 +56,6 @@ export async function updateBooking(
   const { error } = await supabase
     .from("agenda_entries")
     .update({
-      service_id: serviceId,
-      client_name: clientName.trim(),
-      client_phone: clientPhone.trim(),
       start_time: startIso,
       end_time: endDate.toISOString(),
     })

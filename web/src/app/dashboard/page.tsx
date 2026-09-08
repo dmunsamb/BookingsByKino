@@ -13,6 +13,12 @@ const roleLabels: Record<Profile["role"], string> = {
   platform_admin: "Administrateur KinoBooking",
 };
 
+const historyStatusLabels: Record<string, string> = {
+  geannuleerd: "Annulée",
+  termine: "Terminée",
+  no_show: "No-show",
+};
+
 type BookingRow = {
   id: string;
   service_id: string | null;
@@ -21,6 +27,8 @@ type BookingRow = {
   start_time: string;
   end_time: string | null;
 };
+
+type HistoryRow = BookingRow & { status: string };
 
 type ServiceInfo = { name: string; price_usd: number };
 
@@ -40,11 +48,13 @@ function BookingCard({
   services,
   actions,
   editHref,
+  statusLabel,
 }: {
   entry: BookingRow;
   services: Map<string, ServiceInfo>;
   actions?: ReactNode;
   editHref?: string;
+  statusLabel?: string;
 }) {
   const service = entry.service_id ? services.get(entry.service_id) : undefined;
 
@@ -54,6 +64,11 @@ function BookingCard({
         <p className="font-bold text-slate-900 dark:text-white">
           {entry.client_name ?? "Client"} —{" "}
           {service?.name ?? "Service inconnu"}
+          {statusLabel && (
+            <span className="ml-2 rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+              {statusLabel}
+            </span>
+          )}
         </p>
         <p className="text-sm text-slate-500 dark:text-slate-400">
           {formatDateTime(entry.start_time)} · {entry.client_phone_display}
@@ -99,27 +114,22 @@ export default async function DashboardPage() {
   }
 
   let pending: BookingRow[] = [];
+  let toClose: BookingRow[] = [];
   let confirmedUpcoming: BookingRow[] = [];
   let waitingPayment: BookingRow[] = [];
-  let recentlyCancelled: BookingRow[] = [];
+  let history: HistoryRow[] = [];
   let serviceInfo = new Map<string, ServiceInfo>();
 
   if (profile.business_id) {
     const supabase = await createClient();
-    // Depuis le début de la journée locale (Africa/Kinshasa), pas
-    // "maintenant" : sinon un rendez-vous confirmé plus tôt dans la
-    // journée disparaîtrait de la liste sans avoir été annulé ni
-    // marqué comme passé.
-    const todayLocal = new Date().toLocaleDateString("en-CA", {
-      timeZone: "Africa/Kinshasa",
-    });
-    const startOfTodayIso = `${todayLocal}T00:00:00+01:00`;
+    const nowIso = new Date().toISOString();
 
     const [
       { data: pendingData },
+      { data: toCloseData },
       { data: confirmedData },
       { data: waitingData },
-      { data: cancelledData },
+      { data: historyData },
       { data: servicesData },
     ] = await Promise.all([
       supabase
@@ -130,6 +140,9 @@ export default async function DashboardPage() {
         .eq("business_id", profile.business_id)
         .eq("status", "pending_approval")
         .order("start_time"),
+      // Un rendez-vous confirmé dont l'heure est passée n'a plus sa place
+      // dans "à venir" : il faut le clôturer (service rendu / no-show),
+      // pas l'annuler après coup.
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
@@ -137,7 +150,17 @@ export default async function DashboardPage() {
         )
         .eq("business_id", profile.business_id)
         .eq("status", "confirmed")
-        .gte("start_time", startOfTodayIso)
+        .lt("start_time", nowIso)
+        .order("start_time")
+        .limit(20),
+      supabase
+        .from("agenda_entries_for_dashboard")
+        .select(
+          "id, service_id, client_name, client_phone_display, start_time, end_time"
+        )
+        .eq("business_id", profile.business_id)
+        .eq("status", "confirmed")
+        .gte("start_time", nowIso)
         .order("start_time")
         .limit(20),
       supabase
@@ -151,12 +174,12 @@ export default async function DashboardPage() {
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, status"
         )
         .eq("business_id", profile.business_id)
-        .eq("status", "geannuleerd")
-        .order("created_at", { ascending: false })
-        .limit(10),
+        .in("status", ["geannuleerd", "termine", "no_show"])
+        .order("start_time", { ascending: false })
+        .limit(15),
       supabase
         .from("services")
         .select("id, name, price_usd")
@@ -164,9 +187,10 @@ export default async function DashboardPage() {
     ]);
 
     pending = pendingData ?? [];
+    toClose = toCloseData ?? [];
     confirmedUpcoming = confirmedData ?? [];
     waitingPayment = waitingData ?? [];
-    recentlyCancelled = cancelledData ?? [];
+    history = historyData ?? [];
     serviceInfo = new Map(
       (servicesData ?? []).map((s) => [s.id, { name: s.name, price_usd: s.price_usd }])
     );
@@ -250,12 +274,56 @@ export default async function DashboardPage() {
 
           <section className="mb-8">
             <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Réservations confirmées (aujourd&apos;hui et à venir)
+              Rendez-vous passés à clôturer
+            </h2>
+            <div className="space-y-3">
+              {toClose.length === 0 && (
+                <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+                  Aucun rendez-vous en attente de clôture.
+                </p>
+              )}
+              {toClose.map((entry) => (
+                <BookingCard
+                  key={entry.id}
+                  entry={entry}
+                  services={serviceInfo}
+                  actions={
+                    <>
+                      <form action={updateBookingStatus}>
+                        <input type="hidden" name="id" value={entry.id} />
+                        <input type="hidden" name="status" value="termine" />
+                        <button
+                          type="submit"
+                          className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
+                        >
+                          Service rendu
+                        </button>
+                      </form>
+                      <form action={updateBookingStatus}>
+                        <input type="hidden" name="id" value={entry.id} />
+                        <input type="hidden" name="status" value="no_show" />
+                        <button
+                          type="submit"
+                          className="rounded-xl border border-slate-300 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200"
+                        >
+                          No-show
+                        </button>
+                      </form>
+                    </>
+                  }
+                />
+              ))}
+            </div>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              Réservations confirmées à venir
             </h2>
             <div className="space-y-3">
               {confirmedUpcoming.length === 0 && (
                 <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
-                  Aucune réservation confirmée pour aujourd&apos;hui ou à venir.
+                  Aucune réservation confirmée à venir.
                 </p>
               )}
               {confirmedUpcoming.map((entry) => (
@@ -330,16 +398,21 @@ export default async function DashboardPage() {
 
           <section className="mb-8">
             <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-              Annulées récemment
+              Historique récent
             </h2>
             <div className="space-y-3">
-              {recentlyCancelled.length === 0 && (
+              {history.length === 0 && (
                 <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
-                  Aucune réservation annulée récemment.
+                  Aucun historique pour l&apos;instant.
                 </p>
               )}
-              {recentlyCancelled.map((entry) => (
-                <BookingCard key={entry.id} entry={entry} services={serviceInfo} />
+              {history.map((entry) => (
+                <BookingCard
+                  key={entry.id}
+                  entry={entry}
+                  services={serviceInfo}
+                  statusLabel={historyStatusLabels[entry.status] ?? entry.status}
+                />
               ))}
             </div>
           </section>

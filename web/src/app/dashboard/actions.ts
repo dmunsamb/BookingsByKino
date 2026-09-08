@@ -16,6 +16,8 @@ const ALLOWED_BOOKING_STATUSES = [
   "approved_waiting_payment",
   "confirmed",
   "geannuleerd",
+  "termine",
+  "no_show",
 ] as const;
 
 /**
