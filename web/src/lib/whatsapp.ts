@@ -39,11 +39,22 @@ export function formatMobileMoneyAccounts(
     .join(separator);
 }
 
-/** Normalise un numéro local RDC ("081 000 0000") vers le format international attendu par wa.me. */
+/**
+ * Normalise un numéro vers le format attendu par wa.me (chiffres
+ * uniquement, sans "+" ni "00" en tête) — accepte n'importe quel pays.
+ *
+ * - Préfixe international fourni ("+33..." ou "0033...") : on retire
+ *   uniquement ce préfixe, le reste du numéro n'est pas modifié.
+ * - Aucun préfixe fourni (ex: "081 000 0000") : on ne touche à rien,
+ *   notamment on n'ajoute plus l'indicatif 243 automatiquement — ce sont
+ *   normalement des numéros congolais, WhatsApp applique alors
+ *   l'indicatif RDC par défaut.
+ */
 function toWhatsAppDigits(phone: string): string {
+  const hasPlusPrefix = phone.trim().startsWith("+");
   const digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("243")) return digits;
-  if (digits.startsWith("0")) return `243${digits.slice(1)}`;
+  if (hasPlusPrefix) return digits;
+  if (digits.startsWith("00")) return digits.slice(2);
   return digits;
 }
 
