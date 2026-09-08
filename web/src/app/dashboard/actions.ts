@@ -52,3 +52,26 @@ export async function updateBookingStatus(formData: FormData) {
 
   revalidatePath("/dashboard");
 }
+
+/**
+ * Numéro M-Pesa de l'établissement, communiqué manuellement par le gérant
+ * au client une fois la demande validée (BR-3 : l'acompte est payé
+ * directement au gérant, hors plateforme — phase 1, pas d'intégration
+ * M-Pesa réelle, voir section 12.2 du cahier de charge).
+ */
+export async function updateMpesaNumber(formData: FormData) {
+  const profile = await getCurrentProfile();
+  if (!profile?.business_id) return;
+  if (profile.role !== "owner") return;
+
+  const mpesaNumber = formData.get("mpesa_number");
+  if (typeof mpesaNumber !== "string") return;
+
+  const supabase = await createClient();
+  await supabase
+    .from("businesses")
+    .update({ mpesa_number: mpesaNumber.trim() || null })
+    .eq("id", profile.business_id);
+
+  revalidatePath("/dashboard");
+}
