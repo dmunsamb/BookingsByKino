@@ -43,7 +43,7 @@ const { data: business, error: businessError } = await admin
     sub_category: "Coiffure & Perruques",
     city: "Gombe, Kinshasa",
     address: "Adresse de test",
-    mpesa_number: "+243 00 000 0000",
+    mobile_money_number: "+243 00 000 0000",
     response_timeout_hours: 2,
   })
   .select()

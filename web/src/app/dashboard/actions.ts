@@ -53,24 +53,42 @@ export async function updateBookingStatus(formData: FormData) {
   revalidatePath("/dashboard");
 }
 
+const ALLOWED_MOBILE_MONEY_PROVIDERS = [
+  "mpesa",
+  "orange_money",
+  "airtel_money",
+] as const;
+
 /**
- * Numéro M-Pesa de l'établissement, communiqué manuellement par le gérant
+ * Numéro mobile money de l'établissement (M-Pesa, Orange Money ou Airtel
+ * Money — un seul actif à la fois), communiqué manuellement par le gérant
  * au client une fois la demande validée (BR-3 : l'acompte est payé
  * directement au gérant, hors plateforme — phase 1, pas d'intégration
- * M-Pesa réelle, voir section 12.2 du cahier de charge).
+ * de paiement réelle, voir section 12.2 du cahier de charge).
  */
-export async function updateMpesaNumber(formData: FormData) {
+export async function updateMobileMoneyInfo(formData: FormData) {
   const profile = await getCurrentProfile();
   if (!profile?.business_id) return;
   if (profile.role !== "owner") return;
 
-  const mpesaNumber = formData.get("mpesa_number");
-  if (typeof mpesaNumber !== "string") return;
+  const momoNumber = formData.get("mobile_money_number");
+  const provider = formData.get("mobile_money_provider");
+  if (typeof momoNumber !== "string" || typeof provider !== "string") return;
+  if (
+    !ALLOWED_MOBILE_MONEY_PROVIDERS.includes(
+      provider as (typeof ALLOWED_MOBILE_MONEY_PROVIDERS)[number]
+    )
+  ) {
+    return;
+  }
 
   const supabase = await createClient();
   await supabase
     .from("businesses")
-    .update({ mpesa_number: mpesaNumber.trim() || null })
+    .update({
+      mobile_money_number: momoNumber.trim() || null,
+      mobile_money_provider: provider,
+    })
     .eq("id", profile.business_id);
 
   revalidatePath("/dashboard");

@@ -12,7 +12,7 @@
 -- équivalent service role — contourne le RLS, comme prévu pour l'admin)
 -- ============================================================
 
-insert into public.businesses (id, name, main_category, city, address, mpesa_number)
+insert into public.businesses (id, name, main_category, city, address, mobile_money_number)
 values (
   '00000000-0000-0000-0000-000000000001',
   '[TEST] Vérification RLS',
