@@ -72,9 +72,20 @@ export default async function DashboardPage() {
             Gérer les services proposés aux clients.
           </p>
         </Link>
+        <Link
+          href="/dashboard/demandes"
+          className="rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+        >
+          <span className="font-bold text-slate-900 dark:text-white">
+            Demandes de réservation
+          </span>
+          <p className="mt-1 text-slate-500 dark:text-slate-400">
+            Valider ou refuser les demandes envoyées par vos clients.
+          </p>
+        </Link>
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-sm text-slate-400 dark:border-slate-700 dark:bg-slate-900 sm:col-span-2">
-          Aanvragen et le reste du tableau de bord restent à construire —
-          voir docs/functioneel-ontwerp-kinobooking.md, section 12.
+          Le reste du tableau de bord reste à construire — voir
+          docs/functioneel-ontwerp-kinobooking.md, section 12.
         </div>
       </div>
     </div>
