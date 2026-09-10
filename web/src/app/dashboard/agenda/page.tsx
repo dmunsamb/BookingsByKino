@@ -1,9 +1,36 @@
 import Link from "next/link";
-import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
+import {
+  getCurrentProfile,
+  canManageBusiness,
+  isStaffMember,
+} from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { AvailabilityForm } from "./availability-form";
-import { deleteAvailabilityRule } from "./actions";
+import { BlockingForm } from "./blocking-form";
+import { deleteAvailabilityRule, deleteBlockingGroup } from "./actions";
+
+function formatBlockRange(startIso: string, endIso: string) {
+  const start = new Date(startIso);
+  const end = new Date(endIso);
+  const dateLabel = start.toLocaleDateString("fr-FR", {
+    timeZone: "Africa/Kinshasa",
+    weekday: "long",
+    day: "2-digit",
+    month: "short",
+  });
+  const startTime = start.toLocaleTimeString("fr-FR", {
+    timeZone: "Africa/Kinshasa",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const endTime = end.toLocaleTimeString("fr-FR", {
+    timeZone: "Africa/Kinshasa",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${dateLabel} · ${startTime}–${endTime}`;
+}
 
 const weekdayLabels = [
   "Dimanche",
@@ -42,6 +69,29 @@ export default async function AgendaPage() {
     .eq("business_id", profile.business_id)
     .order("weekday")
     .order("start_time");
+
+  const { data: blockRows } = await supabase
+    .from("agenda_entries")
+    .select("id, block_group_id, start_time, end_time")
+    .eq("business_id", profile.business_id)
+    .eq("source", "blokkering")
+    .gte("start_time", new Date().toISOString())
+    .order("start_time");
+
+  const blockGroups = new Map<string, { id: string; start: string; end: string }>();
+  for (const row of blockRows ?? []) {
+    const key = row.block_group_id ?? row.id;
+    const existing = blockGroups.get(key);
+    if (!existing) {
+      blockGroups.set(key, { id: key, start: row.start_time, end: row.end_time });
+    } else {
+      if (row.start_time < existing.start) existing.start = row.start_time;
+      if (row.end_time > existing.end) existing.end = row.end_time;
+    }
+  }
+  const blocks = Array.from(blockGroups.values()).sort((a, b) =>
+    a.start.localeCompare(b.start)
+  );
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
@@ -113,6 +163,42 @@ export default async function AgendaPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="mt-10">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+          Congés et indisponibilités
+        </h2>
+        <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+          Bloque une plage horaire : elle n&apos;apparaît plus disponible
+          pour les nouvelles réservations en ligne (FR-9.3).
+        </p>
+
+        {isStaffMember(profile) && <BlockingForm />}
+
+        <div className="space-y-2">
+          {blocks.length === 0 && (
+            <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+              Aucun blocage à venir.
+            </p>
+          )}
+          {blocks.map((b) => (
+            <div
+              key={b.id}
+              className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-3 text-sm dark:border-slate-800 dark:bg-slate-900"
+            >
+              <span className="text-slate-700 dark:text-slate-300">
+                {formatBlockRange(b.start, b.end)}
+              </span>
+              {isStaffMember(profile) && (
+                <form action={deleteBlockingGroup}>
+                  <input type="hidden" name="block_group_id" value={b.id} />
+                  <ConfirmDeleteButton />
+                </form>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
