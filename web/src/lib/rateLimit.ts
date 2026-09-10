@@ -38,13 +38,15 @@ export async function checkRateLimit(
 }
 
 /**
- * Extrait une adresse IP raisonnable de la requête entrante, pour l'utiliser
- * comme clé de rate limiting. Netlify (comme la plupart des plateformes)
- * transmet l'IP réelle du visiteur via `x-nf-client-connection-ip`, avec
- * `x-forwarded-for` en repli plus générique.
+ * Extrait une adresse IP raisonnable des en-têtes de la requête entrante,
+ * pour l'utiliser comme clé de rate limiting. Netlify (comme la plupart des
+ * plateformes) transmet l'IP réelle du visiteur via
+ * `x-nf-client-connection-ip`, avec `x-forwarded-for` en repli plus
+ * générique. Prend directement un objet Headers (celui de `next/headers`
+ * dans une Server Action, ou `request.headers` dans un Route Handler) plutôt
+ * qu'un `Request` complet, qu'une Server Action ne reçoit jamais.
  */
-export function getClientIp(request: Request): string {
-  const headers = request.headers;
+export function getClientIp(headers: Headers): string {
   return (
     headers.get("x-nf-client-connection-ip") ??
     headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??

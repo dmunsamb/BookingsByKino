@@ -1,8 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { localSlotToIso } from "@/lib/availability";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 /**
  * Soumission d'une demande de réservation "avec RDV" par le client
@@ -15,10 +17,25 @@ import { localSlotToIso } from "@/lib/availability";
 
 export type BookingFormState = { error?: string };
 
+const BOOKING_RATE_LIMIT_MAX = 5;
+const BOOKING_RATE_LIMIT_WINDOW_SECONDS = 60;
+
 export async function createBookingRequest(
   _prevState: BookingFormState,
   formData: FormData
 ): Promise<BookingFormState> {
+  const ip = getClientIp(await headers());
+  const allowed = await checkRateLimit(
+    `booking:${ip}`,
+    BOOKING_RATE_LIMIT_MAX,
+    BOOKING_RATE_LIMIT_WINDOW_SECONDS
+  );
+  if (!allowed) {
+    return {
+      error: "Trop de demandes envoyées. Merci de réessayer dans une minute.",
+    };
+  }
+
   const businessId = formData.get("business_id");
   const serviceId = formData.get("service_id");
   const date = formData.get("date");

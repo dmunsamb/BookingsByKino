@@ -1,11 +1,16 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 export type LoginState = {
   error?: string;
 };
+
+const LOGIN_RATE_LIMIT_MAX = 10;
+const LOGIN_RATE_LIMIT_WINDOW_SECONDS = 60;
 
 /**
  * Connexion gérant/personnel (US-O1, US-S1). Pas d'inscription libre : les
@@ -16,6 +21,16 @@ export async function login(
   _prevState: LoginState,
   formData: FormData
 ): Promise<LoginState> {
+  const ip = getClientIp(await headers());
+  const allowed = await checkRateLimit(
+    `login:${ip}`,
+    LOGIN_RATE_LIMIT_MAX,
+    LOGIN_RATE_LIMIT_WINDOW_SECONDS
+  );
+  if (!allowed) {
+    return { error: "Trop de tentatives. Merci de réessayer dans une minute." };
+  }
+
   const email = formData.get("email");
   const password = formData.get("password");
 

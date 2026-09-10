@@ -1,8 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 /**
  * Auto-inscription d'un nouveau gérant. Toutes les écritures passent par
@@ -26,11 +28,25 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export type SignupState = { error?: string };
 
 const BUSINESS_TYPES = ["Salon de coiffure", "Salon de beauté"] as const;
+const SIGNUP_RATE_LIMIT_MAX = 5;
+const SIGNUP_RATE_LIMIT_WINDOW_SECONDS = 300;
 
 export async function signup(
   _prevState: SignupState,
   formData: FormData
 ): Promise<SignupState> {
+  const ip = getClientIp(await headers());
+  const allowed = await checkRateLimit(
+    `signup:${ip}`,
+    SIGNUP_RATE_LIMIT_MAX,
+    SIGNUP_RATE_LIMIT_WINDOW_SECONDS
+  );
+  if (!allowed) {
+    return {
+      error: "Trop de tentatives. Merci de réessayer dans quelques minutes.",
+    };
+  }
+
   const ownerName = formData.get("owner_name");
   const emailRaw = formData.get("email");
   const whatsappRaw = formData.get("whatsapp");
