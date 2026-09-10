@@ -162,6 +162,8 @@ export default async function AdminPage() {
                 <SubscriptionPaymentDialog
                   businessId={b.id}
                   businessName={b.name}
+                  ownerName={ownerNameByBusiness.get(b.id)}
+                  ownerWhatsapp={b.owner_whatsapp}
                   prices={priceByDuration}
                   mode="approve"
                   triggerLabel="Approuver"

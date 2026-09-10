@@ -146,6 +146,8 @@ export default async function DashboardPage() {
   let businessName = "";
   let mobileMoneyAccounts: MobileMoneyAccount[] = [];
   let subscriptionStatus: ReturnType<typeof getSubscriptionStatus> = "actif";
+  let hasServices = false;
+  let hasAvailability = false;
 
   if (profile.business_id) {
     const supabase = await createClient();
@@ -237,6 +239,7 @@ export default async function DashboardPage() {
       { data: historyData },
       { data: servicesData },
       { data: businessData },
+      { count: availabilityRulesCount },
     ] = await Promise.all([
       supabase
         .from("agenda_entries_for_dashboard")
@@ -297,6 +300,10 @@ export default async function DashboardPage() {
         )
         .eq("id", profile.business_id)
         .maybeSingle(),
+      supabase
+        .from("availability_rules")
+        .select("id", { count: "exact", head: true })
+        .eq("business_id", profile.business_id),
     ]);
 
     pending = pendingData ?? [];
@@ -311,6 +318,8 @@ export default async function DashboardPage() {
       ])
     );
     businessName = businessData?.name ?? "";
+    hasServices = (servicesData?.length ?? 0) > 0;
+    hasAvailability = (availabilityRulesCount ?? 0) > 0;
     mobileMoneyAccounts = (
       [
         ["mpesa", businessData?.mpesa_number, businessData?.mpesa_holder_name],
@@ -371,6 +380,64 @@ export default async function DashboardPage() {
           tableau de bord.
         </div>
       )}
+
+      {profile.business_id &&
+        canManageBusiness(profile) &&
+        (!hasServices || !hasAvailability) && (
+          <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm dark:border-amber-800 dark:bg-amber-950">
+            <p className="mb-2 font-bold text-amber-900 dark:text-amber-200">
+              Configuration à terminer avant d&apos;être visible des clients
+            </p>
+            <ul className="space-y-1.5">
+              <li className="flex items-center gap-2">
+                <span
+                  className={
+                    hasServices
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-amber-500"
+                  }
+                >
+                  {hasServices ? "✓" : "○"}
+                </span>
+                {hasServices ? (
+                  <span className="text-amber-800 line-through dark:text-amber-400">
+                    Ajouter au moins un service au catalogue
+                  </span>
+                ) : (
+                  <Link
+                    href="/dashboard/catalogue"
+                    className="font-bold text-amber-900 hover:underline dark:text-amber-100"
+                  >
+                    Ajouter au moins un service au catalogue
+                  </Link>
+                )}
+              </li>
+              <li className="flex items-center gap-2">
+                <span
+                  className={
+                    hasAvailability
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-amber-500"
+                  }
+                >
+                  {hasAvailability ? "✓" : "○"}
+                </span>
+                {hasAvailability ? (
+                  <span className="text-amber-800 line-through dark:text-amber-400">
+                    Définir vos horaires et votre capacité
+                  </span>
+                ) : (
+                  <Link
+                    href="/dashboard/agenda"
+                    className="font-bold text-amber-900 hover:underline dark:text-amber-100"
+                  >
+                    Définir vos horaires et votre capacité
+                  </Link>
+                )}
+              </li>
+            </ul>
+          </div>
+        )}
 
       {!profile.business_id ? (
         profile.role === "platform_admin" ? (
