@@ -1,15 +1,15 @@
 import { getCurrentProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
-import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import {
   getSubscriptionStatus,
   subscriptionStatusLabels,
   type SubscriptionStatus,
 } from "@/lib/subscription";
-import { rejectBusiness } from "./actions";
 import { SubscriptionPaymentDialog } from "./subscription-payment-dialog";
 import { SubscriptionPricesForm } from "./subscription-prices-form";
+import { PendingSignupsSection } from "./pending-signups-section";
+import { TestBadge } from "./test-badge";
 
 const statusLabels: Record<string, string> = {
   pending_approval: "En attente",
@@ -26,14 +26,6 @@ const statusBadgeClasses: Record<SubscriptionStatus, string> = {
 };
 
 const DURATION_MONTHS = [1, 3, 12] as const;
-
-function TestBadge() {
-  return (
-    <span className="rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-bold uppercase text-purple-700 dark:bg-purple-950 dark:text-purple-300">
-      Test
-    </span>
-  );
-}
 
 export default async function AdminPage() {
   const profile = await getCurrentProfile();
@@ -53,6 +45,7 @@ export default async function AdminPage() {
     .select(
       "id, name, main_category, sub_category, address, city, signup_status, subscription_paid_until, owner_whatsapp, is_test, created_at"
     )
+    .neq("signup_status", "pending_approval")
     .order("created_at", { ascending: false });
 
   const { data: prices } = await supabase
@@ -79,9 +72,6 @@ export default async function AdminPage() {
     (owners ?? []).map((o) => [o.business_id, o.full_name])
   );
 
-  const pending = (businesses ?? []).filter(
-    (b) => b.signup_status === "pending_approval"
-  );
   const approved = (businesses ?? []).filter(
     (b) => b.signup_status === "approved"
   );
@@ -130,53 +120,7 @@ export default async function AdminPage() {
         <SubscriptionPricesForm initialPrices={priceByDuration} />
       </section>
 
-      <section className="mb-8">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          Inscriptions en attente de validation
-        </h2>
-        <div className="space-y-3">
-          {pending.length === 0 && (
-            <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
-              Aucune inscription en attente.
-            </p>
-          )}
-          {pending.map((b) => (
-            <div
-              key={b.id}
-              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
-            >
-              <p className="font-bold text-slate-900 dark:text-white">
-                {b.name}{" "}
-                <span className="text-xs font-normal text-slate-400">
-                  ({b.sub_category ?? b.main_category})
-                </span>{" "}
-                {b.is_test && <TestBadge />}
-              </p>
-              <p className="mb-3 text-sm text-slate-500 dark:text-slate-400">
-                Gérant : {ownerNameByBusiness.get(b.id) ?? "—"}
-                {(b.address || b.city) && (
-                  <> · {[b.address, b.city].filter(Boolean).join(", ")}</>
-                )}
-              </p>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <SubscriptionPaymentDialog
-                  businessId={b.id}
-                  businessName={b.name}
-                  ownerName={ownerNameByBusiness.get(b.id)}
-                  ownerWhatsapp={b.owner_whatsapp}
-                  prices={priceByDuration}
-                  mode="approve"
-                  triggerLabel="Approuver"
-                />
-                <form action={rejectBusiness}>
-                  <input type="hidden" name="id" value={b.id} />
-                  <ConfirmDeleteButton label="Refuser" />
-                </form>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <PendingSignupsSection />
 
       <section className="mb-8">
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">

@@ -20,6 +20,7 @@ import {
   type MobileMoneyProvider,
 } from "@/lib/whatsapp";
 import { formatBookingReference } from "@/lib/booking-reference";
+import { PendingSignupsSection } from "@/app/admin/pending-signups-section";
 
 const roleLabels: Record<Profile["role"], string> = {
   owner: "Gérant / Propriétaire",
@@ -441,17 +442,20 @@ export default async function DashboardPage() {
 
       {!profile.business_id ? (
         profile.role === "platform_admin" ? (
-          <Link
-            href="/admin"
-            className="block rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
-          >
-            <span className="font-bold text-slate-900 dark:text-white">
-              Administration KinoBooking
-            </span>
-            <p className="mt-1 text-slate-500 dark:text-slate-400">
-              Valider les inscriptions et gérer les établissements.
-            </p>
-          </Link>
+          <>
+            <PendingSignupsSection showEmptyState />
+            <Link
+              href="/admin"
+              className="block rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+            >
+              <span className="font-bold text-slate-900 dark:text-white">
+                Panel d&apos;administration complet
+              </span>
+              <p className="mt-1 text-slate-500 dark:text-slate-400">
+                Tarifs, abonnements à régulariser, tous les établissements.
+              </p>
+            </Link>
+          </>
         ) : (
           <p className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
             Aucun établissement n&apos;est encore associé à votre compte.
@@ -460,6 +464,10 @@ export default async function DashboardPage() {
         )
       ) : (
         <>
+          {profile.role === "platform_admin" && (
+            <PendingSignupsSection showEmptyState={false} />
+          )}
+
           <section className="mb-8">
             <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Nouvelles demandes
@@ -729,10 +737,10 @@ export default async function DashboardPage() {
             className="block rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
           >
             <span className="font-bold text-slate-900 dark:text-white">
-              Administration KinoBooking
+              Panel d&apos;administration complet
             </span>
             <p className="mt-1 text-slate-500 dark:text-slate-400">
-              Valider les inscriptions et gérer les établissements.
+              Tarifs, abonnements à régulariser, tous les établissements.
             </p>
           </Link>
         </section>
