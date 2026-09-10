@@ -468,6 +468,17 @@ export default async function DashboardPage() {
             <PendingSignupsSection showEmptyState={false} />
           )}
 
+          {isStaffMember(profile) && (
+            <div className="mb-6 flex justify-end">
+              <Link
+                href="/dashboard/reservations/new"
+                className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
+              >
+                + Nouvelle réservation
+              </Link>
+            </div>
+          )}
+
           <section className="mb-8">
             <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
               Nouvelles demandes
