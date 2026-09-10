@@ -8,6 +8,7 @@ import {
   type SlotCapacity,
 } from "@/lib/availability";
 import { BookingForm } from "./booking-form";
+import { WalkInForm } from "./walk-in-form";
 import { formatBookingReference } from "@/lib/booking-reference";
 import { getSubscriptionStatus } from "@/lib/subscription";
 
@@ -19,17 +20,24 @@ export default async function BusinessPage({
   searchParams: Promise<{
     date?: string;
     service?: string;
+    mode?: string;
     confirmed?: string;
+    walkin?: string;
     ref?: string;
+    ticket?: string;
   }>;
 }) {
   const { id } = await params;
   const {
     date: dateParam,
     service: serviceIdParam,
+    mode,
     confirmed,
+    walkin,
     ref,
+    ticket,
   } = await searchParams;
+  const isWalkInMode = mode === "walkin";
   const minDate = minBookableDateIso();
   // Jamais le jour même : une date passée/aujourd'hui envoyée via l'URL
   // (lien partagé, retour en arrière du navigateur...) est ramenée au
@@ -138,35 +146,78 @@ export default async function BusinessPage({
       </>
     );
   } else {
-    const weekday = new Date(`${date}T12:00:00+01:00`).getDay();
-
-    const { data: rules } = await supabase
-      .from("availability_rules")
-      .select("weekday, start_time, end_time, slot_duration_minutes, capacity")
-      .eq("business_id", id)
-      .eq("weekday", weekday);
-
-    const { data: capacities } = await supabase.rpc("get_agenda_capacity", {
-      p_business_id: id,
-    });
-
-    const slots = generateSlotsForDate(
-      (rules ?? []) as AvailabilityRule[],
-      date,
-      (capacities ?? []) as SlotCapacity[],
-      selectedService.duration_minutes
+    const modeToggle = (
+      <div className="mb-4 flex gap-2 text-sm">
+        <Link
+          href={`/etablissements/${id}?service=${selectedService.id}`}
+          className={`flex-1 rounded-xl border px-3 py-2 text-center font-bold ${
+            !isWalkInMode
+              ? "border-kino-500 bg-kino-50 text-kino-700 dark:bg-kino-900 dark:text-kino-100"
+              : "border-slate-300 text-slate-500 dark:border-slate-700 dark:text-slate-400"
+          }`}
+        >
+          Avec rendez-vous
+        </Link>
+        <Link
+          href={`/etablissements/${id}?service=${selectedService.id}&mode=walkin`}
+          className={`flex-1 rounded-xl border px-3 py-2 text-center font-bold ${
+            isWalkInMode
+              ? "border-kino-500 bg-kino-50 text-kino-700 dark:bg-kino-900 dark:text-kino-100"
+              : "border-slate-300 text-slate-500 dark:border-slate-700 dark:text-slate-400"
+          }`}
+        >
+          Sans rendez-vous
+        </Link>
+      </div>
     );
 
-    bookingSection = (
-      <BookingForm
-        businessId={id}
-        mainCategory={business.main_category}
-        service={selectedService}
-        date={date}
-        minDate={minDate}
-        slots={slots}
-      />
-    );
+    if (isWalkInMode) {
+      bookingSection = (
+        <>
+          {modeToggle}
+          <WalkInForm
+            businessId={id}
+            serviceId={selectedService.id}
+            serviceName={selectedService.name}
+          />
+        </>
+      );
+    } else {
+      const weekday = new Date(`${date}T12:00:00+01:00`).getDay();
+
+      const { data: rules } = await supabase
+        .from("availability_rules")
+        .select(
+          "weekday, start_time, end_time, slot_duration_minutes, capacity"
+        )
+        .eq("business_id", id)
+        .eq("weekday", weekday);
+
+      const { data: capacities } = await supabase.rpc("get_agenda_capacity", {
+        p_business_id: id,
+      });
+
+      const slots = generateSlotsForDate(
+        (rules ?? []) as AvailabilityRule[],
+        date,
+        (capacities ?? []) as SlotCapacity[],
+        selectedService.duration_minutes
+      );
+
+      bookingSection = (
+        <>
+          {modeToggle}
+          <BookingForm
+            businessId={id}
+            mainCategory={business.main_category}
+            service={selectedService}
+            date={date}
+            minDate={minDate}
+            slots={slots}
+          />
+        </>
+      );
+    }
   }
 
   return (
@@ -208,6 +259,31 @@ export default async function BusinessPage({
                 question.
               </p>
             </>
+          )}
+        </div>
+      )}
+
+      {walkin && (
+        <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
+          <p className="font-bold">Vous êtes dans la file d&apos;attente !</p>
+          {ticket && !Number.isNaN(Number(ticket)) && (
+            <>
+              <p className="mt-3 text-xs uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+                Votre numéro dans la file aujourd&apos;hui
+              </p>
+              <p className="text-2xl font-extrabold tracking-wide">
+                {ticket}
+              </p>
+            </>
+          )}
+          <p className="mt-3 text-xs text-emerald-800 dark:text-emerald-300">
+            Présentez-vous sur place, votre tour viendra dans l&apos;ordre
+            d&apos;arrivée — sans acompte à payer.
+          </p>
+          {ref && !Number.isNaN(Number(ref)) && (
+            <p className="mt-2 text-xs text-emerald-700 dark:text-emerald-400">
+              Référence : {formatBookingReference(Number(ref))}
+            </p>
           )}
         </div>
       )}

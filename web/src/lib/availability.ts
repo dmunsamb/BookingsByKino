@@ -66,17 +66,95 @@ export function minBookableDateIso(): string {
   return `${y}-${m}-${d}`;
 }
 
-function timeToMinutes(time: string): number {
+export function timeToMinutes(time: string): number {
   const [h, m] = time.split(":").map(Number);
   return h * 60 + m;
 }
 
-function minutesToTime(minutes: number): string {
+export function minutesToTime(minutes: number): string {
   const h = Math.floor(minutes / 60)
     .toString()
     .padStart(2, "0");
   const m = (minutes % 60).toString().padStart(2, "0");
   return `${h}:${m}`;
+}
+
+function kinshasaNow(): Date {
+  return new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Africa/Kinshasa" })
+  );
+}
+
+function dateIso(d: Date): string {
+  const y = d.getFullYear();
+  const m = (d.getMonth() + 1).toString().padStart(2, "0");
+  const day = d.getDate().toString().padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** Date locale (Kinshasa) du jour, au format "YYYY-MM-DD". */
+export function todayIso(): string {
+  return dateIso(kinshasaNow());
+}
+
+/**
+ * Créneau (aligné sur la grille d'ouverture) qui correspond à l'instant
+ * présent, ou `null` si l'établissement n'est pas ouvert maintenant selon
+ * ses règles de disponibilité — utilisé pour le ticket "sans rendez-vous"
+ * (FR-3.x) : la file d'attente ne peut être rejointe que pendant les
+ * heures d'ouverture déclarées.
+ */
+export function currentSlotStart(
+  rules: AvailabilityRule[]
+): { date: string; time: string; rule: AvailabilityRule } | null {
+  const now = kinshasaNow();
+  const weekday = now.getDay();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const rule = rules.find((r) => {
+    if (r.weekday !== weekday) return false;
+    return (
+      nowMinutes >= timeToMinutes(r.start_time) &&
+      nowMinutes < timeToMinutes(r.end_time)
+    );
+  });
+
+  if (!rule) return null;
+
+  const ruleStart = timeToMinutes(rule.start_time);
+  const slotIndex = Math.floor(
+    (nowMinutes - ruleStart) / rule.slot_duration_minutes
+  );
+  const slotStartMinutes = ruleStart + slotIndex * rule.slot_duration_minutes;
+
+  return {
+    date: dateIso(now),
+    time: minutesToTime(slotStartMinutes),
+    rule,
+  };
+}
+
+/**
+ * Débuts de créneaux (en minutes depuis minuit), alignés sur la grille
+ * d'une règle de disponibilité, à l'intérieur de la plage
+ * [fromMinutes, toMinutes) demandée — utilisé pour générer un blocage qui
+ * recouvre exactement les mêmes créneaux que ceux proposés aux clients
+ * (voir get_agenda_capacity, migration 0018).
+ */
+export function alignedSlotStartsInRange(
+  rule: AvailabilityRule,
+  fromMinutes: number,
+  toMinutes: number
+): number[] {
+  const ruleStart = timeToMinutes(rule.start_time);
+  const ruleEnd = timeToMinutes(rule.end_time);
+  const starts: number[] = [];
+  for (let t = ruleStart; t < ruleEnd; t += rule.slot_duration_minutes) {
+    if (t >= fromMinutes && t < toMinutes) {
+      starts.push(t);
+    }
+  }
+  return starts;
 }
 
 export function generateSlotsForDate(
