@@ -1,12 +1,16 @@
 # Tests de bout en bout (avant chaque release)
 
 Ces scripts SQL rejouent, pour chacun des trois rôles de KinoBooking
-(client, gérant/personnel, administrateur), les scénarios critiques du
-produit : réservation, capacité, blocages, visibilité RLS, abonnement,
-paiements. Ils ont été écrits après un passage de tests manuels le
-2026-09-11, qui a d'ailleurs trouvé et corrigé un vrai bug (le blocage de
-créneaux n'était pas appliqué au niveau du trigger — voir migration
-`0019_enforce_blocking_at_trigger_level.sql`).
+(client, gérant/personnel, administrateur) plus le journal d'audit
+transverse, les scénarios critiques du produit : réservation, capacité,
+blocages, visibilité RLS, abonnement, paiements, traçabilité. Ils ont été
+écrits après un passage de tests manuels le 2026-09-11, qui a d'ailleurs
+trouvé et corrigé un vrai bug (le blocage de créneaux n'était pas
+appliqué au niveau du trigger — voir migration
+`0019_enforce_blocking_at_trigger_level.sql`). Le journal d'audit
+(`0020_audit_log.sql`) a été ajouté juste après, pour répondre à un
+scénario concret : pouvoir prouver qu'une réservation a bien été reçue
+par la plateforme en cas de litige avec un client.
 
 ## Pourquoi du SQL, pas un framework de test classique
 
@@ -26,6 +30,7 @@ Directement dans le **SQL Editor du dashboard Supabase** du projet
 psql "$DATABASE_URL" -f web/supabase/tests/01_client_scenarios.sql
 psql "$DATABASE_URL" -f web/supabase/tests/02_gerant_scenarios.sql
 psql "$DATABASE_URL" -f web/supabase/tests/03_admin_scenarios.sql
+psql "$DATABASE_URL" -f web/supabase/tests/04_audit_log_scenarios.sql
 ```
 
 Chaque fichier se termine par un `select * from test_results` suivi d'un
@@ -67,3 +72,4 @@ réservation cliente le jour même ou dans le passé).
 | `01_client_scenarios.sql` | Client (visiteur anonyme) | réservation avec RDV (valide/jour-même/capacité), ticket sans RDV (bypass capacité, compteur de file), garde-fous RLS (ne peut pas forcer un statut confirmé, créer une réservation manuelle/un blocage, lire l'agenda), recherche/filtre page d'accueil, établissement inactif (refusé) vs en grâce (accepté) |
 | `02_gerant_scenarios.sql` | Gérant / personnel (authentifié) | réservation manuelle (aujourd'hui autorisé, capacité vérifiée), blocage de créneaux (création, reflet dans la capacité, application réelle au niveau du trigger), masquage du téléphone client (staff vs owner) |
 | `03_admin_scenarios.sql` | Administrateur plateforme | visibilité d'une inscription en attente puis approuvée, calcul de la date d'abonnement (première approbation et renouvellement anticipé), historique des paiements, contrainte de montant, confidentialité de l'historique des paiements (RLS), limitation de débit |
+| `04_audit_log_scenarios.sql` | Journal d'audit (transverse aux 3 rôles) | chaque action sensible génère bien une ligne (création de réservation, changement de statut, approbation de salon, changement de date d'abonnement, changement de rôle, suppression d'un service/horaire), confidentialité (ni anon ni un simple gérant ne le lit), infalsifiabilité (personne ne peut appeler `write_audit_log` directement, ni modifier/supprimer une ligne existante — même un platform_admin) |
