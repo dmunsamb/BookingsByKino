@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { getCurrentProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
-import { currentMonthIso, monthRange } from "../month-range";
+import { currentMonthIso, monthRange } from "@/lib/period-range";
 
 /** Échappe une valeur pour une cellule CSV (RFC 4180 : guillemets doublés). */
 function csvCell(value: string | number): string {

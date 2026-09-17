@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { getCurrentProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
-import { currentMonthIso, monthRange, formatMonthLabel } from "./month-range";
+import {
+  currentMonthIso,
+  monthRange,
+  formatMonthLabel,
+} from "@/lib/period-range";
 
 export default async function RapportsPage({
   searchParams,
