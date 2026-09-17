@@ -10,6 +10,7 @@ import { SubscriptionPaymentDialog } from "./subscription-payment-dialog";
 import { SubscriptionPricesForm } from "./subscription-prices-form";
 import { PendingSignupsSection } from "./pending-signups-section";
 import { TestBadge } from "./test-badge";
+import Link from "next/link";
 
 const statusLabels: Record<string, string> = {
   pending_approval: "En attente",
@@ -109,9 +110,17 @@ export default async function AdminPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
-      <h1 className="mb-6 text-xl font-bold text-slate-900 dark:text-white">
-        Administration KinoBooking
-      </h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+          Administration KinoBooking
+        </h1>
+        <Link
+          href="/admin/rapports"
+          className="text-xs font-bold text-kino-600 hover:underline dark:text-kino-500"
+        >
+          Rapports financiers →
+        </Link>
+      </div>
 
       <section className="mb-8">
         <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
