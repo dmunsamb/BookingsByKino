@@ -9,6 +9,7 @@ import {
 } from "@/lib/availability";
 import { BookingForm } from "./booking-form";
 import { WalkInForm } from "./walk-in-form";
+import { PhotoGallery } from "./photo-gallery";
 import { formatBookingReference } from "@/lib/booking-reference";
 import { getSubscriptionStatus } from "@/lib/subscription";
 import { formatCdf } from "@/lib/currency";
@@ -76,10 +77,18 @@ export default async function BusinessPage({
     : await supabase
         .from("services")
         .select(
-          "id, name, category, description, duration_minutes, price_usd, deposit_usd"
+          "id, name, category, description, duration_minutes, price_usd, deposit_usd, photo_url"
         )
         .eq("business_id", id)
         .order("created_at");
+
+  const { data: photos } = isInactive
+    ? { data: [] }
+    : await supabase
+        .from("business_photos")
+        .select("id, url")
+        .eq("business_id", id)
+        .order("position");
 
   const selectedService = serviceIdParam
     ? services?.find((s) => s.id === serviceIdParam)
@@ -119,19 +128,32 @@ export default async function BusinessPage({
               className="flex flex-col justify-between rounded-xl border border-ink-900/10 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
             >
               <div>
-                <div className="mb-2 flex items-start justify-between gap-2">
-                  {s.category && (
-                    <span className="rounded bg-kino-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-kino-700 dark:bg-kino-900 dark:text-kino-300">
-                      {s.category}
-                    </span>
+                <div className="mb-2 flex gap-3">
+                  {s.photo_url && (
+                    // eslint-disable-next-line @next/next/no-img-element -- URL de stockage externe
+                    <img
+                      src={s.photo_url}
+                      alt=""
+                      loading="lazy"
+                      className="h-14 w-14 flex-none rounded-lg object-cover"
+                    />
                   )}
-                  <span className="whitespace-nowrap text-xs font-bold text-ink-400">
-                    {s.duration_minutes} min
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-start justify-between gap-2">
+                      {s.category && (
+                        <span className="rounded bg-kino-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-kino-700 dark:bg-kino-900 dark:text-kino-300">
+                          {s.category}
+                        </span>
+                      )}
+                      <span className="whitespace-nowrap text-xs font-bold text-ink-400">
+                        {s.duration_minutes} min
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold text-ink-900 dark:text-paper">
+                      {s.name}
+                    </h3>
+                  </div>
                 </div>
-                <h3 className="mb-1 text-sm font-bold text-ink-900 dark:text-paper">
-                  {s.name}
-                </h3>
                 {s.description && (
                   <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-ink-400">
                     {s.description}
@@ -234,6 +256,8 @@ export default async function BusinessPage({
       >
         ← {selectedService ? "Retour aux prestations" : "Retour à la recherche"}
       </Link>
+
+      <PhotoGallery photos={photos ?? []} />
 
       <h1 className="font-serif text-2xl text-ink-900 dark:text-paper">
         {business.name}

@@ -5,6 +5,8 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { uploadPhoto } from "@/lib/supabase/media-admin";
+import { MAX_BUSINESS_PHOTOS } from "@/lib/media";
 
 /**
  * Auto-inscription d'un nouveau gérant. Toutes les écritures passent par
@@ -150,6 +152,21 @@ export async function signup(
     return {
       error: "Une erreur est survenue lors de la création du profil.",
     };
+  }
+
+  // Galerie de photos du salon (facultative, en plus du logo) — meilleur
+  // effort : une photo invalide ou en échec d'upload ne doit jamais faire
+  // échouer toute l'inscription, elle est simplement ignorée.
+  const photoFiles = formData.getAll("photos").slice(0, MAX_BUSINESS_PHOTOS);
+  const photoRows: { business_id: string; url: string; position: number }[] = [];
+  for (let i = 0; i < photoFiles.length; i++) {
+    const url = await uploadPhoto(photoFiles[i], `businesses/${business.id}`);
+    if (url) {
+      photoRows.push({ business_id: business.id, url, position: i });
+    }
+  }
+  if (photoRows.length > 0) {
+    await admin.from("business_photos").insert(photoRows);
   }
 
   // Connecte immédiatement le gérant (cookies de session) pour qu'il

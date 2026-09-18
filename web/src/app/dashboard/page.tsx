@@ -819,6 +819,19 @@ export default async function DashboardPage() {
           </Link>
           {profile.business_id && canManageBusiness(profile) && (
             <Link
+              href="/dashboard/photos"
+              className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
+            >
+              <span className="font-bold text-ink-900 dark:text-paper">
+                Photos
+              </span>
+              <p className="mt-1 text-ink-400">
+                La galerie visible sur votre fiche établissement.
+              </p>
+            </Link>
+          )}
+          {profile.business_id && canManageBusiness(profile) && (
+            <Link
               href="/dashboard/equipe"
               className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
             >

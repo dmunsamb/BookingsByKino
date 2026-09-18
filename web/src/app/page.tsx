@@ -33,6 +33,22 @@ export default async function Home({
 
   const { data: businesses } = await query;
 
+  const businessIds = (businesses ?? []).map((b) => b.id);
+  const { data: photoRows } = businessIds.length
+    ? await supabase
+        .from("business_photos")
+        .select("business_id, url")
+        .in("business_id", businessIds)
+        .order("position")
+    : { data: [] };
+
+  const coverPhotoByBusiness = new Map<string, string>();
+  for (const photo of photoRows ?? []) {
+    if (!coverPhotoByBusiness.has(photo.business_id)) {
+      coverPhotoByBusiness.set(photo.business_id, photo.url);
+    }
+  }
+
   const { data: cityRows } = await supabase
     .from("businesses")
     .select("city")
@@ -97,27 +113,41 @@ export default async function Home({
               : "Aucun établissement disponible pour l'instant."}
           </p>
         )}
-        {businesses?.map((b) => (
-          <Link
-            key={b.id}
-            href={`/etablissements/${b.id}`}
-            className="overflow-hidden rounded-2xl border border-ink-900/10 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
-          >
-            {b.sub_category && (
-              <span className="mb-2 inline-block rounded bg-kino-100 px-2 py-0.5 text-[10.5px] font-bold tracking-wide text-kino-700 dark:bg-kino-900 dark:text-kino-300">
-                {b.sub_category.toUpperCase()}
-              </span>
-            )}
-            <h2 className="font-serif text-lg text-ink-900 dark:text-paper">
-              {b.name}
-            </h2>
-            {(b.address || b.city) && (
-              <p className="mt-1 text-xs text-ink-400">
-                {[b.address, b.city].filter(Boolean).join(", ")}
-              </p>
-            )}
-          </Link>
-        ))}
+        {businesses?.map((b) => {
+          const coverPhoto = coverPhotoByBusiness.get(b.id);
+          return (
+            <Link
+              key={b.id}
+              href={`/etablissements/${b.id}`}
+              className="overflow-hidden rounded-2xl border border-ink-900/10 bg-white shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
+            >
+              {coverPhoto && (
+                // eslint-disable-next-line @next/next/no-img-element -- URL de stockage externe
+                <img
+                  src={coverPhoto}
+                  alt=""
+                  loading="lazy"
+                  className="h-32 w-full object-cover"
+                />
+              )}
+              <div className="p-4">
+                {b.sub_category && (
+                  <span className="mb-2 inline-block rounded bg-kino-100 px-2 py-0.5 text-[10.5px] font-bold tracking-wide text-kino-700 dark:bg-kino-900 dark:text-kino-300">
+                    {b.sub_category.toUpperCase()}
+                  </span>
+                )}
+                <h2 className="font-serif text-lg text-ink-900 dark:text-paper">
+                  {b.name}
+                </h2>
+                {(b.address || b.city) && (
+                  <p className="mt-1 text-xs text-ink-400">
+                    {[b.address, b.city].filter(Boolean).join(", ")}
+                  </p>
+                )}
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
+import { uploadPhoto } from "@/lib/supabase/media-admin";
 
 /**
  * Gestion du catalogue de services (FR-5.1/5.2/5.3, US-O6). L'écriture est
@@ -52,6 +53,11 @@ export async function createService(
     };
   }
 
+  const photoUrl = await uploadPhoto(
+    formData.get("photo"),
+    `services/${profile.business_id}`
+  );
+
   const supabase = await createClient();
   const { error } = await supabase.from("services").insert({
     business_id: profile.business_id,
@@ -64,6 +70,7 @@ export async function createService(
     duration_minutes: durationMinutes,
     price_usd: priceUsd,
     deposit_usd: depositUsd,
+    photo_url: photoUrl,
   });
 
   if (error) {
@@ -83,6 +90,29 @@ export async function deleteService(formData: FormData) {
 
   const supabase = await createClient();
   await supabase.from("services").delete().eq("id", id);
+
+  revalidatePath("/dashboard/catalogue");
+}
+
+export async function updateServicePhoto(formData: FormData) {
+  const profile = await getCurrentProfile();
+  if (!profile?.business_id || !canManageBusiness(profile)) return;
+
+  const id = formData.get("id");
+  if (typeof id !== "string") return;
+
+  const photoUrl = await uploadPhoto(
+    formData.get("photo"),
+    `services/${profile.business_id}`
+  );
+  if (!photoUrl) return;
+
+  const supabase = await createClient();
+  await supabase
+    .from("services")
+    .update({ photo_url: photoUrl })
+    .eq("id", id)
+    .eq("business_id", profile.business_id);
 
   revalidatePath("/dashboard/catalogue");
 }

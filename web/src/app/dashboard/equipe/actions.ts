@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
+import { uploadPhoto } from "@/lib/supabase/media-admin";
 
 /**
  * Liste nommée des membres du personnel (US demandée : "Équipe"). Voir
@@ -30,10 +31,16 @@ export async function createStaffMember(
     return { error: "Veuillez indiquer un nom." };
   }
 
+  const photoUrl = await uploadPhoto(
+    formData.get("photo"),
+    `staff/${profile.business_id}`
+  );
+
   const supabase = await createClient();
   const { error } = await supabase.from("staff_members").insert({
     business_id: profile.business_id,
     name: name.trim(),
+    photo_url: photoUrl,
   });
 
   if (error) {
@@ -42,6 +49,29 @@ export async function createStaffMember(
 
   revalidatePath("/dashboard/equipe");
   return {};
+}
+
+export async function updateStaffPhoto(formData: FormData) {
+  const profile = await getCurrentProfile();
+  if (!profile?.business_id || !canManageBusiness(profile)) return;
+
+  const id = formData.get("id");
+  if (typeof id !== "string") return;
+
+  const photoUrl = await uploadPhoto(
+    formData.get("photo"),
+    `staff/${profile.business_id}`
+  );
+  if (!photoUrl) return;
+
+  const supabase = await createClient();
+  await supabase
+    .from("staff_members")
+    .update({ photo_url: photoUrl })
+    .eq("id", id)
+    .eq("business_id", profile.business_id);
+
+  revalidatePath("/dashboard/equipe");
 }
 
 export async function toggleStaffActive(formData: FormData) {

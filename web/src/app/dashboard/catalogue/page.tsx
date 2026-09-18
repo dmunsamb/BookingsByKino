@@ -3,7 +3,7 @@ import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { ServiceForm } from "./service-form";
-import { deleteService } from "./actions";
+import { deleteService, updateServicePhoto } from "./actions";
 
 export default async function CataloguePage() {
   const profile = await getCurrentProfile();
@@ -29,7 +29,7 @@ export default async function CataloguePage() {
   const { data: services } = await supabase
     .from("services")
     .select(
-      "id, name, category, description, duration_minutes, price_usd, deposit_usd"
+      "id, name, category, description, duration_minutes, price_usd, deposit_usd, photo_url"
     )
     .eq("business_id", profile.business_id)
     .order("created_at", { ascending: false });
@@ -67,23 +67,57 @@ export default async function CataloguePage() {
             className="flex flex-col justify-between rounded-2xl border border-ink-900/10 bg-white p-4 shadow-sm dark:border-paper/10 dark:bg-ink-800"
           >
             <div>
-              <div className="mb-2 flex items-start justify-between gap-2">
-                {service.category && (
-                  <span className="rounded bg-kino-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-kino-700 dark:bg-kino-900 dark:text-kino-300">
-                    {service.category}
-                  </span>
+              <div className="mb-3 flex gap-3">
+                {service.photo_url && (
+                  // eslint-disable-next-line @next/next/no-img-element -- URL de stockage externe
+                  <img
+                    src={service.photo_url}
+                    alt={service.name}
+                    loading="lazy"
+                    className="h-16 w-16 flex-none rounded-xl object-cover"
+                  />
                 )}
-                <span className="whitespace-nowrap text-xs font-bold text-ink-400">
-                  {service.duration_minutes} min
-                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="mb-2 flex items-start justify-between gap-2">
+                    {service.category && (
+                      <span className="rounded bg-kino-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-kino-700 dark:bg-kino-900 dark:text-kino-300">
+                        {service.category}
+                      </span>
+                    )}
+                    <span className="whitespace-nowrap text-xs font-bold text-ink-400">
+                      {service.duration_minutes} min
+                    </span>
+                  </div>
+                  <h3 className="mb-1 text-sm font-bold text-ink-900 dark:text-paper">
+                    {service.name}
+                  </h3>
+                </div>
               </div>
-              <h3 className="mb-1 text-sm font-bold text-ink-900 dark:text-paper">
-                {service.name}
-              </h3>
               {service.description && (
                 <p className="mb-3 text-xs leading-relaxed text-ink-400">
                   {service.description}
                 </p>
+              )}
+              {canManageBusiness(profile) && (
+                <form
+                  action={updateServicePhoto}
+                  encType="multipart/form-data"
+                  className="mb-3 flex items-center gap-2"
+                >
+                  <input type="hidden" name="id" value={service.id} />
+                  <input
+                    type="file"
+                    name="photo"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="w-full flex-1 text-xs text-ink-400 file:mr-2 file:rounded-lg file:border-0 file:bg-kino-100 file:px-2 file:py-1 file:text-[10px] file:font-bold file:text-kino-700 dark:file:bg-kino-900 dark:file:text-kino-300"
+                  />
+                  <button
+                    type="submit"
+                    className="whitespace-nowrap text-xs font-bold text-ink-400 hover:underline"
+                  >
+                    {service.photo_url ? "Changer" : "Ajouter"}
+                  </button>
+                </form>
               )}
             </div>
             <div className="flex items-center justify-between border-t border-ink-900/8 pt-3 dark:border-paper/8">

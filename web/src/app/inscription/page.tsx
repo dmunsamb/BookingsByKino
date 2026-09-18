@@ -148,6 +148,24 @@ export default function SignupPage() {
             />
           </div>
 
+          <div>
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
+              Photos du salon (optionnel)
+            </label>
+            <input
+              name="photos"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
+            />
+            <p className="mt-1 text-xs text-ink-400">
+              Visibles en défilement sur votre fiche établissement — vous
+              pourrez en ajouter d&apos;autres plus tard depuis votre
+              tableau de bord.
+            </p>
+          </div>
+
           {state.error && (
             <p className="rounded-xl bg-danger/10 p-3 text-xs text-danger">
               {state.error}
