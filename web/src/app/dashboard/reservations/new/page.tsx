@@ -41,6 +41,13 @@ export default async function NewReservationPage({
     .eq("business_id", profile.business_id)
     .order("created_at");
 
+  const { data: staff } = await supabase
+    .from("staff_members")
+    .select("id, name")
+    .eq("business_id", profile.business_id)
+    .eq("active", true)
+    .order("name");
+
   const selectedService = serviceIdParam
     ? services?.find((s) => s.id === serviceIdParam)
     : undefined;
@@ -121,6 +128,7 @@ export default async function NewReservationPage({
           serviceName={selectedService.name}
           date={date}
           slots={slots}
+          staff={staff ?? []}
         />
       )}
     </div>

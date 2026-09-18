@@ -31,6 +31,7 @@ psql "$DATABASE_URL" -f web/supabase/tests/01_client_scenarios.sql
 psql "$DATABASE_URL" -f web/supabase/tests/02_gerant_scenarios.sql
 psql "$DATABASE_URL" -f web/supabase/tests/03_admin_scenarios.sql
 psql "$DATABASE_URL" -f web/supabase/tests/04_audit_log_scenarios.sql
+psql "$DATABASE_URL" -f web/supabase/tests/05_multi_business_staff_scenarios.sql
 ```
 
 Chaque fichier se termine par un `select * from test_results` suivi d'un
@@ -73,3 +74,4 @@ réservation cliente le jour même ou dans le passé).
 | `02_gerant_scenarios.sql` | Gérant / personnel (authentifié) | réservation manuelle (aujourd'hui autorisé, capacité vérifiée), blocage de créneaux (création, reflet dans la capacité, application réelle au niveau du trigger), masquage du téléphone client (staff vs owner) |
 | `03_admin_scenarios.sql` | Administrateur plateforme | visibilité d'une inscription en attente puis approuvée, calcul de la date d'abonnement (première approbation et renouvellement anticipé), historique des paiements, contrainte de montant, confidentialité de l'historique des paiements (RLS), limitation de débit |
 | `04_audit_log_scenarios.sql` | Journal d'audit (transverse aux 3 rôles) | chaque action sensible génère bien une ligne (création de réservation, changement de statut, approbation de salon, changement de date d'abonnement, changement de rôle, suppression d'un service/horaire), confidentialité (ni anon ni un simple gérant ne le lit), infalsifiabilité (personne ne peut appeler `write_audit_log` directement, ni modifier/supprimer une ligne existante — même un platform_admin) |
+| `05_multi_business_staff_scenarios.sql` | Plusieurs salons (`business_owners`) + équipe (`staff_members`) | `is_owner_of` reconnaît un établissement non actif via `business_owners`, visibilité RLS d'un établissement en attente pour son propriétaire (mais pas pour anon), confidentialité de `business_owners`, lecture/écriture de l'équipe (gérant oui, anon non), isolation de l'équipe entre salons pour un simple membre du personnel, lecture de l'équipe d'un salon non actif par son propriétaire, assignation d'un membre d'équipe à une réservation (résolution dans `agenda_entries_for_dashboard`, suppression du membre sans casser la réservation) |

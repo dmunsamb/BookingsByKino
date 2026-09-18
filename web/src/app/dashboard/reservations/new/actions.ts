@@ -30,6 +30,8 @@ export async function createManualBooking(
   const slot = formData.get("slot");
   const clientName = formData.get("client_name");
   const clientPhone = formData.get("client_phone");
+  const staffIdRaw = formData.get("staff_id");
+  const staffId = typeof staffIdRaw === "string" && staffIdRaw ? staffIdRaw : null;
 
   if (
     typeof serviceId !== "string" ||
@@ -76,6 +78,7 @@ export async function createManualBooking(
     start_time: startIso,
     end_time: endDate.toISOString(),
     reference_number: referenceNumber,
+    staff_id: staffId,
   });
 
   if (error) {

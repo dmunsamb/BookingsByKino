@@ -32,6 +32,8 @@ export async function updateBooking(
   const id = formData.get("id");
   const date = formData.get("date");
   const slot = formData.get("slot");
+  const staffIdRaw = formData.get("staff_id");
+  const staffId = typeof staffIdRaw === "string" && staffIdRaw ? staffIdRaw : null;
 
   if (
     typeof id !== "string" ||
@@ -58,6 +60,7 @@ export async function updateBooking(
     .update({
       start_time: startIso,
       end_time: endDate.toISOString(),
+      staff_id: staffId,
     })
     .eq("id", id)
     .eq("business_id", profile.business_id);

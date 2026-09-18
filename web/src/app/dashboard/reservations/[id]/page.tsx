@@ -56,7 +56,7 @@ export default async function EditReservationPage({
   const { data: booking } = await supabase
     .from("agenda_entries")
     .select(
-      "id, business_id, service_id, start_time, end_time, client_name, reference_number"
+      "id, business_id, service_id, start_time, end_time, client_name, reference_number, staff_id"
     )
     .eq("id", bookingId)
     .eq("business_id", profile.business_id)
@@ -77,6 +77,13 @@ export default async function EditReservationPage({
         .eq("id", booking.service_id)
         .maybeSingle()
     : { data: null };
+
+  const { data: staff } = await supabase
+    .from("staff_members")
+    .select("id, name")
+    .eq("business_id", profile.business_id)
+    .eq("active", true)
+    .order("name");
 
   const originalDate = localDateFromIso(booking.start_time);
   const date = dateParam || originalDate;
@@ -158,6 +165,8 @@ export default async function EditReservationPage({
           date={date}
           slots={slots}
           currentSlotValue={currentSlotValue}
+          staff={staff ?? []}
+          currentStaffId={booking.staff_id}
         />
       )}
     </div>

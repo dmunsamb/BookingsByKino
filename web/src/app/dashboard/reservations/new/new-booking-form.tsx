@@ -16,11 +16,13 @@ export function NewBookingForm({
   serviceName,
   date,
   slots,
+  staff,
 }: {
   serviceId: string;
   serviceName: string;
   date: string;
   slots: Slot[];
+  staff: { id: string; name: string }[];
 }) {
   const [state, formAction, pending] = useActionState(
     createManualBooking,
@@ -92,6 +94,26 @@ export function NewBookingForm({
             ))}
           </div>
         </div>
+
+        {staff.length > 0 && (
+          <div>
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
+              Avec (optionnel)
+            </label>
+            <select
+              name="staff_id"
+              defaultValue=""
+              className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
+            >
+              <option value="">Aucune personne assignée</option>
+              {staff.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-3">
           <div>

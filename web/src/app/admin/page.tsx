@@ -60,17 +60,36 @@ export default async function AdminPage() {
     ])
   ) as Record<(typeof DURATION_MONTHS)[number], number>;
 
+  // Passe par business_owners (plutôt que profiles.business_id
+  // directement) : un gérant qui possède plusieurs établissements n'a
+  // qu'un seul business_id "actif" à la fois — ses autres établissements
+  // ne s'y retrouveraient pas sinon (voir migration 0021).
   const businessIds = (businesses ?? []).map((b) => b.id);
-  const { data: owners } = businessIds.length
+  const { data: ownerLinks } = businessIds.length
     ? await supabase
-        .from("profiles")
-        .select("business_id, full_name")
+        .from("business_owners")
+        .select("business_id, profile_id")
         .in("business_id", businessIds)
-        .eq("role", "owner")
     : { data: [] };
 
+  const ownerProfileIds = [
+    ...new Set((ownerLinks ?? []).map((l) => l.profile_id)),
+  ];
+  const { data: ownerProfiles } = ownerProfileIds.length
+    ? await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", ownerProfileIds)
+    : { data: [] };
+
+  const nameByProfileId = new Map(
+    (ownerProfiles ?? []).map((p) => [p.id, p.full_name])
+  );
   const ownerNameByBusiness = new Map(
-    (owners ?? []).map((o) => [o.business_id, o.full_name])
+    (ownerLinks ?? []).map((l) => [
+      l.business_id,
+      nameByProfileId.get(l.profile_id) ?? null,
+    ])
   );
 
   const approved = (businesses ?? []).filter(

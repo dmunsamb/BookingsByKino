@@ -21,6 +21,7 @@ import {
 } from "@/lib/whatsapp";
 import { formatBookingReference } from "@/lib/booking-reference";
 import { PendingSignupsSection } from "@/app/admin/pending-signups-section";
+import { BusinessSwitcher, type OwnedBusiness } from "./business-switcher";
 
 const roleLabels: Record<Profile["role"], string> = {
   owner: "Gérant / Propriétaire",
@@ -42,6 +43,7 @@ type BookingRow = {
   start_time: string;
   end_time: string | null;
   reference_number: number;
+  staff_name: string | null;
 };
 
 type HistoryRow = BookingRow & { status: string };
@@ -82,6 +84,9 @@ function BookingCard({
         <p className="font-bold text-ink-900 dark:text-paper">
           {entry.client_name ?? "Client"} —{" "}
           {service?.name ?? "Service inconnu"}
+          {entry.staff_name && (
+            <span className="font-normal text-ink-400"> · avec {entry.staff_name}</span>
+          )}
           {statusLabel && (
             <span className="ml-2 rounded bg-ink-900/5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink-400 dark:bg-paper/10">
               {statusLabel}
@@ -138,6 +143,23 @@ export default async function DashboardPage() {
     );
   }
 
+  let ownedBusinesses: OwnedBusiness[] = [];
+  if (profile.role === "owner") {
+    const supabaseForSwitcher = await createClient();
+    const { data: ownerLinks } = await supabaseForSwitcher
+      .from("business_owners")
+      .select("business_id")
+      .eq("profile_id", profile.id);
+    const ownedIds = (ownerLinks ?? []).map((l) => l.business_id);
+    if (ownedIds.length > 0) {
+      const { data } = await supabaseForSwitcher
+        .from("businesses")
+        .select("id, name, signup_status")
+        .in("id", ownedIds);
+      ownedBusinesses = data ?? [];
+    }
+  }
+
   let pending: BookingRow[] = [];
   let toClose: BookingRow[] = [];
   let confirmedUpcoming: BookingRow[] = [];
@@ -165,6 +187,14 @@ export default async function DashboardPage() {
     ) {
       return (
         <div className="mx-auto w-full max-w-lg px-4 py-16 text-center">
+          {ownedBusinesses.length > 1 && (
+            <div className="mb-6 flex justify-center">
+              <BusinessSwitcher
+                businesses={ownedBusinesses}
+                currentBusinessId={profile.business_id}
+              />
+            </div>
+          )}
           {businessStatusCheck.signup_status === "pending_approval" ? (
             <>
               <h1 className="mb-2 text-lg font-bold text-ink-900 dark:text-paper">
@@ -209,6 +239,14 @@ export default async function DashboardPage() {
     if (subscriptionStatus === "inactif" && isStaffMember(profile) && profile.role !== "platform_admin") {
       return (
         <div className="mx-auto w-full max-w-lg px-4 py-16 text-center">
+          {ownedBusinesses.length > 1 && (
+            <div className="mb-6 flex justify-center">
+              <BusinessSwitcher
+                businesses={ownedBusinesses}
+                currentBusinessId={profile.business_id}
+              />
+            </div>
+          )}
           <h1 className="mb-2 text-lg font-bold text-ink-900 dark:text-paper">
             Compte suspendu
           </h1>
@@ -245,7 +283,7 @@ export default async function DashboardPage() {
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, staff_name"
         )
         .eq("business_id", profile.business_id)
         .eq("status", "pending_approval")
@@ -256,7 +294,7 @@ export default async function DashboardPage() {
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, staff_name"
         )
         .eq("business_id", profile.business_id)
         .eq("status", "confirmed")
@@ -266,7 +304,7 @@ export default async function DashboardPage() {
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, staff_name"
         )
         .eq("business_id", profile.business_id)
         .eq("status", "confirmed")
@@ -276,7 +314,7 @@ export default async function DashboardPage() {
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, staff_name"
         )
         .eq("business_id", profile.business_id)
         .eq("status", "approved_waiting_payment")
@@ -284,7 +322,7 @@ export default async function DashboardPage() {
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, status"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, status, staff_name"
         )
         .eq("business_id", profile.business_id)
         .in("status", ["geannuleerd", "termine", "no_show"])
@@ -373,6 +411,13 @@ export default async function DashboardPage() {
           </button>
         </form>
       </div>
+
+      {profile.role === "owner" && profile.business_id && (
+        <BusinessSwitcher
+          businesses={ownedBusinesses}
+          currentBusinessId={profile.business_id}
+        />
+      )}
 
       {profile.business_id && subscriptionStatus === "en_attente" && (
         <div className="mb-6 rounded-xl border border-kino-200 bg-kino-50 p-4 text-sm text-ink-900 dark:border-kino-800 dark:bg-ink-800 dark:text-paper">
@@ -772,6 +817,20 @@ export default async function DashboardPage() {
               Gérer les services proposés aux clients.
             </p>
           </Link>
+          {profile.business_id && canManageBusiness(profile) && (
+            <Link
+              href="/dashboard/equipe"
+              className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
+            >
+              <span className="font-bold text-ink-900 dark:text-paper">
+                Équipe
+              </span>
+              <p className="mt-1 text-ink-400">
+                Gérer les membres de l&apos;équipe, assignables à une
+                réservation.
+              </p>
+            </Link>
+          )}
           {profile.business_id && canManageBusiness(profile) && (
             <Link
               href="/dashboard/bilan"
