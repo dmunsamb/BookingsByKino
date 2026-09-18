@@ -52,7 +52,7 @@ export default async function BusinessPage({
   const { data: business } = await supabase
     .from("businesses")
     .select(
-      "id, name, main_category, sub_category, city, address, subscription_paid_until"
+      "id, name, main_category, sub_category, city, commune, address, subscription_paid_until"
     )
     .eq("id", id)
     .maybeSingle();
@@ -262,9 +262,11 @@ export default async function BusinessPage({
       <h1 className="font-serif text-2xl text-ink-900 dark:text-paper">
         {business.name}
       </h1>
-      {!isInactive && (business.address || business.city) && (
+      {!isInactive && (business.address || business.commune || business.city) && (
         <p className="mb-6 text-sm text-ink-400">
-          {[business.address, business.city].filter(Boolean).join(", ")}
+          {[business.address, business.commune, business.city]
+            .filter(Boolean)
+            .join(", ")}
         </p>
       )}
       {isInactive && <div className="mb-4" />}

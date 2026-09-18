@@ -2,6 +2,8 @@
 
 import { useActionState } from "react";
 import { createAdditionalBusiness, type NewBusinessFormState } from "../actions";
+import { CATEGORIES } from "@/lib/categories";
+import { KINSHASA_COMMUNES } from "@/lib/communes";
 
 const initialState: NewBusinessFormState = {};
 
@@ -39,22 +41,43 @@ export function NewBusinessForm() {
           <option value="" disabled>
             Choisir...
           </option>
-          <option value="Salon de coiffure">Salon de coiffure</option>
-          <option value="Salon de beauté">Salon de beauté</option>
+          {CATEGORIES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.value}
+            </option>
+          ))}
         </select>
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
+          Adresse
+        </label>
+        <input
+          name="address"
+          type="text"
+          placeholder="ex: Avenue Kasa-Vubu"
+          className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
-            Adresse
+            Commune
           </label>
-          <input
-            name="address"
-            type="text"
-            placeholder="ex: Avenue Kasa-Vubu"
+          <select
+            name="commune"
+            defaultValue=""
             className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
-          />
+          >
+            <option value="">Choisir...</option>
+            {KINSHASA_COMMUNES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
@@ -64,6 +87,7 @@ export function NewBusinessForm() {
             name="city"
             type="text"
             placeholder="ex: Kinshasa"
+            defaultValue="Kinshasa"
             className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
           />
         </div>

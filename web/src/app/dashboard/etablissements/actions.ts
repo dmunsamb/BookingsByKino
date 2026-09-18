@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile, requireUser } from "@/lib/auth/dal";
+import { isValidCategory, mainCategoryFor } from "@/lib/categories";
 
 /**
  * Plusieurs salons par gérant. `profiles.business_id` reste
@@ -14,8 +15,6 @@ import { getCurrentProfile, requireUser } from "@/lib/auth/dal";
  * deuxième compte de connexion ; (2) basculer quel établissement est
  * actif parmi ceux que ce compte possède (business_owners).
  */
-
-const BUSINESS_TYPES = ["Salon de coiffure", "Salon de beauté"] as const;
 
 export type NewBusinessFormState = { error?: string };
 
@@ -31,6 +30,7 @@ export async function createAdditionalBusiness(
   const businessName = formData.get("business_name");
   const type = formData.get("type");
   const address = formData.get("address");
+  const commune = formData.get("commune");
   const city = formData.get("city");
   const whatsappRaw = formData.get("whatsapp");
   const whatsapp = typeof whatsappRaw === "string" ? whatsappRaw.trim() : "";
@@ -39,7 +39,7 @@ export async function createAdditionalBusiness(
     typeof businessName !== "string" ||
     !businessName.trim() ||
     typeof type !== "string" ||
-    !BUSINESS_TYPES.includes(type as (typeof BUSINESS_TYPES)[number])
+    !isValidCategory(type)
   ) {
     return { error: "Veuillez remplir tous les champs obligatoires." };
   }
@@ -51,9 +51,10 @@ export async function createAdditionalBusiness(
     .from("businesses")
     .insert({
       name: businessName.trim(),
-      main_category: "beauty",
+      main_category: mainCategoryFor(type),
       sub_category: type,
       address: typeof address === "string" ? address.trim() || null : null,
+      commune: typeof commune === "string" ? commune.trim() || null : null,
       city: typeof city === "string" ? city.trim() || null : null,
       signup_status: "pending_approval",
       owner_email: user.email ?? null,

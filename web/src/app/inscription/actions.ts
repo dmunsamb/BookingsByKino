@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { uploadPhoto } from "@/lib/supabase/media-admin";
 import { MAX_BUSINESS_PHOTOS } from "@/lib/media";
+import { isValidCategory, mainCategoryFor } from "@/lib/categories";
 
 /**
  * Auto-inscription d'un nouveau gérant. Toutes les écritures passent par
@@ -29,7 +30,6 @@ import { MAX_BUSINESS_PHOTOS } from "@/lib/media";
 
 export type SignupState = { error?: string };
 
-const BUSINESS_TYPES = ["Salon de coiffure", "Salon de beauté"] as const;
 const SIGNUP_RATE_LIMIT_MAX = 5;
 const SIGNUP_RATE_LIMIT_WINDOW_SECONDS = 300;
 
@@ -56,6 +56,7 @@ export async function signup(
   const businessName = formData.get("business_name");
   const type = formData.get("type");
   const address = formData.get("address");
+  const commune = formData.get("commune");
   const city = formData.get("city");
   const logo = formData.get("logo");
 
@@ -70,7 +71,7 @@ export async function signup(
     typeof businessName !== "string" ||
     !businessName.trim() ||
     typeof type !== "string" ||
-    !BUSINESS_TYPES.includes(type as (typeof BUSINESS_TYPES)[number])
+    !isValidCategory(type)
   ) {
     return { error: "Veuillez remplir tous les champs obligatoires." };
   }
@@ -120,9 +121,10 @@ export async function signup(
     .from("businesses")
     .insert({
       name: businessName.trim(),
-      main_category: "beauty",
+      main_category: mainCategoryFor(type),
       sub_category: type,
       address: typeof address === "string" ? address.trim() || null : null,
+      commune: typeof commune === "string" ? commune.trim() || null : null,
       city: typeof city === "string" ? city.trim() || null : null,
       image_url: logoUrl,
       signup_status: "pending_approval",

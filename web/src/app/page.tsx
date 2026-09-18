@@ -4,18 +4,22 @@ import { createClient } from "@/lib/supabase/server";
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; city?: string }>;
+  searchParams: Promise<{ q?: string; city?: string; category?: string }>;
 }) {
-  const { q, city } = await searchParams;
+  const { q, city, category } = await searchParams;
   const supabase = await createClient();
 
   let query = supabase
     .from("businesses")
-    .select("id, name, main_category, sub_category, city, address")
+    .select("id, name, main_category, sub_category, city, commune, address")
     .order("name");
 
   if (city) {
     query = query.eq("city", city);
+  }
+
+  if (category) {
+    query = query.eq("sub_category", category);
   }
 
   // Les caractères structurants de la syntaxe de filtre PostgREST
@@ -58,7 +62,7 @@ export default async function Home({
     new Set((cityRows ?? []).map((c) => c.city).filter((c): c is string => !!c))
   ).sort();
 
-  const hasFilters = !!term || !!city;
+  const hasFilters = !!term || !!city || !!category;
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-12">
@@ -69,15 +73,10 @@ export default async function Home({
         <p className="mt-2 text-sm text-ink-400">
           Réservez vos soins à Kinshasa, sans faire la queue.
         </p>
-        <Link
-          href="/login"
-          className="mt-3 inline-block text-xs font-bold text-kino-600 underline-offset-4 hover:underline dark:text-kino-300"
-        >
-          Accès professionnel (gérant / personnel)
-        </Link>
       </div>
 
-      <form method="GET" className="mb-8 flex flex-col gap-3 sm:flex-row">
+      <form method="GET" className="mb-4 flex flex-col gap-3 sm:flex-row">
+        <input type="hidden" name="category" value={category ?? ""} />
         <input
           type="search"
           name="q"
@@ -104,6 +103,23 @@ export default async function Home({
           Rechercher
         </button>
       </form>
+
+      {category && (
+        <div className="mb-8 flex items-center justify-center gap-2">
+          <span className="rounded-full bg-kino-100 px-3 py-1 text-xs font-bold text-kino-700 dark:bg-kino-900 dark:text-kino-300">
+            {category}
+          </span>
+          <Link
+            href={{
+              pathname: "/",
+              query: { ...(q ? { q } : {}), ...(city ? { city } : {}) },
+            }}
+            className="text-xs font-bold text-ink-400 hover:underline"
+          >
+            Retirer le filtre
+          </Link>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {(!businesses || businesses.length === 0) && (
@@ -139,9 +155,9 @@ export default async function Home({
                 <h2 className="font-serif text-lg text-ink-900 dark:text-paper">
                   {b.name}
                 </h2>
-                {(b.address || b.city) && (
+                {(b.address || b.commune || b.city) && (
                   <p className="mt-1 text-xs text-ink-400">
-                    {[b.address, b.city].filter(Boolean).join(", ")}
+                    {[b.address, b.commune, b.city].filter(Boolean).join(", ")}
                   </p>
                 )}
               </div>

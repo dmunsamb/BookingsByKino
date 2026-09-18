@@ -28,7 +28,7 @@ export async function PendingSignupsSection({
   const { data: pending } = await supabase
     .from("businesses")
     .select(
-      "id, name, main_category, sub_category, address, city, owner_whatsapp, is_test, created_at"
+      "id, name, main_category, sub_category, address, commune, city, owner_whatsapp, is_test, created_at"
     )
     .eq("signup_status", "pending_approval")
     .order("created_at", { ascending: false });
@@ -105,8 +105,11 @@ export async function PendingSignupsSection({
             </p>
             <p className="mb-3 text-sm text-ink-400">
               Gérant : {ownerNameByBusiness.get(b.id) ?? "—"}
-              {(b.address || b.city) && (
-                <> · {[b.address, b.city].filter(Boolean).join(", ")}</>
+              {(b.address || b.commune || b.city) && (
+                <>
+                  {" "}
+                  · {[b.address, b.commune, b.city].filter(Boolean).join(", ")}
+                </>
               )}
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

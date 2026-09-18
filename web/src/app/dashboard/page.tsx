@@ -12,7 +12,6 @@ import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { formatCdf } from "@/lib/currency";
 import { logout, updateBookingStatus } from "./actions";
 import { ValidateWithWhatsAppButton } from "./validate-with-whatsapp-button";
-import { MobileMoneyForm } from "./mobile-money-form";
 import {
   buildWhatsAppLink,
   formatMobileMoneyAccounts,
@@ -22,6 +21,7 @@ import {
 import { formatBookingReference } from "@/lib/booking-reference";
 import { PendingSignupsSection } from "@/app/admin/pending-signups-section";
 import { BusinessSwitcher, type OwnedBusiness } from "./business-switcher";
+import { DashboardNav } from "./dashboard-nav";
 
 const roleLabels: Record<Profile["role"], string> = {
   owner: "Gérant / Propriétaire",
@@ -169,8 +169,6 @@ export default async function DashboardPage() {
   let businessName = "";
   let mobileMoneyAccounts: MobileMoneyAccount[] = [];
   let subscriptionStatus: ReturnType<typeof getSubscriptionStatus> = "actif";
-  let hasServices = false;
-  let hasAvailability = false;
 
   if (profile.business_id) {
     const supabase = await createClient();
@@ -278,7 +276,6 @@ export default async function DashboardPage() {
       { data: historyData },
       { data: servicesData },
       { data: businessData },
-      { count: availabilityRulesCount },
     ] = await Promise.all([
       supabase
         .from("agenda_entries_for_dashboard")
@@ -339,10 +336,6 @@ export default async function DashboardPage() {
         )
         .eq("id", profile.business_id)
         .maybeSingle(),
-      supabase
-        .from("availability_rules")
-        .select("id", { count: "exact", head: true })
-        .eq("business_id", profile.business_id),
     ]);
 
     pending = pendingData ?? [];
@@ -357,8 +350,6 @@ export default async function DashboardPage() {
       ])
     );
     businessName = businessData?.name ?? "";
-    hasServices = (servicesData?.length ?? 0) > 0;
-    hasAvailability = (availabilityRulesCount ?? 0) > 0;
     mobileMoneyAccounts = (
       [
         ["mpesa", businessData?.mpesa_number, businessData?.mpesa_holder_name],
@@ -393,6 +384,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
+      <DashboardNav />
+
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="font-serif text-2xl text-ink-900 dark:text-paper">
@@ -426,52 +419,6 @@ export default async function DashboardPage() {
           tableau de bord.
         </div>
       )}
-
-      {profile.business_id &&
-        canManageBusiness(profile) &&
-        (!hasServices || !hasAvailability) && (
-          <div className="mb-6 rounded-xl border border-kino-200 bg-kino-50 p-4 text-sm dark:border-kino-800 dark:bg-ink-800">
-            <p className="mb-2 font-bold text-ink-900 dark:text-paper">
-              Configuration à terminer avant d&apos;être visible des clients
-            </p>
-            <ul className="space-y-1.5">
-              <li className="flex items-center gap-2">
-                <span className={hasServices ? "text-success" : "text-kino-500"}>
-                  {hasServices ? "✓" : "○"}
-                </span>
-                {hasServices ? (
-                  <span className="text-ink-400 line-through">
-                    Ajouter au moins un service au catalogue
-                  </span>
-                ) : (
-                  <Link
-                    href="/dashboard/catalogue"
-                    className="font-bold text-ink-900 hover:underline dark:text-paper"
-                  >
-                    Ajouter au moins un service au catalogue
-                  </Link>
-                )}
-              </li>
-              <li className="flex items-center gap-2">
-                <span className={hasAvailability ? "text-success" : "text-kino-500"}>
-                  {hasAvailability ? "✓" : "○"}
-                </span>
-                {hasAvailability ? (
-                  <span className="text-ink-400 line-through">
-                    Définir vos horaires et votre capacité
-                  </span>
-                ) : (
-                  <Link
-                    href="/dashboard/agenda"
-                    className="font-bold text-ink-900 hover:underline dark:text-paper"
-                  >
-                    Définir vos horaires et votre capacité
-                  </Link>
-                )}
-              </li>
-            </ul>
-          </div>
-        )}
 
       {!profile.business_id ? (
         profile.role === "platform_admin" ? (
@@ -790,93 +737,6 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      <section>
-        <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
-          Réglages de l&apos;établissement
-        </h2>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Link
-            href="/dashboard/agenda"
-            className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
-          >
-            <span className="font-bold text-ink-900 dark:text-paper">
-              Horaires et capacité
-            </span>
-            <p className="mt-1 text-ink-400">
-              Configurer l&apos;agenda central de votre établissement.
-            </p>
-          </Link>
-          <Link
-            href="/dashboard/catalogue"
-            className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
-          >
-            <span className="font-bold text-ink-900 dark:text-paper">
-              Catalogue &amp; tarifs
-            </span>
-            <p className="mt-1 text-ink-400">
-              Gérer les services proposés aux clients.
-            </p>
-          </Link>
-          {profile.business_id && canManageBusiness(profile) && (
-            <Link
-              href="/dashboard/photos"
-              className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
-            >
-              <span className="font-bold text-ink-900 dark:text-paper">
-                Photos
-              </span>
-              <p className="mt-1 text-ink-400">
-                La galerie visible sur votre fiche établissement.
-              </p>
-            </Link>
-          )}
-          {profile.business_id && canManageBusiness(profile) && (
-            <Link
-              href="/dashboard/equipe"
-              className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
-            >
-              <span className="font-bold text-ink-900 dark:text-paper">
-                Équipe
-              </span>
-              <p className="mt-1 text-ink-400">
-                Gérer les membres de l&apos;équipe, assignables à une
-                réservation.
-              </p>
-            </Link>
-          )}
-          {profile.business_id && canManageBusiness(profile) && (
-            <Link
-              href="/dashboard/bilan"
-              className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
-            >
-              <span className="font-bold text-ink-900 dark:text-paper">
-                Ma semaine
-              </span>
-              <p className="mt-1 text-ink-400">
-                Bilan de la semaine : encaissements, meilleures ventes,
-                absences, une recommandation.
-              </p>
-            </Link>
-          )}
-          {profile.business_id && canManageBusiness(profile) && (
-            <Link
-              href="/dashboard/rapports"
-              className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
-            >
-              <span className="font-bold text-ink-900 dark:text-paper">
-                Rapports
-              </span>
-              <p className="mt-1 text-ink-400">
-                Encaissements et réservations par semaine, mois, trimestre ou
-                année, à télécharger en CSV.
-              </p>
-            </Link>
-          )}
-          {profile.business_id && canManageBusiness(profile) && (
-            <MobileMoneyForm accounts={mobileMoneyAccounts} />
-          )}
-        </div>
-      </section>
     </div>
   );
 }
