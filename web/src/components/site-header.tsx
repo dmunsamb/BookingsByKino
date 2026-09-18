@@ -24,12 +24,15 @@ export async function SiteHeader() {
   } = await supabase.auth.getUser();
 
   let pendingCount = 0;
+  let displayName: string | null = null;
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, full_name")
       .eq("id", user.id)
       .maybeSingle();
+
+    displayName = profile?.full_name ?? user.email ?? null;
 
     if (profile?.role === "platform_admin") {
       const { count } = await supabase
@@ -57,7 +60,15 @@ export async function SiteHeader() {
               attente
             </Link>
           )}
-          {!user && (
+          {user ? (
+            <Link
+              href="/dashboard"
+              className="max-w-[10rem] truncate rounded-full px-3 py-1.5 text-sm font-bold text-paper transition hover:bg-paper/10"
+              title={displayName ?? undefined}
+            >
+              {displayName}
+            </Link>
+          ) : (
             <Link
               href="/login"
               aria-label="Connexion professionnelle"

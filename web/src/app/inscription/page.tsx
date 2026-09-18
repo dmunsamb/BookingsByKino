@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { signup, type SignupState } from "./actions";
 import { CATEGORIES } from "@/lib/categories";
-import { KINSHASA_COMMUNES } from "@/lib/communes";
+import { CityCommuneFields } from "@/components/city-commune-fields";
 
 const initialState: SignupState = {};
 
@@ -128,37 +128,7 @@ export default function SignupPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
-                Commune
-              </label>
-              <select
-                name="commune"
-                defaultValue=""
-                className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
-              >
-                <option value="">Choisir...</option>
-                {KINSHASA_COMMUNES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
-                Ville
-              </label>
-              <input
-                name="city"
-                type="text"
-                placeholder="ex: Kinshasa"
-                defaultValue="Kinshasa"
-                className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
-              />
-            </div>
-          </div>
+          <CityCommuneFields />
 
           <div>
             <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
