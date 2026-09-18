@@ -32,7 +32,7 @@ export function ValidateWithWhatsAppButton({
       />
       <button
         type="submit"
-        className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
+        className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500"
       >
         {whatsAppLink ? "Valider (WhatsApp)" : "Valider"}
       </button>

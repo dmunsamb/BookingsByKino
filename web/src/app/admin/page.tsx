@@ -20,10 +20,10 @@ const statusLabels: Record<string, string> = {
 
 const statusBadgeClasses: Record<SubscriptionStatus, string> = {
   actif:
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
+    "bg-success/10 text-success",
   en_attente:
-    "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
-  inactif: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300",
+    "bg-kino-100 text-kino-700 dark:bg-kino-900 dark:text-kino-300",
+  inactif: "bg-danger/10 text-danger",
 };
 
 const DURATION_MONTHS = [1, 3, 12] as const;
@@ -33,7 +33,7 @@ export default async function AdminPage() {
 
   if (profile?.role !== "platform_admin") {
     return (
-      <div className="mx-auto max-w-lg px-4 py-16 text-center text-sm text-slate-500 dark:text-slate-400">
+      <div className="mx-auto max-w-lg px-4 py-16 text-center text-sm text-ink-400">
         Accès réservé à l&apos;équipe KinoBooking.
       </div>
     );
@@ -111,7 +111,7 @@ export default async function AdminPage() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+        <h1 className="font-serif text-2xl text-ink-900 dark:text-paper">
           Administration KinoBooking
         </h1>
         <Link
@@ -123,7 +123,7 @@ export default async function AdminPage() {
       </div>
 
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
           Tarifs d&apos;abonnement
         </h2>
         <SubscriptionPricesForm initialPrices={priceByDuration} />
@@ -132,17 +132,17 @@ export default async function AdminPage() {
       <PendingSignupsSection />
 
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
           Abonnements à régulariser
         </h2>
-        <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+        <p className="mb-3 text-xs text-ink-400">
           Un établissement inactif reste visible dans le catalogue, mais sa
           fiche masque ses coordonnées et n&apos;accepte plus de nouvelles
           réservations tant que le gérant n&apos;a pas régularisé.
         </p>
         <div className="space-y-3">
           {needsAttention.length === 0 && (
-            <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+            <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
               Tous les abonnements sont à jour.
             </p>
           )}
@@ -168,10 +168,10 @@ export default async function AdminPage() {
             return (
               <div
                 key={b.id}
-                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                className="rounded-2xl border border-ink-900/10 bg-white p-4 shadow-sm dark:border-paper/10 dark:bg-ink-800"
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="font-bold text-slate-900 dark:text-white">
+                  <p className="font-bold text-ink-900 dark:text-paper">
                     {b.name} {b.is_test && <TestBadge />}
                   </p>
                   <span
@@ -181,7 +181,7 @@ export default async function AdminPage() {
                   </span>
                 </div>
                 {stuck.length > 0 && (
-                  <p className="mb-2 text-xs font-bold text-red-600">
+                  <p className="mb-2 text-xs font-bold text-danger">
                     {stuck.length} réservation{stuck.length > 1 ? "s" : ""} en
                     attente bloquée{stuck.length > 1 ? "s" : ""} pour ce
                     gérant.
@@ -200,12 +200,12 @@ export default async function AdminPage() {
                       href={reminderLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs font-bold text-slate-500 hover:underline dark:text-slate-400"
+                      className="text-xs font-bold text-ink-400 hover:underline"
                     >
                       Rappel WhatsApp
                     </a>
                   ) : (
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-ink-400">
                       Pas de numéro WhatsApp fourni
                     </span>
                   )}
@@ -217,32 +217,32 @@ export default async function AdminPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
           Tous les établissements
         </h2>
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+        <div className="overflow-x-auto rounded-2xl border border-ink-900/10 dark:border-paper/10">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-xs font-bold uppercase text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+            <thead className="bg-kino-50/60 text-xs font-bold uppercase tracking-widest text-ink-400 dark:bg-ink-900">
               <tr>
                 <th className="p-3">Établissement</th>
                 <th className="p-3">Gérant</th>
                 <th className="p-3">Statut</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-ink-900/8 dark:divide-paper/8">
               {approved.length === 0 && rejected.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="p-4 text-center text-slate-400">
+                  <td colSpan={3} className="p-4 text-center text-ink-400">
                     Aucun autre établissement.
                   </td>
                 </tr>
               )}
               {approvedWithStatus.map((b) => (
                 <tr key={b.id}>
-                  <td className="p-3 font-medium text-slate-900 dark:text-white">
+                  <td className="p-3 font-medium text-ink-900 dark:text-paper">
                     {b.name} {b.is_test && <TestBadge />}
                   </td>
-                  <td className="p-3 text-slate-600 dark:text-slate-300">
+                  <td className="p-3 text-ink-400">
                     {ownerNameByBusiness.get(b.id) ?? "—"}
                   </td>
                   <td className="p-3">
@@ -256,13 +256,13 @@ export default async function AdminPage() {
               ))}
               {rejected.map((b) => (
                 <tr key={b.id}>
-                  <td className="p-3 font-medium text-slate-900 dark:text-white">
+                  <td className="p-3 font-medium text-ink-900 dark:text-paper">
                     {b.name} {b.is_test && <TestBadge />}
                   </td>
-                  <td className="p-3 text-slate-600 dark:text-slate-300">
+                  <td className="p-3 text-ink-400">
                     {ownerNameByBusiness.get(b.id) ?? "—"}
                   </td>
-                  <td className="p-3 text-slate-600 dark:text-slate-300">
+                  <td className="p-3 text-ink-400">
                     {statusLabels[b.signup_status]}
                   </td>
                 </tr>

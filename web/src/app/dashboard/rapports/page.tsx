@@ -98,7 +98,7 @@ export default async function GerantRapportsPage({
 
   if (!profile?.business_id || !canManageBusiness(profile)) {
     return (
-      <div className="mx-auto max-w-lg px-4 py-16 text-center text-sm text-slate-500 dark:text-slate-400">
+      <div className="mx-auto max-w-lg px-4 py-16 text-center text-sm text-ink-400">
         Accès réservé au gérant de l&apos;établissement.
       </div>
     );
@@ -152,12 +152,12 @@ export default async function GerantRapportsPage({
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
       <Link
         href="/dashboard"
-        className="mb-4 inline-block text-xs font-bold text-slate-500 hover:underline dark:text-slate-400"
+        className="mb-4 inline-block text-xs font-bold text-ink-400 hover:underline"
       >
         ← Retour au tableau de bord
       </Link>
 
-      <h1 className="mb-6 text-xl font-bold text-slate-900 dark:text-white">
+      <h1 className="mb-6 font-serif text-2xl text-ink-900 dark:text-paper">
         Rapports
       </h1>
 
@@ -168,8 +168,8 @@ export default async function GerantRapportsPage({
             href={`/dashboard/rapports?type=${tab.type}`}
             className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
               type === tab.type
-                ? "bg-kino-500 text-slate-950"
-                : "border border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                ? "bg-kino-400 text-ink-900"
+                : "border border-ink-900/16 text-ink-900 hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
             }`}
           >
             {tab.label}
@@ -180,7 +180,7 @@ export default async function GerantRapportsPage({
       <form method="GET" className="mb-6 flex flex-wrap items-end gap-3">
         <input type="hidden" name="type" value={type} />
         <div>
-          <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+          <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
             {PERIOD_TABS.find((t) => t.type === type)?.label}
           </label>
           {type === "week" && (
@@ -188,7 +188,7 @@ export default async function GerantRapportsPage({
               type="week"
               name="week"
               defaultValue={value}
-              className="rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             />
           )}
           {type === "month" && (
@@ -196,14 +196,14 @@ export default async function GerantRapportsPage({
               type="month"
               name="month"
               defaultValue={value}
-              className="rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             />
           )}
           {type === "quarter" && (
             <select
               name="quarter"
               defaultValue={value}
-              className="rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             >
               {recentQuarters(8).map((q) => (
                 <option key={q} value={q}>
@@ -216,7 +216,7 @@ export default async function GerantRapportsPage({
             <select
               name="year"
               defaultValue={value}
-              className="rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             >
               {recentYears(6).map((y) => (
                 <option key={y} value={y}>
@@ -228,43 +228,43 @@ export default async function GerantRapportsPage({
         </div>
         <button
           type="submit"
-          className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
+          className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500"
         >
           Afficher
         </button>
         <a
           href={`/dashboard/rapports/export?${exportParams.toString()}`}
-          className="rounded-xl border border-slate-300 px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+          className="rounded-xl border border-ink-900/16 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
         >
           Exporter en CSV
         </a>
       </form>
 
       <div className="mb-6 grid grid-cols-2 gap-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-          <span className="block text-xs font-bold uppercase text-slate-500">
+        <div className="rounded-2xl border border-ink-900/10 bg-white p-4 dark:border-paper/10 dark:bg-ink-800">
+          <span className="block text-xs font-bold uppercase tracking-widest text-ink-400">
             Encaissé — {periodLabel(type, value)}
           </span>
-          <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
+          <span className="text-2xl font-bold text-ink-900 dark:text-paper">
             ${totalUsd.toFixed(2)}
           </span>
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-ink-400">
             {formatCdf(totalUsd)}
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-          <span className="block text-xs font-bold uppercase text-slate-500">
+        <div className="rounded-2xl border border-ink-900/10 bg-white p-4 dark:border-paper/10 dark:bg-ink-800">
+          <span className="block text-xs font-bold uppercase tracking-widest text-ink-400">
             Réservations
           </span>
-          <span className="text-2xl font-extrabold text-slate-900 dark:text-white">
+          <span className="text-2xl font-bold text-ink-900 dark:text-paper">
             {allEntries.length}
           </span>
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+      <div className="overflow-x-auto rounded-2xl border border-ink-900/10 dark:border-paper/10">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs font-bold uppercase text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+          <thead className="bg-kino-50/60 text-xs font-bold uppercase tracking-widest text-ink-400 dark:bg-ink-900">
             <tr>
               <th className="p-3">Date</th>
               <th className="p-3">Client</th>
@@ -274,10 +274,10 @@ export default async function GerantRapportsPage({
               <th className="p-3">Réf.</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-ink-900/8 dark:divide-paper/8">
             {allEntries.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-4 text-center text-slate-400">
+                <td colSpan={6} className="p-4 text-center text-ink-400">
                   Aucune réservation pour cette période.
                 </td>
               </tr>
@@ -288,7 +288,7 @@ export default async function GerantRapportsPage({
                 : undefined;
               return (
                 <tr key={e.id}>
-                  <td className="p-3 text-slate-600 dark:text-slate-300">
+                  <td className="p-3 text-ink-400">
                     {new Date(e.start_time).toLocaleString("fr-FR", {
                       timeZone: "Africa/Kinshasa",
                       day: "2-digit",
@@ -297,22 +297,22 @@ export default async function GerantRapportsPage({
                       minute: "2-digit",
                     })}
                   </td>
-                  <td className="p-3 font-medium text-slate-900 dark:text-white">
+                  <td className="p-3 font-medium text-ink-900 dark:text-paper">
                     {e.client_name ?? "—"}
-                    <span className="block text-xs font-normal text-slate-400">
+                    <span className="block text-xs font-normal text-ink-400">
                       {e.client_phone_display}
                     </span>
                   </td>
-                  <td className="p-3 text-slate-600 dark:text-slate-300">
+                  <td className="p-3 text-ink-400">
                     {service?.name ?? "—"}
                   </td>
-                  <td className="p-3 font-bold text-kino-600">
+                  <td className="p-3 font-bold text-kino-600 dark:text-kino-300">
                     {service ? `$${service.price_usd.toFixed(2)}` : "—"}
                   </td>
-                  <td className="p-3 text-slate-600 dark:text-slate-300">
+                  <td className="p-3 text-ink-400">
                     {statusLabels[e.status] ?? e.status}
                   </td>
-                  <td className="p-3 text-slate-600 dark:text-slate-300">
+                  <td className="p-3 text-ink-400">
                     {formatBookingReference(e.reference_number)}
                   </td>
                 </tr>

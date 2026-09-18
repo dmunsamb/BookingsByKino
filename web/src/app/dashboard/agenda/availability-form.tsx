@@ -27,17 +27,17 @@ export function AvailabilityForm() {
   return (
     <form
       action={formAction}
-      className="grid grid-cols-2 gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-4 dark:border-slate-800 dark:bg-slate-900"
+      className="grid grid-cols-2 gap-3 rounded-2xl border border-ink-900/10 bg-white p-4 sm:grid-cols-4 dark:border-paper/10 dark:bg-ink-800"
     >
       <div className="col-span-full">
-        <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
           Jours (plusieurs choix possibles)
         </label>
         <div className="flex flex-wrap gap-2">
           {weekdayOptions.map((d) => (
             <label
               key={d.value}
-              className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-300 px-3 py-2 text-sm has-[:checked]:border-kino-500 has-[:checked]:bg-kino-50 has-[:checked]:font-bold dark:border-slate-700 dark:has-[:checked]:bg-kino-950"
+              className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-ink-900/16 px-3 py-2 text-sm text-ink-900 has-[:checked]:border-kino-500 has-[:checked]:bg-kino-400 has-[:checked]:text-ink-900 has-[:checked]:font-bold dark:border-paper/16 dark:text-paper"
             >
               <input
                 type="checkbox"
@@ -52,7 +52,7 @@ export function AvailabilityForm() {
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
           Début
         </label>
         <input
@@ -60,12 +60,12 @@ export function AvailabilityForm() {
           name="start_time"
           required
           defaultValue="09:00"
-          className="w-full rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+          className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
           Fin
         </label>
         <input
@@ -73,12 +73,12 @@ export function AvailabilityForm() {
           name="end_time"
           required
           defaultValue="17:00"
-          className="w-full rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+          className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
           Créneau (min)
         </label>
         <input
@@ -87,12 +87,12 @@ export function AvailabilityForm() {
           min={5}
           required
           defaultValue={30}
-          className="w-full rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+          className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
           Capacité
         </label>
         <input
@@ -101,12 +101,12 @@ export function AvailabilityForm() {
           min={1}
           required
           defaultValue={1}
-          className="w-full rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+          className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
         />
       </div>
 
       {state.error && (
-        <p className="col-span-full rounded-xl bg-red-50 p-2 text-xs text-red-700 dark:bg-red-950 dark:text-red-300">
+        <p className="col-span-full rounded-xl bg-danger/10 p-2 text-xs text-danger">
           {state.error}
         </p>
       )}
@@ -115,7 +115,7 @@ export function AvailabilityForm() {
         <button
           type="submit"
           disabled={pending}
-          className="rounded-xl bg-kino-500 px-4 py-2 text-sm font-extrabold text-slate-950 transition hover:bg-kino-600 disabled:opacity-60"
+          className="rounded-xl bg-kino-400 px-4 py-2 text-sm font-bold text-ink-900 transition hover:bg-kino-500 disabled:opacity-60"
         >
           {pending ? "Ajout..." : "Ajouter ce créneau"}
         </button>

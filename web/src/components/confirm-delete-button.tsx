@@ -22,14 +22,14 @@ export function ConfirmDeleteButton({
       <span className="inline-flex items-center gap-2">
         <button
           type="submit"
-          className="text-xs font-bold text-red-600 hover:underline"
+          className="text-xs font-bold text-danger hover:underline"
         >
           Confirmer ?
         </button>
         <button
           type="button"
           onClick={() => setConfirming(false)}
-          className="text-xs font-bold text-slate-400 hover:underline"
+          className="text-xs font-bold text-ink-400 hover:underline"
         >
           {dismissLabel}
         </button>
@@ -41,7 +41,7 @@ export function ConfirmDeleteButton({
     <button
       type="button"
       onClick={() => setConfirming(true)}
-      className="text-xs font-bold text-red-600 hover:underline"
+      className="text-xs font-bold text-danger hover:underline"
     >
       {label}
     </button>

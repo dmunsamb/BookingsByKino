@@ -47,7 +47,7 @@ export default async function AgendaPage() {
 
   if (!profile) {
     return (
-      <p className="p-8 text-sm text-slate-500 dark:text-slate-400">
+      <p className="p-8 text-sm text-ink-400">
         Compte non configuré.
       </p>
     );
@@ -55,7 +55,7 @@ export default async function AgendaPage() {
 
   if (!profile.business_id) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-slate-500 dark:text-slate-400">
+      <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-ink-400">
         Aucun établissement n&apos;est encore associé à votre compte. Contactez
         l&apos;administrateur KinoBooking.
       </div>
@@ -97,16 +97,16 @@ export default async function AgendaPage() {
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
       <Link
         href="/dashboard"
-        className="mb-4 inline-block text-xs font-bold text-slate-500 hover:underline dark:text-slate-400"
+        className="mb-4 inline-block text-xs font-bold text-ink-400 hover:underline"
       >
         ← Retour au tableau de bord
       </Link>
 
       <div className="mb-6">
-        <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+        <h1 className="text-xl font-bold text-ink-900 dark:text-paper">
           Horaires et capacité
         </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-sm text-ink-400">
           Définissez vos plages d&apos;ouverture et le nombre de places
           disponibles en parallèle par créneau. Ces réglages détermineront
           les créneaux réellement proposés aux clients (agenda centrale,
@@ -116,9 +116,9 @@ export default async function AgendaPage() {
 
       {canManageBusiness(profile) && <AvailabilityForm />}
 
-      <div className="mt-8 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+      <div className="mt-8 overflow-x-auto rounded-2xl border border-ink-900/10 dark:border-paper/10">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-50 text-xs font-bold uppercase text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+          <thead className="bg-kino-50/60 text-xs font-bold uppercase tracking-widest text-ink-400 dark:bg-ink-900">
             <tr>
               <th className="p-3">Jour</th>
               <th className="p-3">Horaire</th>
@@ -129,26 +129,26 @@ export default async function AgendaPage() {
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-ink-900/8 dark:divide-paper/8">
             {(!rules || rules.length === 0) && (
               <tr>
-                <td colSpan={5} className="p-4 text-center text-slate-400">
+                <td colSpan={5} className="p-4 text-center text-ink-400">
                   Aucun horaire configuré pour l&apos;instant.
                 </td>
               </tr>
             )}
             {rules?.map((rule) => (
               <tr key={rule.id}>
-                <td className="p-3 font-medium text-slate-900 dark:text-white">
+                <td className="p-3 font-medium text-ink-900 dark:text-paper">
                   {weekdayLabels[rule.weekday]}
                 </td>
-                <td className="p-3 text-slate-600 dark:text-slate-300">
+                <td className="p-3 text-ink-400">
                   {rule.start_time.slice(0, 5)} – {rule.end_time.slice(0, 5)}
                 </td>
-                <td className="p-3 text-slate-600 dark:text-slate-300">
+                <td className="p-3 text-ink-400">
                   {rule.slot_duration_minutes} min
                 </td>
-                <td className="p-3 text-slate-600 dark:text-slate-300">
+                <td className="p-3 text-ink-400">
                   {rule.capacity}
                 </td>
                 {canManageBusiness(profile) && (
@@ -166,10 +166,10 @@ export default async function AgendaPage() {
       </div>
 
       <div className="mt-10">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+        <h2 className="text-lg font-bold text-ink-900 dark:text-paper">
           Congés et indisponibilités
         </h2>
-        <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mb-4 text-sm text-ink-400">
           Bloque une plage horaire : elle n&apos;apparaît plus disponible
           pour les nouvelles réservations en ligne (FR-9.3).
         </p>
@@ -178,16 +178,16 @@ export default async function AgendaPage() {
 
         <div className="space-y-2">
           {blocks.length === 0 && (
-            <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+            <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
               Aucun blocage à venir.
             </p>
           )}
           {blocks.map((b) => (
             <div
               key={b.id}
-              className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-3 text-sm dark:border-slate-800 dark:bg-slate-900"
+              className="flex items-center justify-between rounded-2xl border border-ink-900/10 bg-white p-3 text-sm dark:border-paper/10 dark:bg-ink-800"
             >
-              <span className="text-slate-700 dark:text-slate-300">
+              <span className="text-ink-900 dark:text-paper">
                 {formatBlockRange(b.start, b.end)}
               </span>
               {isStaffMember(profile) && (

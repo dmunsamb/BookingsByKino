@@ -19,7 +19,7 @@ export default async function NewReservationPage({
 
   if (!profile?.business_id) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-slate-500 dark:text-slate-400">
+      <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-ink-400">
         Aucun établissement n&apos;est encore associé à votre compte.
       </div>
     );
@@ -27,7 +27,7 @@ export default async function NewReservationPage({
 
   if (!isStaffMember(profile)) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-slate-500 dark:text-slate-400">
+      <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-ink-400">
         Action réservée au personnel de l&apos;établissement.
       </div>
     );
@@ -74,26 +74,26 @@ export default async function NewReservationPage({
     <div className="mx-auto w-full max-w-2xl px-4 py-10">
       <Link
         href={selectedService ? "/dashboard/reservations/new" : "/dashboard"}
-        className="mb-4 inline-block text-xs font-bold text-slate-500 hover:underline dark:text-slate-400"
+        className="mb-4 inline-block text-xs font-bold text-ink-400 hover:underline"
       >
         ← {selectedService ? "Changer de prestation" : "Retour au tableau de bord"}
       </Link>
 
-      <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+      <h1 className="text-xl font-bold text-ink-900 dark:text-paper">
         Nouvelle réservation
       </h1>
-      <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+      <p className="mb-6 text-sm text-ink-400">
         Pour un rendez-vous pris par téléphone ou en personne — confirmée
         immédiatement, sans étape de validation.
       </p>
 
       {!selectedService ? (
         <>
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
             Choisir la prestation
           </h2>
           {(!services || services.length === 0) && (
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-ink-400">
               Aucun service au catalogue pour l&apos;instant — ajoutez-en un
               dans le catalogue d&apos;abord.
             </p>
@@ -103,12 +103,12 @@ export default async function NewReservationPage({
               <Link
                 key={s.id}
                 href={`/dashboard/reservations/new?service=${s.id}`}
-                className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+                className="flex flex-col justify-between rounded-2xl border border-ink-900/10 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
               >
-                <h3 className="mb-2 text-sm font-extrabold text-slate-900 dark:text-white">
+                <h3 className="mb-2 text-sm font-bold text-ink-900 dark:text-paper">
                   {s.name}
                 </h3>
-                <span className="text-sm font-extrabold text-kino-600">
+                <span className="text-sm font-bold text-kino-600">
                   ${s.price_usd.toFixed(2)}
                 </span>
               </Link>

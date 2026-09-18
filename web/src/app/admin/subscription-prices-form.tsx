@@ -52,11 +52,11 @@ export function SubscriptionPricesForm({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="rounded-2xl border border-ink-900/10 bg-white p-4 shadow-sm dark:border-paper/10 dark:bg-ink-800">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
         {DURATION_MONTHS.map((m) => (
           <div key={m} className="flex-1">
-            <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
               {m === 12 ? "1 an" : `${m} mois`} ($)
             </label>
             <input
@@ -65,7 +65,7 @@ export function SubscriptionPricesForm({
               step="0.01"
               value={values[m]}
               onChange={(e) => handleChange(m, e.target.value)}
-              className="w-full rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             />
           </div>
         ))}
@@ -73,24 +73,24 @@ export function SubscriptionPricesForm({
           type="button"
           disabled={!isDirty || pending}
           onClick={submit}
-          className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {pending ? "Enregistrement..." : "Enregistrer les tarifs"}
         </button>
       </div>
       <div className="mt-2 h-4 text-xs font-bold">
         {feedback === "success" && (
-          <span className="text-emerald-600 dark:text-emerald-400">
+          <span className="text-success">
             Tarifs enregistrés ✓
           </span>
         )}
         {feedback === "error" && (
-          <span className="text-red-600 dark:text-red-400">
+          <span className="text-danger">
             Erreur lors de l&apos;enregistrement, merci de réessayer.
           </span>
         )}
       </div>
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-ink-400">
         Ces montants apparaissent en présélection lors de
         l&apos;enregistrement d&apos;un paiement gérant, avec toujours la
         possibilité de saisir un autre montant.

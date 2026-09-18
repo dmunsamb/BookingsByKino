@@ -14,50 +14,50 @@ export function BlockingForm() {
   return (
     <form
       action={formAction}
-      className="mb-4 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:grid-cols-4 sm:items-end"
+      className="mb-4 grid gap-3 rounded-2xl border border-ink-900/10 bg-white p-4 shadow-sm dark:border-paper/10 dark:bg-ink-800 sm:grid-cols-4 sm:items-end"
     >
       <div>
-        <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
           Date
         </label>
         <input
           type="date"
           name="date"
           required
-          className="w-full rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+          className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
           De
         </label>
         <input
           type="time"
           name="start_time"
           required
-          className="w-full rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+          className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
           À
         </label>
         <input
           type="time"
           name="end_time"
           required
-          className="w-full rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+          className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
         />
       </div>
       <button
         type="submit"
         disabled={pending}
-        className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600 disabled:opacity-60"
+        className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500 disabled:opacity-60"
       >
         {pending ? "Blocage..." : "Bloquer ce créneau"}
       </button>
       {state.error && (
-        <p className="text-xs font-bold text-red-600 sm:col-span-4">
+        <p className="text-xs font-bold text-danger sm:col-span-4">
           {state.error}
         </p>
       )}

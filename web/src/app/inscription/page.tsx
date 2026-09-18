@@ -10,12 +10,12 @@ export default function SignupPage() {
   const [state, formAction, pending] = useActionState(signup, initialState);
 
   return (
-    <div className="flex flex-1 items-center justify-center bg-slate-50 px-4 py-12 dark:bg-slate-950">
-      <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <h1 className="mb-1 text-lg font-bold text-slate-900 dark:text-white">
+    <div className="flex flex-1 items-center justify-center bg-paper px-4 py-12 dark:bg-ink-900">
+      <div className="w-full max-w-md rounded-2xl border border-ink-900/10 bg-white p-8 shadow-sm dark:border-paper/10 dark:bg-ink-800">
+        <h1 className="mb-1 text-lg font-bold text-ink-900 dark:text-paper">
           Créer votre compte gérant
         </h1>
-        <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mb-6 text-sm text-ink-400">
           Votre établissement sera visible des clients après validation
           manuelle par l&apos;équipe KinoBooking.
         </p>
@@ -26,7 +26,7 @@ export default function SignupPage() {
           className="space-y-4"
         >
           <div>
-            <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
               Votre nom
             </label>
             <input
@@ -34,13 +34,13 @@ export default function SignupPage() {
               type="text"
               required
               placeholder="ex: Nouschka Mbelu"
-              className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+              <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
                 Email
               </label>
               <input
@@ -48,11 +48,11 @@ export default function SignupPage() {
                 type="email"
                 required
                 autoComplete="email"
-                className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+              <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
                 Mot de passe
               </label>
               <input
@@ -61,27 +61,27 @@ export default function SignupPage() {
                 required
                 minLength={8}
                 autoComplete="new-password"
-                className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
               Numéro WhatsApp (optionnel)
             </label>
             <input
               name="whatsapp"
               type="tel"
               placeholder="ex: 081 000 0000"
-              className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             />
           </div>
 
-          <hr className="border-slate-200 dark:border-slate-800" />
+          <hr className="border-ink-900/10 dark:border-paper/10" />
 
           <div>
-            <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
               Nom de l&apos;établissement
             </label>
             <input
@@ -89,19 +89,19 @@ export default function SignupPage() {
               type="text"
               required
               placeholder="ex: Salon Nouschka"
-              className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
               Type d&apos;établissement
             </label>
             <select
               name="type"
               required
               defaultValue=""
-              className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             >
               <option value="" disabled>
                 Choisir...
@@ -113,43 +113,43 @@ export default function SignupPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+              <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
                 Adresse
               </label>
               <input
                 name="address"
                 type="text"
                 placeholder="ex: Avenue Kasa-Vubu"
-                className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+              <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
                 Ville
               </label>
               <input
                 name="city"
                 type="text"
                 placeholder="ex: Kinshasa"
-                className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-bold uppercase text-slate-500">
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
               Logo (optionnel)
             </label>
             <input
               name="logo"
               type="file"
               accept="image/*"
-              className="w-full rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+              className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             />
           </div>
 
           {state.error && (
-            <p className="rounded-xl bg-red-50 p-3 text-xs text-red-700 dark:bg-red-950 dark:text-red-300">
+            <p className="rounded-xl bg-danger/10 p-3 text-xs text-danger">
               {state.error}
             </p>
           )}
@@ -157,15 +157,15 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-xl bg-kino-500 py-3 text-sm font-extrabold text-slate-950 transition hover:bg-kino-600 disabled:opacity-60"
+            className="w-full rounded-xl bg-kino-400 py-3.5 text-sm font-bold text-ink-900 transition hover:bg-kino-500 disabled:opacity-60"
           >
             {pending ? "Création..." : "Créer mon compte"}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-xs text-slate-500 dark:text-slate-400">
+        <p className="mt-4 text-center text-xs text-ink-400">
           Déjà un compte ?{" "}
-          <Link href="/login" className="font-bold text-kino-600 hover:underline">
+          <Link href="/login" className="font-bold text-kino-600 hover:underline dark:text-kino-300">
             Se connecter
           </Link>
         </p>

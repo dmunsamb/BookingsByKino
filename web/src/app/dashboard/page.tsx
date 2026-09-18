@@ -77,28 +77,28 @@ function BookingCard({
   const service = entry.service_id ? services.get(entry.service_id) : undefined;
 
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-xl border border-ink-900/12 bg-white p-4 shadow-sm dark:border-paper/12 dark:bg-ink-800 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <p className="font-bold text-slate-900 dark:text-white">
+        <p className="font-bold text-ink-900 dark:text-paper">
           {entry.client_name ?? "Client"} —{" "}
           {service?.name ?? "Service inconnu"}
           {statusLabel && (
-            <span className="ml-2 rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+            <span className="ml-2 rounded bg-ink-900/5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink-400 dark:bg-paper/10">
               {statusLabel}
             </span>
           )}
         </p>
-        <p className="text-sm text-slate-500 dark:text-slate-400">
+        <p className="text-sm text-ink-400">
           {formatDateTime(entry.start_time)} · {entry.client_phone_display} ·
           Réf. {formatBookingReference(entry.reference_number)}
         </p>
         {service && !showDeposit && (
-          <p className="mt-1 text-sm font-bold text-kino-600">
+          <p className="mt-1 text-sm font-bold text-kino-600 dark:text-kino-300">
             ${service.price_usd.toFixed(2)} ({formatCdf(service.price_usd)})
           </p>
         )}
         {service && showDeposit && (
-          <p className="mt-1 text-sm font-bold text-kino-600">
+          <p className="mt-1 text-sm font-bold text-kino-600 dark:text-kino-300">
             Acompte attendu : ${service.deposit_usd.toFixed(2)} (
             {formatCdf(service.deposit_usd)})
           </p>
@@ -108,7 +108,7 @@ function BookingCard({
         {editHref && (
           <Link
             href={editHref}
-            className="text-xs font-bold text-slate-500 hover:underline dark:text-slate-400"
+            className="text-xs font-bold text-ink-400 hover:underline"
           >
             Modifier
           </Link>
@@ -126,10 +126,10 @@ export default async function DashboardPage() {
     return (
       <div className="flex flex-1 items-center justify-center px-4 py-16 text-center">
         <div>
-          <p className="mb-2 font-bold text-slate-900 dark:text-white">
+          <p className="mb-2 font-bold text-ink-900 dark:text-paper">
             Compte non configuré
           </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-ink-400">
             Votre compte existe mais n&apos;est lié à aucun profil
             KinoBooking. Contactez l&apos;administrateur.
           </p>
@@ -167,10 +167,10 @@ export default async function DashboardPage() {
         <div className="mx-auto w-full max-w-lg px-4 py-16 text-center">
           {businessStatusCheck.signup_status === "pending_approval" ? (
             <>
-              <h1 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">
+              <h1 className="mb-2 text-lg font-bold text-ink-900 dark:text-paper">
                 Inscription en attente de validation
               </h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-sm text-ink-400">
                 Merci de votre inscription ! L&apos;équipe KinoBooking va
                 valider votre établissement sous peu. Vous recevrez un
                 accès complet dès que ce sera fait.
@@ -178,10 +178,10 @@ export default async function DashboardPage() {
             </>
           ) : (
             <>
-              <h1 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">
+              <h1 className="mb-2 text-lg font-bold text-ink-900 dark:text-paper">
                 Inscription non validée
               </h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-sm text-ink-400">
                 Votre inscription n&apos;a pas été validée par KinoBooking.
                 Contactez-nous pour plus d&apos;informations.
               </p>
@@ -190,7 +190,7 @@ export default async function DashboardPage() {
           <form action={logout} className="mt-6">
             <button
               type="submit"
-              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200"
+              className="rounded-xl border border-ink-900/16 px-4 py-2 text-sm font-bold text-ink-900 hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
             >
               Se déconnecter
             </button>
@@ -209,10 +209,10 @@ export default async function DashboardPage() {
     if (subscriptionStatus === "inactif" && isStaffMember(profile) && profile.role !== "platform_admin") {
       return (
         <div className="mx-auto w-full max-w-lg px-4 py-16 text-center">
-          <h1 className="mb-2 text-lg font-bold text-slate-900 dark:text-white">
+          <h1 className="mb-2 text-lg font-bold text-ink-900 dark:text-paper">
             Compte suspendu
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-ink-400">
             Votre compte est inactif. Veuillez régulariser votre abonnement
             KinoBooking pour retrouver l&apos;accès à votre tableau de bord.
             Les demandes de réservation continuent d&apos;arriver le temps
@@ -221,7 +221,7 @@ export default async function DashboardPage() {
           <form action={logout} className="mt-6">
             <button
               type="submit"
-              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200"
+              className="rounded-xl border border-ink-900/16 px-4 py-2 text-sm font-bold text-ink-900 hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
             >
               Se déconnecter
             </button>
@@ -357,17 +357,17 @@ export default async function DashboardPage() {
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+          <h1 className="font-serif text-2xl text-ink-900 dark:text-paper">
             Bonjour, {profile.full_name ?? "utilisateur"}
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-ink-400">
             {roleLabels[profile.role] ?? profile.role}
           </p>
         </div>
         <form action={logout}>
           <button
             type="submit"
-            className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200"
+            className="rounded-xl border border-ink-900/16 px-4 py-2 text-sm font-bold text-ink-900 hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
           >
             Se déconnecter
           </button>
@@ -375,7 +375,7 @@ export default async function DashboardPage() {
       </div>
 
       {profile.business_id && subscriptionStatus === "en_attente" && (
-        <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+        <div className="mb-6 rounded-xl border border-kino-200 bg-kino-50 p-4 text-sm text-ink-900 dark:border-kino-800 dark:bg-ink-800 dark:text-paper">
           <span className="font-bold">Abonnement en attente de paiement.</span>{" "}
           Régularisez sous peu pour éviter la suspension de votre accès au
           tableau de bord.
@@ -385,52 +385,40 @@ export default async function DashboardPage() {
       {profile.business_id &&
         canManageBusiness(profile) &&
         (!hasServices || !hasAvailability) && (
-          <div className="mb-6 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm dark:border-amber-800 dark:bg-amber-950">
-            <p className="mb-2 font-bold text-amber-900 dark:text-amber-200">
+          <div className="mb-6 rounded-xl border border-kino-200 bg-kino-50 p-4 text-sm dark:border-kino-800 dark:bg-ink-800">
+            <p className="mb-2 font-bold text-ink-900 dark:text-paper">
               Configuration à terminer avant d&apos;être visible des clients
             </p>
             <ul className="space-y-1.5">
               <li className="flex items-center gap-2">
-                <span
-                  className={
-                    hasServices
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-amber-500"
-                  }
-                >
+                <span className={hasServices ? "text-success" : "text-kino-500"}>
                   {hasServices ? "✓" : "○"}
                 </span>
                 {hasServices ? (
-                  <span className="text-amber-800 line-through dark:text-amber-400">
+                  <span className="text-ink-400 line-through">
                     Ajouter au moins un service au catalogue
                   </span>
                 ) : (
                   <Link
                     href="/dashboard/catalogue"
-                    className="font-bold text-amber-900 hover:underline dark:text-amber-100"
+                    className="font-bold text-ink-900 hover:underline dark:text-paper"
                   >
                     Ajouter au moins un service au catalogue
                   </Link>
                 )}
               </li>
               <li className="flex items-center gap-2">
-                <span
-                  className={
-                    hasAvailability
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-amber-500"
-                  }
-                >
+                <span className={hasAvailability ? "text-success" : "text-kino-500"}>
                   {hasAvailability ? "✓" : "○"}
                 </span>
                 {hasAvailability ? (
-                  <span className="text-amber-800 line-through dark:text-amber-400">
+                  <span className="text-ink-400 line-through">
                     Définir vos horaires et votre capacité
                   </span>
                 ) : (
                   <Link
                     href="/dashboard/agenda"
-                    className="font-bold text-amber-900 hover:underline dark:text-amber-100"
+                    className="font-bold text-ink-900 hover:underline dark:text-paper"
                   >
                     Définir vos horaires et votre capacité
                   </Link>
@@ -446,18 +434,18 @@ export default async function DashboardPage() {
             <PendingSignupsSection showEmptyState />
             <Link
               href="/admin"
-              className="block rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+              className="block rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
             >
-              <span className="font-bold text-slate-900 dark:text-white">
+              <span className="font-bold text-ink-900 dark:text-paper">
                 Panel d&apos;administration complet
               </span>
-              <p className="mt-1 text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-ink-400">
                 Tarifs, abonnements à régulariser, tous les établissements.
               </p>
             </Link>
           </>
         ) : (
-          <p className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+          <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
             Aucun établissement n&apos;est encore associé à votre compte.
             Contactez l&apos;administrateur KinoBooking.
           </p>
@@ -472,7 +460,7 @@ export default async function DashboardPage() {
             <div className="mb-6 flex justify-end">
               <Link
                 href="/dashboard/reservations/new"
-                className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
+                className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500"
               >
                 + Nouvelle réservation
               </Link>
@@ -480,17 +468,17 @@ export default async function DashboardPage() {
           )}
 
           <section className="mb-8">
-            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
               Nouvelles demandes
             </h2>
-            <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mb-3 text-xs text-ink-400">
               Valider une demande la fait passer en attente d&apos;acompte et
               ouvre WhatsApp avec un message prérempli pour le client
               (montant et numéro mobile money inclus) — à vous de l&apos;envoyer.
             </p>
             <div className="space-y-3">
               {pending.length === 0 && (
-                <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+                <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
                   Aucune demande en attente pour l&apos;instant.
                 </p>
               )}
@@ -554,12 +542,12 @@ export default async function DashboardPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
               Rendez-vous passés à clôturer
             </h2>
             <div className="space-y-3">
               {toClose.length === 0 && (
-                <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+                <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
                   Aucun rendez-vous en attente de clôture.
                 </p>
               )}
@@ -575,7 +563,7 @@ export default async function DashboardPage() {
                         <input type="hidden" name="status" value="termine" />
                         <button
                           type="submit"
-                          className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
+                          className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500"
                         >
                           Service rendu
                         </button>
@@ -585,7 +573,7 @@ export default async function DashboardPage() {
                         <input type="hidden" name="status" value="no_show" />
                         <button
                           type="submit"
-                          className="rounded-xl border border-slate-300 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200"
+                          className="rounded-xl border border-ink-900/16 px-4 py-2 text-xs font-bold text-ink-900 hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
                         >
                           No-show
                         </button>
@@ -598,12 +586,12 @@ export default async function DashboardPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
               Réservations confirmées à venir
             </h2>
             <div className="space-y-3">
               {confirmedUpcoming.length === 0 && (
-                <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+                <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
                   Aucune réservation confirmée à venir.
                 </p>
               )}
@@ -630,17 +618,17 @@ export default async function DashboardPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
               En attente de paiement
             </h2>
-            <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mb-3 text-xs text-ink-400">
               Une fois l&apos;acompte reçu sur votre compte mobile money,
               cliquez sur « Marquer payé ». Le délai de 30 minutes est
               indicatif — aucune annulation automatique n&apos;a lieu.
             </p>
             <div className="space-y-3">
               {waitingPayment.length === 0 && (
-                <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+                <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
                   Aucune réservation en attente de paiement.
                 </p>
               )}
@@ -686,7 +674,7 @@ export default async function DashboardPage() {
                           href={resendLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs font-bold text-slate-500 hover:underline dark:text-slate-400"
+                          className="text-xs font-bold text-ink-400 hover:underline"
                         >
                           Rappel WhatsApp
                         </a>
@@ -696,7 +684,7 @@ export default async function DashboardPage() {
                         <input type="hidden" name="status" value="confirmed" />
                         <button
                           type="submit"
-                          className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
+                          className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500"
                         >
                           Marquer payé
                         </button>
@@ -719,12 +707,12 @@ export default async function DashboardPage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
               Historique récent
             </h2>
             <div className="space-y-3">
               {history.length === 0 && (
-                <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+                <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
                   Aucun historique pour l&apos;instant.
                 </p>
               )}
@@ -745,12 +733,12 @@ export default async function DashboardPage() {
         <section className="mb-8">
           <Link
             href="/admin"
-            className="block rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+            className="block rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
           >
-            <span className="font-bold text-slate-900 dark:text-white">
+            <span className="font-bold text-ink-900 dark:text-paper">
               Panel d&apos;administration complet
             </span>
-            <p className="mt-1 text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-ink-400">
               Tarifs, abonnements à régulariser, tous les établissements.
             </p>
           </Link>
@@ -758,41 +746,41 @@ export default async function DashboardPage() {
       )}
 
       <section>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
           Réglages de l&apos;établissement
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <Link
             href="/dashboard/agenda"
-            className="rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+            className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
           >
-            <span className="font-bold text-slate-900 dark:text-white">
+            <span className="font-bold text-ink-900 dark:text-paper">
               Horaires et capacité
             </span>
-            <p className="mt-1 text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-ink-400">
               Configurer l&apos;agenda central de votre établissement.
             </p>
           </Link>
           <Link
             href="/dashboard/catalogue"
-            className="rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+            className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
           >
-            <span className="font-bold text-slate-900 dark:text-white">
+            <span className="font-bold text-ink-900 dark:text-paper">
               Catalogue &amp; tarifs
             </span>
-            <p className="mt-1 text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-ink-400">
               Gérer les services proposés aux clients.
             </p>
           </Link>
           {profile.business_id && canManageBusiness(profile) && (
             <Link
               href="/dashboard/rapports"
-              className="rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+              className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
             >
-              <span className="font-bold text-slate-900 dark:text-white">
+              <span className="font-bold text-ink-900 dark:text-paper">
                 Rapports
               </span>
-              <p className="mt-1 text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-ink-400">
                 Encaissements et réservations par semaine, mois, trimestre ou
                 année, à télécharger en CSV.
               </p>

@@ -93,7 +93,7 @@ export function SubscriptionPaymentDialog({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600"
+        className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500"
       >
         {triggerLabel}
       </button>
@@ -104,20 +104,20 @@ export function SubscriptionPaymentDialog({
           onClick={close}
         >
           <div
-            className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-lg dark:bg-slate-900"
+            className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-lg dark:bg-ink-800"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="mb-1 font-bold text-slate-900 dark:text-white">
+            <h3 className="mb-1 font-bold text-ink-900 dark:text-paper">
               Paiement reçu
             </h3>
-            <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mb-4 text-xs text-ink-400">
               {businessName}
             </p>
 
-            <p className="mb-1 text-xs font-bold uppercase text-slate-500">
+            <p className="mb-1 text-xs font-bold uppercase tracking-widest text-ink-400">
               Durée payée
             </p>
-            <div className="mb-4 flex gap-3 text-sm text-slate-700 dark:text-slate-300">
+            <div className="mb-4 flex gap-3 text-sm text-ink-900 dark:text-paper">
               {DURATION_OPTIONS.map((opt) => (
                 <label key={opt.value} className="flex items-center gap-1">
                   <input
@@ -133,10 +133,10 @@ export function SubscriptionPaymentDialog({
               ))}
             </div>
 
-            <p className="mb-1 text-xs font-bold uppercase text-slate-500">
+            <p className="mb-1 text-xs font-bold uppercase tracking-widest text-ink-400">
               Montant payé
             </p>
-            <div className="mb-1 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+            <div className="mb-1 space-y-2 text-sm text-ink-900 dark:text-paper">
               <label className="flex items-center gap-2">
                 <input
                   type="radio"
@@ -162,13 +162,13 @@ export function SubscriptionPaymentDialog({
                   value={customAmount}
                   onChange={(e) => setCustomAmount(e.target.value)}
                   placeholder="Montant en $"
-                  className="w-full rounded-xl border border-slate-300 p-2 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
                 />
               )}
             </div>
 
             {mode === "approve" && (
-              <p className="mt-3 text-xs text-slate-400">
+              <p className="mt-3 text-xs text-ink-400">
                 {ownerWhatsapp
                   ? "Un message de bienvenue WhatsApp s'ouvrira à la confirmation."
                   : "Pas de numéro WhatsApp fourni : aucun message de bienvenue ne sera proposé."}
@@ -176,14 +176,14 @@ export function SubscriptionPaymentDialog({
             )}
 
             {error && (
-              <p className="mt-3 text-xs font-bold text-red-600">{error}</p>
+              <p className="mt-3 text-xs font-bold text-danger">{error}</p>
             )}
 
             <div className="mt-5 flex justify-end gap-2">
               <button
                 type="button"
                 onClick={close}
-                className="rounded-xl px-3 py-2 text-xs font-bold text-slate-500 hover:underline"
+                className="rounded-xl px-3 py-2 text-xs font-bold text-ink-400 hover:underline"
               >
                 Annuler
               </button>
@@ -191,7 +191,7 @@ export function SubscriptionPaymentDialog({
                 type="button"
                 disabled={pending}
                 onClick={submit}
-                className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600 disabled:opacity-60"
+                className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500 disabled:opacity-60"
               >
                 {pending ? "Enregistrement..." : "Confirmer"}
               </button>

@@ -79,12 +79,12 @@ export function MobileMoneyForm({
   return (
     <form
       action={formAction}
-      className="rounded-2xl border border-slate-200 bg-white p-6 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:col-span-2"
+      className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm dark:border-paper/10 dark:bg-ink-800 sm:col-span-2"
     >
-      <label className="font-bold text-slate-900 dark:text-white">
+      <label className="font-bold text-ink-900 dark:text-paper">
         Mobile money
       </label>
-      <p className="mt-1 mb-3 text-slate-500 dark:text-slate-400">
+      <p className="mt-1 mb-3 text-ink-400">
         Cochez chaque opérateur que vous utilisez. Le numéro et le nom du
         titulaire sont tous les deux obligatoires (affichés au client pour
         éviter tout litige au moment du transfert). Plusieurs opérateurs
@@ -99,15 +99,15 @@ export function MobileMoneyForm({
         ).map(([provider, label]) => {
           const error = rowError(provider);
           const invalidClass = error
-            ? "border-red-400 focus:border-red-500"
-            : "border-slate-300 dark:border-slate-700";
+            ? "border-danger focus:border-danger"
+            : "border-ink-900/16 dark:border-paper/16";
 
           return (
             <div
               key={provider}
-              className="rounded-xl border border-slate-200 p-3 dark:border-slate-700"
+              className="rounded-xl border border-ink-900/10 p-3 dark:border-paper/10"
             >
-              <label className="mb-2 flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
+              <label className="mb-2 flex items-center gap-2 text-sm font-bold text-ink-900 dark:text-paper">
                 <input
                   type="checkbox"
                   name={`${provider}_enabled`}
@@ -136,7 +136,7 @@ export function MobileMoneyForm({
                     }))
                   }
                   placeholder="Numéro (ex: 081 234 5678)"
-                  className={`w-full rounded-xl border p-3 text-sm dark:bg-slate-800 dark:text-white ${invalidClass}`}
+                  className={`w-full rounded-xl border p-3 text-sm dark:bg-ink-900 dark:text-paper ${invalidClass}`}
                 />
                 <input
                   type="text"
@@ -152,11 +152,11 @@ export function MobileMoneyForm({
                     }))
                   }
                   placeholder="Nom du titulaire (obligatoire)"
-                  className={`w-full rounded-xl border p-3 text-sm dark:bg-slate-800 dark:text-white ${invalidClass}`}
+                  className={`w-full rounded-xl border p-3 text-sm dark:bg-ink-900 dark:text-paper ${invalidClass}`}
                 />
               </div>
               {error && (
-                <p className="mt-1 text-xs font-bold text-red-600">{error}</p>
+                <p className="mt-1 text-xs font-bold text-danger">{error}</p>
               )}
             </div>
           );
@@ -167,17 +167,17 @@ export function MobileMoneyForm({
         <button
           type="submit"
           disabled={!isDirty || pending || hasRowErrors}
-          className="rounded-xl bg-kino-500 px-4 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-kino-600 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {pending ? "Enregistrement..." : "Enregistrer"}
         </button>
         {!isDirty && state.success && (
-          <span className="text-xs font-bold text-emerald-600">
+          <span className="text-xs font-bold text-success">
             Enregistrement réussi ✓
           </span>
         )}
         {state.error && (
-          <span className="text-xs font-bold text-red-600">
+          <span className="text-xs font-bold text-danger">
             {state.error}
           </span>
         )}

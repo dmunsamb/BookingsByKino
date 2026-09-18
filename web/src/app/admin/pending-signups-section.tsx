@@ -63,28 +63,28 @@ export async function PendingSignupsSection({
 
   return (
     <section className="mb-8">
-      <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+      <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
         Inscriptions en attente de validation
       </h2>
       <div className="space-y-3">
         {(!pending || pending.length === 0) && (
-          <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+          <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
             Aucune inscription en attente.
           </p>
         )}
         {pending?.map((b) => (
           <div
             key={b.id}
-            className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+            className="rounded-2xl border border-ink-900/10 bg-white p-4 shadow-sm dark:border-paper/10 dark:bg-ink-800"
           >
-            <p className="font-bold text-slate-900 dark:text-white">
+            <p className="font-bold text-ink-900 dark:text-paper">
               {b.name}{" "}
-              <span className="text-xs font-normal text-slate-400">
+              <span className="text-xs font-normal text-ink-400">
                 ({b.sub_category ?? b.main_category})
               </span>{" "}
               {b.is_test && <TestBadge />}
             </p>
-            <p className="mb-3 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mb-3 text-sm text-ink-400">
               Gérant : {ownerNameByBusiness.get(b.id) ?? "—"}
               {(b.address || b.city) && (
                 <> · {[b.address, b.city].filter(Boolean).join(", ")}</>

@@ -83,7 +83,7 @@ export default async function Home({
         </select>
         <button
           type="submit"
-          className="rounded-xl bg-kino-400 px-6 py-3 text-sm font-extrabold text-ink-900 transition hover:bg-kino-500"
+          className="rounded-xl bg-kino-400 px-6 py-3 text-sm font-bold text-ink-900 transition hover:bg-kino-500"
         >
           Rechercher
         </button>

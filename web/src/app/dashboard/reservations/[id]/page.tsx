@@ -37,7 +37,7 @@ export default async function EditReservationPage({
 
   if (!profile?.business_id) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-slate-500 dark:text-slate-400">
+      <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-ink-400">
         Aucun établissement n&apos;est encore associé à votre compte.
       </div>
     );
@@ -45,7 +45,7 @@ export default async function EditReservationPage({
 
   if (!canManageBusiness(profile)) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-slate-500 dark:text-slate-400">
+      <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-ink-400">
         Seul le gérant peut modifier manuellement une réservation.
       </div>
     );
@@ -64,7 +64,7 @@ export default async function EditReservationPage({
 
   if (!booking) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-slate-500 dark:text-slate-400">
+      <div className="mx-auto max-w-2xl px-4 py-10 text-sm text-ink-400">
         Cette réservation n&apos;existe pas ou plus.
       </div>
     );
@@ -134,20 +134,20 @@ export default async function EditReservationPage({
     <div className="mx-auto w-full max-w-2xl px-4 py-10">
       <Link
         href="/dashboard"
-        className="mb-4 inline-block text-xs font-bold text-slate-500 hover:underline dark:text-slate-400"
+        className="mb-4 inline-block text-xs font-bold text-ink-400 hover:underline"
       >
         ← Retour au tableau de bord
       </Link>
 
-      <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+      <h1 className="text-xl font-bold text-ink-900 dark:text-paper">
         Modifier la réservation
       </h1>
-      <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+      <p className="mb-6 text-sm text-ink-400">
         Réf. {formatBookingReference(booking.reference_number)}
       </p>
 
       {!service ? (
-        <p className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+        <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
           Service introuvable pour cette réservation.
         </p>
       ) : (
