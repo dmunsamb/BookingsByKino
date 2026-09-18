@@ -40,22 +40,17 @@ export async function SiteHeader() {
   }
 
   return (
-    <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+    <header className="bg-ink-900">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3.5">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-kino-500 to-amber-300 text-sm font-black text-slate-950">
-            K
-          </div>
-          <span className="font-black text-slate-900 dark:text-white">
-            Kino<span className="text-kino-500">Booking</span>
-          </span>
+          <span className="font-serif text-xl text-paper">KinoBooking</span>
         </Link>
         {pendingCount > 0 && (
           <Link
             href="/admin"
-            className="flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700 transition hover:bg-red-100 dark:bg-red-950 dark:text-red-300 dark:hover:bg-red-900"
+            className="flex items-center gap-1.5 rounded-full bg-kino-900 px-3 py-1 text-xs font-bold text-kino-200 transition hover:bg-kino-800"
           >
-            <span className="h-2 w-2 rounded-full bg-red-500" />
+            <span className="h-2 w-2 rounded-full bg-kino-400" />
             {pendingCount} inscription{pendingCount > 1 ? "s" : ""} en attente
           </Link>
         )}

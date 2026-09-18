@@ -47,38 +47,32 @@ export default async function Home({
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-12">
       <div className="mb-10 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-kino-500 to-amber-300 text-2xl font-black text-slate-950 shadow-lg">
-          K
-        </div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-          Kino<span className="text-kino-500">Booking</span>
+        <h1 className="font-serif text-4xl text-ink-900 dark:text-paper">
+          KinoBooking
         </h1>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          Réservez vos soins et tables à Kinshasa.
+        <p className="mt-2 text-sm text-ink-400">
+          Réservez vos soins à Kinshasa, sans faire la queue.
         </p>
         <Link
           href="/login"
-          className="mt-3 inline-block text-xs font-bold text-kino-600 underline-offset-4 hover:underline dark:text-kino-500"
+          className="mt-3 inline-block text-xs font-bold text-kino-600 underline-offset-4 hover:underline dark:text-kino-300"
         >
           Accès professionnel (gérant / personnel)
         </Link>
       </div>
 
-      <form
-        method="GET"
-        className="mb-8 flex flex-col gap-3 sm:flex-row"
-      >
+      <form method="GET" className="mb-8 flex flex-col gap-3 sm:flex-row">
         <input
           type="search"
           name="q"
           defaultValue={q ?? ""}
-          placeholder="Rechercher un salon, un type de prestation..."
-          className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:flex-1"
+          placeholder="Rechercher un salon, une prestation..."
+          className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/14 dark:bg-ink-800 dark:text-paper sm:flex-1"
         />
         <select
           name="city"
           defaultValue={city ?? ""}
-          className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white sm:w-56"
+          className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 dark:border-paper/14 dark:bg-ink-800 dark:text-paper sm:w-56"
         >
           <option value="">Toutes les communes</option>
           {cities.map((c) => (
@@ -89,7 +83,7 @@ export default async function Home({
         </select>
         <button
           type="submit"
-          className="rounded-xl bg-kino-500 px-6 py-3 text-sm font-extrabold text-slate-950 transition hover:bg-kino-600"
+          className="rounded-xl bg-kino-400 px-6 py-3 text-sm font-extrabold text-ink-900 transition hover:bg-kino-500"
         >
           Rechercher
         </button>
@@ -97,7 +91,7 @@ export default async function Home({
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {(!businesses || businesses.length === 0) && (
-          <p className="col-span-full text-center text-sm text-slate-400">
+          <p className="col-span-full text-center text-sm text-ink-400">
             {hasFilters
               ? "Aucun établissement ne correspond à votre recherche."
               : "Aucun établissement disponible pour l'instant."}
@@ -107,18 +101,18 @@ export default async function Home({
           <Link
             key={b.id}
             href={`/etablissements/${b.id}`}
-            className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+            className="overflow-hidden rounded-2xl border border-ink-900/10 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
           >
             {b.sub_category && (
-              <span className="mb-2 inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                {b.sub_category}
+              <span className="mb-2 inline-block rounded bg-kino-100 px-2 py-0.5 text-[10.5px] font-bold tracking-wide text-kino-700 dark:bg-kino-900 dark:text-kino-300">
+                {b.sub_category.toUpperCase()}
               </span>
             )}
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            <h2 className="font-serif text-lg text-ink-900 dark:text-paper">
               {b.name}
             </h2>
             {(b.address || b.city) && (
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-xs text-ink-400">
                 {[b.address, b.city].filter(Boolean).join(", ")}
               </p>
             )}

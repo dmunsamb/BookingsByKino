@@ -11,6 +11,7 @@ import { BookingForm } from "./booking-form";
 import { WalkInForm } from "./walk-in-form";
 import { formatBookingReference } from "@/lib/booking-reference";
 import { getSubscriptionStatus } from "@/lib/subscription";
+import { formatCdf } from "@/lib/currency";
 
 export default async function BusinessPage({
   params,
@@ -57,7 +58,7 @@ export default async function BusinessPage({
 
   if (!business) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16 text-center text-sm text-slate-500">
+      <div className="mx-auto max-w-2xl px-4 py-16 text-center text-sm text-ink-400">
         Cet établissement n&apos;existe pas ou plus.
       </div>
     );
@@ -88,9 +89,9 @@ export default async function BusinessPage({
 
   if (isInactive) {
     bookingSection = (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
+      <div className="rounded-xl border border-kino-200 bg-kino-50 p-6 text-center text-sm text-ink-900 dark:border-kino-800 dark:bg-ink-800 dark:text-paper">
         <p className="font-bold">Établissement temporairement indisponible</p>
-        <p className="mt-1">
+        <p className="mt-1 text-ink-400">
           Cet établissement est en attente d&apos;activation et ne peut pas
           accepter de nouvelles réservations pour le moment. Merci de
           réessayer plus tard.
@@ -100,13 +101,13 @@ export default async function BusinessPage({
   } else if (!selectedService) {
     bookingSection = (
       <>
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
           {business.main_category === "horeca"
             ? "Tables et espaces"
-            : "Nos prestations"}
+            : "Prestations"}
         </h2>
         {(!services || services.length === 0) && (
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-ink-400">
             Aucun service au catalogue pour l&apos;instant.
           </p>
         )}
@@ -115,31 +116,36 @@ export default async function BusinessPage({
             <Link
               key={s.id}
               href={`/etablissements/${id}?service=${s.id}`}
-              className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+              className="flex flex-col justify-between rounded-xl border border-ink-900/10 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
             >
               <div>
                 <div className="mb-2 flex items-start justify-between gap-2">
                   {s.category && (
-                    <span className="rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    <span className="rounded bg-kino-100 px-2 py-0.5 text-[10px] font-bold tracking-wide text-kino-700 dark:bg-kino-900 dark:text-kino-300">
                       {s.category}
                     </span>
                   )}
-                  <span className="whitespace-nowrap text-xs font-bold text-slate-400">
+                  <span className="whitespace-nowrap text-xs font-bold text-ink-400">
                     {s.duration_minutes} min
                   </span>
                 </div>
-                <h3 className="mb-1 text-sm font-extrabold text-slate-900 dark:text-white">
+                <h3 className="mb-1 text-sm font-bold text-ink-900 dark:text-paper">
                   {s.name}
                 </h3>
                 {s.description && (
-                  <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                  <p className="mb-3 line-clamp-2 text-xs leading-relaxed text-ink-400">
                     {s.description}
                   </p>
                 )}
               </div>
-              <span className="text-sm font-extrabold text-kino-600">
-                ${s.price_usd.toFixed(2)}
-              </span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-sm font-bold text-kino-600 dark:text-kino-300">
+                  ${s.price_usd.toFixed(2)}
+                </span>
+                <span className="text-xs text-ink-400">
+                  {formatCdf(s.price_usd)}
+                </span>
+              </div>
             </Link>
           ))}
         </div>
@@ -147,23 +153,23 @@ export default async function BusinessPage({
     );
   } else {
     const modeToggle = (
-      <div className="mb-4 flex gap-2 text-sm">
+      <div className="mb-4 flex gap-2.5">
         <Link
           href={`/etablissements/${id}?service=${selectedService.id}`}
-          className={`flex-1 rounded-xl border px-3 py-2 text-center font-bold ${
+          className={`flex-1 rounded-xl px-4 py-3.5 text-sm font-bold ${
             !isWalkInMode
-              ? "border-kino-500 bg-kino-50 text-kino-700 dark:bg-kino-900 dark:text-kino-100"
-              : "border-slate-300 text-slate-500 dark:border-slate-700 dark:text-slate-400"
+              ? "bg-kino-400 text-ink-900"
+              : "border border-ink-900/16 text-ink-900 dark:border-paper/16 dark:text-paper"
           }`}
         >
           Avec rendez-vous
         </Link>
         <Link
           href={`/etablissements/${id}?service=${selectedService.id}&mode=walkin`}
-          className={`flex-1 rounded-xl border px-3 py-2 text-center font-bold ${
+          className={`flex-1 rounded-xl px-4 py-3.5 text-sm font-bold ${
             isWalkInMode
-              ? "border-kino-500 bg-kino-50 text-kino-700 dark:bg-kino-900 dark:text-kino-100"
-              : "border-slate-300 text-slate-500 dark:border-slate-700 dark:text-slate-400"
+              ? "bg-kino-400 text-ink-900"
+              : "border border-ink-900/16 text-ink-900 dark:border-paper/16 dark:text-paper"
           }`}
         >
           Sans rendez-vous
@@ -224,36 +230,36 @@ export default async function BusinessPage({
     <div className="mx-auto w-full max-w-2xl px-4 py-10">
       <Link
         href={selectedService ? `/etablissements/${id}` : "/"}
-        className="mb-4 inline-block text-xs font-bold text-slate-500 hover:underline dark:text-slate-400"
+        className="mb-4 inline-block text-xs font-bold text-ink-400 hover:underline"
       >
         ← {selectedService ? "Retour aux prestations" : "Retour à la recherche"}
       </Link>
 
-      <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">
+      <h1 className="font-serif text-2xl text-ink-900 dark:text-paper">
         {business.name}
       </h1>
       {!isInactive && (business.address || business.city) && (
-        <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mb-6 text-sm text-ink-400">
           {[business.address, business.city].filter(Boolean).join(", ")}
         </p>
       )}
       {isInactive && <div className="mb-4" />}
 
       {confirmed && (
-        <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
+        <div className="mb-6 rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-ink-900 dark:text-paper">
           <p className="font-bold">
             Demande envoyée avec succès ! L&apos;établissement va valider la
             disponibilité.
           </p>
           {ref && !Number.isNaN(Number(ref)) && (
             <>
-              <p className="mt-3 text-xs uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+              <p className="mt-3 text-xs font-bold uppercase tracking-widest text-kino-600 dark:text-kino-300">
                 Votre numéro de suivi
               </p>
-              <p className="text-2xl font-extrabold tracking-wide">
+              <p className="font-mono text-2xl font-bold tracking-wide text-ink-900 dark:text-paper">
                 {formatBookingReference(Number(ref))}
               </p>
-              <p className="mt-1 text-xs text-emerald-800 dark:text-emerald-300">
+              <p className="mt-1 text-xs text-ink-400">
                 Faites-en une capture d&apos;écran : ce numéro vous permet de
                 suivre votre demande auprès de l&apos;établissement en cas de
                 question.
@@ -264,24 +270,24 @@ export default async function BusinessPage({
       )}
 
       {walkin && (
-        <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200">
+        <div className="mb-6 rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-ink-900 dark:text-paper">
           <p className="font-bold">Vous êtes dans la file d&apos;attente !</p>
           {ticket && !Number.isNaN(Number(ticket)) && (
             <>
-              <p className="mt-3 text-xs uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+              <p className="mt-3 text-xs font-bold uppercase tracking-widest text-kino-600 dark:text-kino-300">
                 Votre numéro dans la file aujourd&apos;hui
               </p>
-              <p className="text-2xl font-extrabold tracking-wide">
+              <p className="font-serif text-3xl text-ink-900 dark:text-paper">
                 {ticket}
               </p>
             </>
           )}
-          <p className="mt-3 text-xs text-emerald-800 dark:text-emerald-300">
+          <p className="mt-3 text-xs text-ink-400">
             Présentez-vous sur place, votre tour viendra dans l&apos;ordre
             d&apos;arrivée — sans acompte à payer.
           </p>
           {ref && !Number.isNaN(Number(ref)) && (
-            <p className="mt-2 text-xs text-emerald-700 dark:text-emerald-400">
+            <p className="mt-2 text-xs text-ink-400">
               Référence : {formatBookingReference(Number(ref))}
             </p>
           )}

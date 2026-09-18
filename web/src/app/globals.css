@@ -1,39 +1,58 @@
 @import "tailwindcss";
 
+/*
+ * Identité KinoBooking « Nuit & laiton » — direction retenue à l'issue
+ * du travail de design (voir le brief et les exports Claude Design).
+ * Encre profonde + laiton doré, DM Serif Display pour les titres, DM Sans
+ * pour l'interface. Valeurs reprises telles quelles de la bibliothèque de
+ * composants livrée ("KinoBooking - Composants").
+ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f4ef;
+  --foreground: #17131c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #100d14;
+    --foreground: #f7f4ef;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-dm-sans);
+  --font-serif: var(--font-dm-serif);
 
-  /* Palette KinoBooking, reprise du prototype (index.html) */
-  --color-kino-50: #fff7ed;
-  --color-kino-100: #ffedd5;
-  --color-kino-500: #f97316;
-  --color-kino-600: #ea580c;
-  --color-kino-700: #c2410c;
-  --color-kino-900: #7c2d12;
+  /* kino — laiton, couleur d'action */
+  --color-kino-50: #fbf7ec;
+  --color-kino-100: #f5ead0;
+  --color-kino-200: #ebd8a9;
+  --color-kino-300: #e3c87a;
+  --color-kino-400: #d4af4f;
+  --color-kino-500: #b8922f;
+  --color-kino-600: #94741f;
+  --color-kino-700: #6e5616;
+  --color-kino-800: #463710;
+  --color-kino-900: #2a2009;
+  --color-kino-950: #1b1407;
 
-  --color-brand-50: #f0fdf4;
-  --color-brand-500: #22c55e;
-  --color-brand-600: #16a34a;
-  --color-brand-700: #15803d;
-}
+  /* encre — surfaces & texte */
+  --color-ink-900: #17131c;
+  --color-ink-800: #221c29;
+  --color-ink-400: #7c7485;
+  --color-paper: #f7f4ef;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* sémantique */
+  --color-success: #3e7d62;
+  --color-warning: #b8922f;
+  --color-danger: #a8342b;
+  --color-info: #3e6a8d;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }
