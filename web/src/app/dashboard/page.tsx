@@ -774,6 +774,20 @@ export default async function DashboardPage() {
           </Link>
           {profile.business_id && canManageBusiness(profile) && (
             <Link
+              href="/dashboard/bilan"
+              className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
+            >
+              <span className="font-bold text-ink-900 dark:text-paper">
+                Ma semaine
+              </span>
+              <p className="mt-1 text-ink-400">
+                Bilan de la semaine : encaissements, meilleures ventes,
+                absences, une recommandation.
+              </p>
+            </Link>
+          )}
+          {profile.business_id && canManageBusiness(profile) && (
+            <Link
               href="/dashboard/rapports"
               className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
             >

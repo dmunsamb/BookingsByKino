@@ -59,6 +59,29 @@ export function weekRange(weekStr: string): DateRange {
   return { start, end };
 }
 
+function getIsoWeekOfUtcDate(utcDate: Date): { year: number; week: number } {
+  const d = new Date(
+    Date.UTC(utcDate.getUTCFullYear(), utcDate.getUTCMonth(), utcDate.getUTCDate())
+  );
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(
+    ((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7
+  );
+  return { year: d.getUTCFullYear(), week };
+}
+
+/** La semaine ISO juste avant `weekStr` — pour les comparaisons "vs semaine passée". */
+export function previousWeekIso(weekStr: string): string {
+  const [yearStr, weekPart] = weekStr.split("-W");
+  const monday = isoWeekMonday(Number(yearStr), Number(weekPart));
+  const prevMonday = new Date(monday);
+  prevMonday.setUTCDate(monday.getUTCDate() - 7);
+  const { year, week } = getIsoWeekOfUtcDate(prevMonday);
+  return `${year}-W${pad(week)}`;
+}
+
 export function formatWeekLabel(weekStr: string): string {
   const { start, end } = weekRange(weekStr);
   const startDate = new Date(start);
