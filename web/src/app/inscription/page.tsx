@@ -181,6 +181,14 @@ export default function SignupPage() {
             Se connecter
           </Link>
         </p>
+        <p className="mt-1 text-center text-xs text-ink-400">
+          <Link
+            href="/faq-gerants"
+            className="font-bold text-kino-600 hover:underline dark:text-kino-300"
+          >
+            FAQ gérants
+          </Link>
+        </p>
       </div>
     </div>
   );

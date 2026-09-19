@@ -1,70 +1,72 @@
 import Link from "next/link";
+import { FaqAccordion } from "@/components/faq-accordion";
 
 /**
- * FAQ publique pour les gérants (prospects et déjà inscrits) — questions
- * en accordéon, en pur CSS (<details>/<summary>, sans JavaScript), même
- * principe que la galerie photo (etablissements/[id]/photo-gallery.tsx).
+ * FAQ pour les visiteurs / clients — affichée dans le menu du header
+ * quand personne n'est connecté. Voir /faq-gerants pour la FAQ
+ * professionnelle, affichée une fois connecté (seuls les gérants et
+ * leur personnel ont un compte sur KinoBooking, jamais les clients).
  */
 const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
-    question: "Comment mon établissement devient-il visible sur KinoBooking ?",
+    question: "Dois-je créer un compte pour réserver ?",
     answer:
-      "Après votre inscription, l'établissement reste « en attente de validation » et n'apparaît pas encore dans le catalogue public. L'équipe KinoBooking valide manuellement chaque nouvelle inscription ; vous recevez un accès complet dès que c'est fait.",
+      "Non. Vous réservez directement depuis la fiche de l'établissement, sans compte ni mot de passe : juste votre nom et votre numéro de téléphone.",
   },
   {
-    question: "Comment fonctionne l'abonnement KinoBooking ?",
+    question: "Comment réserver un rendez-vous ?",
     answer:
-      "L'abonnement se règle par mobile money, pour 1, 3 ou 12 mois selon la durée choisie (tarif fixé par KinoBooking). Passé la date d'échéance, vous disposez d'un délai de grâce de 7 jours avant que l'accès à votre tableau de bord ne soit suspendu — les demandes de réservation de vos clients continuent d'arriver pendant ce temps.",
+      "Choisissez un établissement, puis un service, puis un créneau disponible, et envoyez votre demande. L'établissement la valide ensuite et vous contacte sur WhatsApp.",
   },
   {
-    question: "Comment un client réserve-t-il un rendez-vous ?",
+    question: "Que se passe-t-il après ma demande de réservation ?",
     answer:
-      "Depuis la fiche de votre établissement, sans créer de compte : il choisit un service puis un créneau (jamais le jour même) et envoie sa demande. Vous la validez depuis votre tableau de bord, ce qui ouvre WhatsApp avec un message prérempli demandant l'acompte au client.",
+      "Une fois votre demande validée par l'établissement, vous recevez un message WhatsApp avec le montant de l'acompte à envoyer et les coordonnées mobile money pour le faire.",
   },
   {
-    question: "Puis-je accepter des clients sans rendez-vous ?",
+    question: "Dois-je payer un acompte ? Comment ?",
     answer:
-      "Oui, avec le mode « Sans rendez-vous » : le client prend un ticket dans une file d'attente, sans acompte à payer, et sans le délai imposé aux réservations avec rendez-vous.",
+      "Oui, pour une réservation avec rendez-vous : un acompte par mobile money (M-Pesa, Orange Money ou Airtel Money selon l'établissement) confirme votre créneau. Le mode « Sans rendez-vous » n'en demande pas.",
   },
   {
-    question: "Comment recevoir l'acompte de mes clients ?",
+    question: "Puis-je venir sans rendez-vous ?",
     answer:
-      "Renseignez vos numéros mobile money (M-Pesa, Orange Money, Airtel Money) dans Configuration → coordonnées de paiement. Ils sont ensuite inclus automatiquement dans le message WhatsApp envoyé au client lors de la validation de sa demande.",
+      "Oui, la plupart des établissements proposent un mode « Sans rendez-vous » : vous prenez un ticket dans une file d'attente et patientez sur place, sans acompte à payer.",
   },
   {
-    question: "Puis-je gérer plusieurs salons avec un seul compte ?",
+    question: "Puis-je réserver pour aujourd'hui même ?",
     answer:
-      "Oui. Depuis Configuration → « Ajouter un établissement », créez un deuxième salon rattaché au même compte de connexion, puis basculez de l'un à l'autre depuis le tableau de bord.",
+      "Pas avec un rendez-vous — les créneaux s'ouvrent à partir du lendemain. Pour le jour même, présentez-vous directement en mode « Sans rendez-vous ».",
   },
   {
-    question: "Comment ajouter les membres de mon équipe ?",
+    question: "Comment savoir si ma réservation est confirmée ?",
     answer:
-      "Depuis Configuration → Équipe. Une fois ajoutés, ils deviennent assignables à une réservation (« avec untel/unetelle ») — il ne s'agit pas encore de comptes de connexion séparés, seulement d'une organisation interne.",
+      "L'établissement vous contacte sur WhatsApp dès réception de votre acompte. Gardez votre numéro de suivi (affiché après votre demande) au cas où vous auriez besoin de les recontacter.",
   },
   {
-    question: "Comment bloquer un créneau (congé, indisponibilité) ?",
+    question: "Puis-je annuler ou changer l'horaire de ma réservation ?",
     answer:
-      "Depuis Configuration → Horaires et capacité, ajoutez un blocage sur la date et la plage horaire concernées : le créneau disparaît immédiatement de la disponibilité proposée aux clients.",
+      "Contactez directement l'établissement sur WhatsApp avec votre numéro de suivi — c'est lui qui gère votre réservation, KinoBooking n'intervient pas dans cet échange.",
   },
   {
-    question: "Que se passe-t-il si un client ne se présente pas ?",
+    question: "Mon numéro de téléphone est-il visible par tout le monde ?",
     answer:
-      "Une fois l'heure du rendez-vous passée, marquez-le « No-show » depuis votre tableau de bord. Le taux d'absences de la semaine est visible dans Rapport, avec une recommandation concrète pour le réduire (ex. demander un acompte sur les prestations qui n'en ont pas encore).",
+      "Non. Seul l'établissement auprès duquel vous réservez a accès à vos coordonnées, pour vous contacter au sujet de cette réservation.",
   },
   {
-    question: "Où voir mes encaissements et mes statistiques ?",
+    question: "Comment trouver un établissement près de chez moi ?",
     answer:
-      "Dans Rapport : un bilan de la semaine (encaissements, meilleures ventes, absences) et un rapport par période (semaine, mois, trimestre, année), téléchargeable en CSV.",
+      "Sur la page d'accueil, utilisez la recherche par nom, le filtre par commune, ou le menu de catégories (salon de coiffure, salon de beauté, restaurant...).",
   },
   {
-    question: "Comment ajouter des photos de mon salon ?",
+    question: "Que faire si un établissement ne répond pas ?",
     answer:
-      "Depuis Configuration → Photos, ajoutez jusqu'à 8 photos qui défilent sur votre fiche établissement. Vous pouvez aussi ajouter une photo par service (catalogue) et par membre de l'équipe. Formats acceptés : JPEG, PNG, WebP, 5 Mo maximum par photo.",
+      "Recontactez-le directement sur WhatsApp. KinoBooking met en relation clients et établissements mais ne gère pas les rendez-vous à leur place.",
   },
   {
-    question: "Le numéro de téléphone d'un client est-il visible par tout mon personnel ?",
+    question: "Est-ce gratuit pour moi ?",
     answer:
-      "Non. Seul le gérant (propriétaire) voit le numéro complet ; un simple membre du personnel voit une version masquée, pour protéger la confidentialité de vos clients.",
+      "Oui, entièrement gratuit pour les clients. Ce sont les établissements qui s'abonnent à KinoBooking, pas vous.",
   },
 ];
 
@@ -72,55 +74,38 @@ export default function FaqPage() {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10">
       <Link
-        href="/login"
+        href="/"
         className="mb-4 inline-block text-xs font-bold text-ink-400 hover:underline"
       >
-        ← Accès professionnel
+        ← Retour à l&apos;accueil
       </Link>
 
       <h1 className="mb-2 font-serif text-2xl text-ink-900 dark:text-paper">
-        Questions fréquentes — Gérants
+        Questions fréquentes
       </h1>
       <p className="mb-6 text-sm text-ink-400">
-        Tout ce qu&apos;un gérant ou son équipe se demande le plus souvent
-        sur KinoBooking.
+        Tout ce qu&apos;on se demande le plus souvent avant de réserver sur
+        KinoBooking.
       </p>
 
-      <div className="space-y-2">
-        {FAQ_ITEMS.map((item) => (
-          <details
-            key={item.question}
-            className="group rounded-2xl border border-ink-900/10 bg-white p-4 dark:border-paper/10 dark:bg-ink-800"
-          >
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-ink-900 dark:text-paper">
-              {item.question}
-              <span className="text-ink-400 transition group-open:rotate-45">
-                +
-              </span>
-            </summary>
-            <p className="mt-3 text-sm leading-relaxed text-ink-400">
-              {item.answer}
-            </p>
-          </details>
-        ))}
-      </div>
+      <FaqAccordion items={FAQ_ITEMS} />
 
       <p className="mt-8 text-center text-xs text-ink-400">
-        Une autre question ?{" "}
+        Vous gérez un établissement ?{" "}
+        <Link
+          href="/faq-gerants"
+          className="font-bold text-kino-600 hover:underline dark:text-kino-300"
+        >
+          Consultez la FAQ gérants
+        </Link>{" "}
+        ou{" "}
         <Link
           href="/inscription"
           className="font-bold text-kino-600 hover:underline dark:text-kino-300"
         >
-          Créez votre compte
-        </Link>{" "}
-        ou{" "}
-        <Link
-          href="/login"
-          className="font-bold text-kino-600 hover:underline dark:text-kino-300"
-        >
-          connectez-vous
-        </Link>{" "}
-        pour contacter l&apos;équipe KinoBooking.
+          créez votre compte
+        </Link>
+        .
       </p>
     </div>
   );

@@ -127,10 +127,10 @@ export async function SiteHeader() {
               ))}
               <hr className="my-2 border-ink-900/10 dark:border-paper/10" />
               <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-ink-400">
-                Gérants
+                {user ? "Gérants" : "Aide"}
               </p>
               <Link
-                href="/faq"
+                href={user ? "/faq-gerants" : "/faq"}
                 className="block rounded-xl px-3 py-2 text-sm font-bold text-ink-900 hover:bg-ink-900/5 dark:text-paper dark:hover:bg-paper/10"
               >
                 FAQ — Questions fréquentes
