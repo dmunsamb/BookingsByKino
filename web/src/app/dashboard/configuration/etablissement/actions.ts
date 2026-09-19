@@ -5,7 +5,22 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 import { isValidCategory, mainCategoryForAny } from "@/lib/categories";
 
-export type BusinessInfoFormState = { error?: string; success?: boolean };
+export type BusinessInfoFormState = {
+  error?: string;
+  success?: boolean;
+  // Réinjecté par le formulaire après une erreur : React réinitialise les
+  // champs non contrôlés d'un <form action={...}> à chaque soumission
+  // (succès ou échec), donc sans ça, une erreur de validation effacerait
+  // ce que le gérant venait de saisir dans les autres champs.
+  values?: {
+    name: string;
+    categories: string[];
+    address: string;
+    commune: string;
+    city: string;
+    whatsapp: string;
+  };
+};
 
 /**
  * Édition des informations de l'établissement après inscription — avant
@@ -36,13 +51,22 @@ export async function updateBusinessInfo(
   const whatsappRaw = formData.get("whatsapp");
   const whatsapp = typeof whatsappRaw === "string" ? whatsappRaw.trim() : "";
 
+  const values = {
+    name: typeof name === "string" ? name : "",
+    categories,
+    address: typeof address === "string" ? address : "",
+    commune: typeof commune === "string" ? commune : "",
+    city: typeof city === "string" ? city : "",
+    whatsapp,
+  };
+
   if (
     typeof name !== "string" ||
     !name.trim() ||
     categories.length === 0 ||
     !categories.every(isValidCategory)
   ) {
-    return { error: "Veuillez remplir tous les champs obligatoires." };
+    return { error: "Veuillez remplir tous les champs obligatoires.", values };
   }
 
   const supabase = await createClient();
@@ -60,7 +84,10 @@ export async function updateBusinessInfo(
     .eq("id", profile.business_id);
 
   if (error) {
-    return { error: "Erreur lors de l'enregistrement. Merci de réessayer." };
+    return {
+      error: "Erreur lors de l'enregistrement. Merci de réessayer.",
+      values,
+    };
   }
 
   revalidatePath("/dashboard/configuration/etablissement");
