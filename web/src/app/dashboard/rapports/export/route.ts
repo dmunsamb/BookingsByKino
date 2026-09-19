@@ -67,17 +67,22 @@ export async function GET(request: NextRequest) {
           ? currentYearIso()
           : currentMonthIso());
   const { start, end } = periodRange(type, value);
+  const staffFilter = params.get("staff") || null;
 
   const supabase = await createClient();
-  const { data: entries } = await supabase
+  let entriesQuery = supabase
     .from("agenda_entries_for_dashboard")
     .select(
-      "service_id, client_name, client_phone_display, start_time, status, reference_number"
+      "service_id, client_name, client_phone_display, start_time, status, reference_number, staff_name"
     )
     .eq("business_id", profile.business_id)
     .gte("start_time", start)
     .lt("start_time", end)
     .order("start_time");
+  if (staffFilter) {
+    entriesQuery = entriesQuery.eq("staff_id", staffFilter);
+  }
+  const { data: entries } = await entriesQuery;
 
   const allEntries = entries ?? [];
 
@@ -97,6 +102,7 @@ export async function GET(request: NextRequest) {
     "Client",
     "Téléphone",
     "Service",
+    "Membre",
     "Montant (USD)",
     "Statut",
     "Référence",
@@ -114,6 +120,7 @@ export async function GET(request: NextRequest) {
       csvCell(e.client_name ?? ""),
       csvCell(e.client_phone_display ?? ""),
       csvCell(service?.name ?? ""),
+      csvCell(e.staff_name ?? ""),
       csvCell(service ? service.price_usd.toFixed(2) : ""),
       csvCell(statusLabels[e.status] ?? e.status),
       csvCell(formatBookingReference(e.reference_number)),

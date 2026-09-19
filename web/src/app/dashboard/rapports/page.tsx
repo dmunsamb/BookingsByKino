@@ -144,6 +144,7 @@ export default async function GerantRapportsPage({
     month?: string;
     quarter?: string;
     year?: string;
+    staff?: string;
   }>;
 }) {
   const profile = await getCurrentProfile();
@@ -166,6 +167,7 @@ export default async function GerantRapportsPage({
       : "month";
   const value = periodValue(type, params);
   const { start, end } = periodRange(type, value);
+  const staffFilter = params.staff || null;
 
   const supabase = await createClient();
 
@@ -174,22 +176,28 @@ export default async function GerantRapportsPage({
   const { start: weekStart, end: weekEnd } = weekRange(week);
   const { start: prevWeekStart, end: prevWeekEnd } = weekRange(prevWeek);
 
+  let entriesQuery = supabase
+    .from("agenda_entries_for_dashboard")
+    .select(
+      "id, service_id, client_name, client_phone_display, start_time, status, reference_number, staff_name"
+    )
+    .eq("business_id", profile.business_id)
+    .gte("start_time", start)
+    .lt("start_time", end)
+    .order("start_time");
+  if (staffFilter) {
+    entriesQuery = entriesQuery.eq("staff_id", staffFilter);
+  }
+
   const [
     { data: entries },
     { data: currentWeekEntries },
     { data: previousWeekEntries },
     { data: weekServices },
     { data: businessRow },
+    { data: staffMembers },
   ] = await Promise.all([
-    supabase
-      .from("agenda_entries_for_dashboard")
-      .select(
-        "id, service_id, client_name, client_phone_display, start_time, status, reference_number"
-      )
-      .eq("business_id", profile.business_id)
-      .gte("start_time", start)
-      .lt("start_time", end)
-      .order("start_time"),
+    entriesQuery,
     supabase
       .from("agenda_entries_for_dashboard")
       .select("id, service_id, status, source")
@@ -211,6 +219,11 @@ export default async function GerantRapportsPage({
       .select("created_at")
       .eq("id", profile.business_id)
       .maybeSingle(),
+    supabase
+      .from("staff_members")
+      .select("id, name")
+      .eq("business_id", profile.business_id)
+      .order("name"),
   ]);
 
   // Aucune période antérieure à l'inscription de l'établissement : ça
@@ -292,6 +305,9 @@ export default async function GerantRapportsPage({
     }, 0);
 
   const exportParams = new URLSearchParams({ type, [type]: value });
+  if (staffFilter) {
+    exportParams.set("staff", staffFilter);
+  }
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
@@ -460,6 +476,25 @@ export default async function GerantRapportsPage({
             </select>
           )}
         </div>
+        {staffMembers && staffMembers.length > 0 && (
+          <div>
+            <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
+              Membre de l&apos;équipe
+            </label>
+            <select
+              name="staff"
+              defaultValue={staffFilter ?? ""}
+              className="rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
+            >
+              <option value="">Toute l&apos;équipe</option>
+              {staffMembers.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <button
           type="submit"
           className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500"
@@ -503,6 +538,7 @@ export default async function GerantRapportsPage({
               <th className="p-3">Date</th>
               <th className="p-3">Client</th>
               <th className="p-3">Service</th>
+              <th className="p-3">Membre</th>
               <th className="p-3">Montant</th>
               <th className="p-3">Statut</th>
               <th className="p-3">Réf.</th>
@@ -511,7 +547,7 @@ export default async function GerantRapportsPage({
           <tbody className="divide-y divide-ink-900/8 dark:divide-paper/8">
             {allEntries.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-4 text-center text-ink-400">
+                <td colSpan={7} className="p-4 text-center text-ink-400">
                   Aucune réservation pour cette période.
                 </td>
               </tr>
@@ -539,6 +575,9 @@ export default async function GerantRapportsPage({
                   </td>
                   <td className="p-3 text-ink-400">
                     {service?.name ?? "—"}
+                  </td>
+                  <td className="p-3 text-ink-400">
+                    {e.staff_name ?? "—"}
                   </td>
                   <td className="p-3 font-bold text-kino-600 dark:text-kino-300">
                     {service ? `$${service.price_usd.toFixed(2)}` : "—"}
