@@ -23,7 +23,7 @@ export function NewBusinessForm() {
           name="business_name"
           type="text"
           required
-          placeholder="ex: Salon Nouschka II"
+          placeholder="ex: Sephora Beauty II"
           className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
         />
       </div>
