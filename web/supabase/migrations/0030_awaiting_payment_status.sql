@@ -1,0 +1,19 @@
+-- Correction du flux d'approbation (0029) : un établissement approuvé
+-- "sous réserve" ne doit PAS avoir accès au tableau de bord tant que le
+-- premier paiement n'est pas confirmé — 0029 avait à tort activé l'accès
+-- dès la première approbation (subscription_paid_until = null traité
+-- comme "actif"). Le gate d'accès (dashboard/page.tsx) est basé sur
+-- signup_status = 'approved' : il faut donc un statut intermédiaire pour
+-- rester bloqué tant que le paiement n'est pas confirmé.
+--
+-- Nouveau flux à deux étapes, chacune avec son propre message WhatsApp :
+-- 1) "Approuver sous conditions" : pending_approval -> awaiting_payment,
+--    message avec les tarifs et les numéros de paiement KinoBooking.
+-- 2) "Approuver" (paiement reçu) : awaiting_payment -> approved (accès
+--    donné SEULEMENT à cette étape), message de confirmation/bienvenue.
+--
+-- ALTER TYPE ... ADD VALUE ne peut pas être utilisé dans la même
+-- transaction qu'un statement qui référence la nouvelle valeur — cette
+-- migration se limite donc à l'ajouter ; aucune donnée existante n'a
+-- besoin d'être basculée dessus.
+alter type public.business_signup_status add value 'awaiting_payment' after 'pending_approval';

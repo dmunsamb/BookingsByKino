@@ -1,6 +1,6 @@
 "use client";
 
-import { approveBusiness } from "./actions";
+import { conditionallyApproveBusiness } from "./actions";
 import {
   buildWhatsAppLink,
   formatMobileMoneyAccounts,
@@ -17,11 +17,13 @@ const DURATION_LABELS: { value: DurationMonths; label: string }[] = [
 ];
 
 /**
- * Approuve l'inscription et ouvre WhatsApp (même geste, comme
- * ValidateWithWhatsAppButton) avec un message listant les tarifs
- * d'abonnement et les numéros mobile money DE KINOBOOKING — l'accès est
- * donné tout de suite, "sous réserve" que le gérant régularise ensuite
- * (voir approveBusiness, migration 0029).
+ * Approuve l'inscription "sous conditions" (étape 1/2, voir
+ * conditionallyApproveBusiness/migration 0030) et ouvre WhatsApp (même
+ * geste, comme ValidateWithWhatsAppButton) avec un message listant les
+ * tarifs d'abonnement et les numéros mobile money DE KINOBOOKING —
+ * PAS d'accès au tableau de bord à ce stade : l'établissement reste
+ * bloqué tant que le paiement n'est pas confirmé (AwaitingPaymentSection,
+ * étape 2/2).
  */
 export function ApproveSignupButton({
   businessId,
@@ -52,14 +54,12 @@ export function ApproveSignupButton({
 
   const message = `Bonjour ${
     ownerName ?? ""
-  } ! Votre établissement "${businessName}" a été approuvé sur KinoBooking. Vous avez accès à votre tableau de bord : https://kinobooking.netlify.app/login (connectez-vous avec l'email utilisé à l'inscription).
-
-Pour profiter d'un accès complet, il ne reste que le paiement de votre abonnement :
+  } ! Votre établissement "${businessName}" a été présélectionné sur KinoBooking. Pour activer votre accès au tableau de bord, merci de régler votre abonnement :
 ${pricesLines}
 
 ${
   paymentLine
-    ? `À envoyer via ${paymentLine}, puis confirmez-le-nous ici une fois fait.`
+    ? `À envoyer via ${paymentLine}, puis confirmez-le-nous ici une fois fait — votre accès sera activé dès réception.`
     : "Contactez-nous pour connaître les modalités de paiement."
 }${
     contactWhatsapp
@@ -71,7 +71,7 @@ ${
 
   return (
     <form
-      action={approveBusiness}
+      action={conditionallyApproveBusiness}
       onSubmit={() => {
         if (whatsAppLink) {
           window.open(whatsAppLink, "_blank", "noopener,noreferrer");
@@ -83,7 +83,9 @@ ${
         type="submit"
         className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500"
       >
-        {whatsAppLink ? "Approuver (WhatsApp)" : "Approuver"}
+        {whatsAppLink
+          ? "Approuver sous conditions (WhatsApp)"
+          : "Approuver sous conditions"}
       </button>
     </form>
   );

@@ -42,6 +42,9 @@ export function BusinessSwitcher({
             <option key={b.id} value={b.id}>
               {b.name}
               {b.signup_status === "pending_approval" ? " (en attente)" : ""}
+              {b.signup_status === "awaiting_payment"
+                ? " (sous conditions)"
+                : ""}
               {b.signup_status === "rejected" ? " (refusé)" : ""}
             </option>
           ))}

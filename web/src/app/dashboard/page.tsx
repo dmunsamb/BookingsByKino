@@ -221,7 +221,7 @@ export default async function DashboardPage() {
               />
             </div>
           )}
-          {businessStatusCheck.signup_status === "pending_approval" ? (
+          {businessStatusCheck.signup_status === "pending_approval" && (
             <>
               <h1 className="mb-2 text-lg font-bold text-ink-900 dark:text-paper">
                 Inscription en attente de validation
@@ -232,7 +232,21 @@ export default async function DashboardPage() {
                 accès complet dès que ce sera fait.
               </p>
             </>
-          ) : (
+          )}
+          {businessStatusCheck.signup_status === "awaiting_payment" && (
+            <>
+              <h1 className="mb-2 text-lg font-bold text-ink-900 dark:text-paper">
+                Inscription approuvée sous conditions
+              </h1>
+              <p className="text-sm text-ink-400">
+                Votre établissement a été approuvé ! Il ne reste que le
+                paiement de votre abonnement pour activer votre accès —
+                vous devriez avoir reçu un message WhatsApp avec les
+                détails. Contactez-nous si besoin.
+              </p>
+            </>
+          )}
+          {businessStatusCheck.signup_status === "rejected" && (
             <>
               <h1 className="mb-2 text-lg font-bold text-ink-900 dark:text-paper">
                 Inscription non validée

@@ -44,15 +44,15 @@ function addMonths(date: Date, months: number): Date {
 }
 
 /**
- * Approuve l'inscription : accès immédiat au tableau de bord, mais "sous
- * réserve" du paiement de l'abonnement — subscription_paid_until reste
- * null (déjà traité comme "actif" par lib/subscription.ts, voir 0029).
- * Le message WhatsApp envoyé au gérant (voir SubscriptionPaymentDialog/
- * ApproveSignupButton) porte les tarifs et les numéros mobile money de
- * KinoBooking ; le paiement lui-même s'enregistre séparément, une fois
- * reçu, via recordSubscriptionPayment (même mécanisme qu'un renouvellement).
+ * Étape 1/2 : approuve l'inscription "sous conditions" — PAS d'accès au
+ * tableau de bord à ce stade (dashboard/page.tsx bloque tout ce qui n'est
+ * pas signup_status = 'approved'). Fait juste passer pending_approval ->
+ * awaiting_payment ; le message WhatsApp envoyé au gérant (voir
+ * ApproveSignupButton) porte les tarifs et les numéros mobile money DE
+ * KINOBOOKING. L'accès réel n'est donné qu'à l'étape 2, une fois le
+ * paiement confirmé (voir recordSubscriptionPayment).
  */
-export async function approveBusiness(formData: FormData) {
+export async function conditionallyApproveBusiness(formData: FormData) {
   const admin = await requirePlatformAdmin();
   if (!admin) return;
 
@@ -62,17 +62,20 @@ export async function approveBusiness(formData: FormData) {
   const supabase = await createClient();
   await supabase
     .from("businesses")
-    .update({ signup_status: "approved" })
+    .update({ signup_status: "awaiting_payment" })
     .eq("id", id);
 
   revalidatePath("/admin");
 }
 
 /**
- * Enregistre un paiement d'abonnement pour un établissement déjà
- * approuvé (renouvellement). Prolonge depuis la date déjà payée si elle
- * est encore dans le futur (paiement anticipé), sinon depuis maintenant
- * (renouvellement après coupure).
+ * Étape 2/2 (ou renouvellement) : enregistre un paiement d'abonnement.
+ * Passe aussi signup_status à 'approved' — c'est ce qui donne réellement
+ * accès au tableau de bord pour un établissement encore
+ * "awaiting_payment" ; sans effet pour un renouvellement, déjà approuvé.
+ * Prolonge depuis la date déjà payée si elle est encore dans le futur
+ * (paiement anticipé), sinon depuis maintenant (première activation ou
+ * renouvellement après coupure).
  */
 export async function recordSubscriptionPayment(formData: FormData) {
   const admin = await requirePlatformAdmin();
@@ -98,7 +101,10 @@ export async function recordSubscriptionPayment(formData: FormData) {
 
   await supabase
     .from("businesses")
-    .update({ subscription_paid_until: addMonths(base, months).toISOString() })
+    .update({
+      signup_status: "approved",
+      subscription_paid_until: addMonths(base, months).toISOString(),
+    })
     .eq("id", id);
 
   await supabase.from("subscription_payments").insert({

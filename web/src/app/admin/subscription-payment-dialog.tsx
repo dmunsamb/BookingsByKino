@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { recordSubscriptionPayment } from "./actions";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 type DurationMonths = 1 | 3 | 12;
 
@@ -13,22 +14,35 @@ const DURATION_OPTIONS: { value: DurationMonths; label: string }[] = [
 
 /**
  * Popup d'enregistrement d'un paiement gérant (premier paiement après
- * approbation, ou renouvellement — recordSubscriptionPayment gère les
+ * approbation "sous conditions" — étape 2/2, voir AwaitingPaymentSection
+ * — ou renouvellement ordinaire — recordSubscriptionPayment gère les
  * deux cas correctement). On choisit d'abord la durée payée, ce qui
  * affiche le tarif déjà configuré pour cette durée (voir section "Tarifs
  * d'abonnement") en présélection — avec une option "Autre montant" si le
  * gérant a payé un montant différent (négocié, partiel, etc.).
+ *
+ * `sendWelcomeMessage` (première activation uniquement, pas les
+ * renouvellements) ouvre WhatsApp avec un message de bienvenue confirmant
+ * l'accès — de façon synchrone dans le clic, avant l'action serveur
+ * (async), pour rester dans le geste utilisateur et éviter le blocage de
+ * pop-up (même principe que ValidateWithWhatsAppButton).
  */
 export function SubscriptionPaymentDialog({
   businessId,
   businessName,
+  ownerName,
+  ownerWhatsapp,
   prices,
   triggerLabel,
+  sendWelcomeMessage = false,
 }: {
   businessId: string;
   businessName: string;
+  ownerName?: string | null;
+  ownerWhatsapp?: string | null;
   prices: Record<DurationMonths, number>;
   triggerLabel: string;
+  sendWelcomeMessage?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [months, setMonths] = useState<DurationMonths>(1);
@@ -54,6 +68,17 @@ export function SubscriptionPaymentDialog({
     }
 
     setError(null);
+
+    if (sendWelcomeMessage && ownerWhatsapp) {
+      const durationLabel = DURATION_OPTIONS.find((o) => o.value === months)?.label;
+      const welcomeLink = buildWhatsAppLink(
+        ownerWhatsapp,
+        `Bonjour ${ownerName ?? ""} ! Nous avons bien reçu votre paiement de $${amount.toFixed(
+          2
+        )} (${durationLabel}) pour "${businessName}". Votre établissement est maintenant actif sur KinoBooking : connectez-vous à votre tableau de bord ici : https://kinobooking.netlify.app/login — avec l'email utilisé à l'inscription. Bienvenue !`
+      );
+      window.open(welcomeLink, "_blank", "noopener,noreferrer");
+    }
 
     const formData = new FormData();
     formData.set("id", businessId);
@@ -144,6 +169,14 @@ export function SubscriptionPaymentDialog({
                 />
               )}
             </div>
+
+            {sendWelcomeMessage && (
+              <p className="mt-3 text-xs text-ink-400">
+                {ownerWhatsapp
+                  ? "Un message de bienvenue WhatsApp s'ouvrira à la confirmation."
+                  : "Pas de numéro WhatsApp fourni : aucun message de bienvenue ne sera proposé."}
+              </p>
+            )}
 
             {error && (
               <p className="mt-3 text-xs font-bold text-danger">{error}</p>

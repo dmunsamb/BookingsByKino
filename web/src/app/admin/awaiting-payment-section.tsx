@@ -1,71 +1,53 @@
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { rejectBusiness } from "./actions";
-import { ApproveSignupButton } from "./approve-signup-button";
+import { SubscriptionPaymentDialog } from "./subscription-payment-dialog";
 import { ViewSignupDialog } from "./view-signup-dialog";
 import { TestBadge } from "./test-badge";
-import {
-  fetchPlatformAccounts,
-  fetchPriceByDuration,
-  resolveOwnerNames,
-} from "./signup-shared";
+import { fetchPriceByDuration, resolveOwnerNames } from "./signup-shared";
 
 /**
- * Liste des inscriptions en attente de validation, avec actions
- * Approuver sous conditions/Refuser en un clic (étape 1/2 du flux
- * d'approbation, voir AwaitingPaymentSection pour l'étape 2/2).
- * Réutilisée sur /admin (panel complet) et sur /dashboard pour
- * platform_admin — jusqu'ici rien ne signalait une nouvelle inscription
- * tant qu'on n'allait pas consulter /admin soi-même ; ceci s'affiche
- * directement à la connexion.
- *
- * `showEmptyState` à false masque complètement la section quand il n'y
- * a rien à valider (utile sur /dashboard, pour ne pas encombrer l'écran
- * d'un admin la plupart du temps) ; à true (par défaut) elle affiche un
- * message explicite (utile sur /admin, un vrai écran de gestion).
+ * Étape 2/2 du flux d'approbation (voir PendingSignupsSection pour
+ * l'étape 1/2 et conditionallyApproveBusiness/migration 0030) :
+ * établissements approuvés "sous conditions" mais toujours SANS accès au
+ * tableau de bord tant que leur premier paiement n'est pas confirmé ici.
+ * "Ils ont payé" enregistre le paiement ET active l'accès (voir
+ * recordSubscriptionPayment), avec un message WhatsApp de bienvenue.
  */
-export async function PendingSignupsSection({
-  showEmptyState = true,
-}: {
-  showEmptyState?: boolean;
-}) {
+export async function AwaitingPaymentSection() {
   const supabase = await createClient();
 
-  const { data: pending } = await supabase
+  const { data: awaiting } = await supabase
     .from("businesses")
     .select(
       "id, name, main_category, categories, address, commune, city, owner_email, owner_whatsapp, image_url, is_test, created_at"
     )
-    .eq("signup_status", "pending_approval")
+    .eq("signup_status", "awaiting_payment")
     .order("created_at", { ascending: false });
 
-  if ((!pending || pending.length === 0) && !showEmptyState) {
-    return null;
-  }
-
   const priceByDuration = await fetchPriceByDuration(supabase);
-  const {
-    accounts: platformAccounts,
-    contactName,
-    contactWhatsapp,
-  } = await fetchPlatformAccounts(supabase);
   const ownerNameByBusiness = await resolveOwnerNames(
     supabase,
-    (pending ?? []).map((b) => b.id)
+    (awaiting ?? []).map((b) => b.id)
   );
 
   return (
     <section className="mb-8">
       <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
-        Inscriptions en attente de validation
+        Paiement en attente de confirmation
       </h2>
+      <p className="mb-3 text-xs text-ink-400">
+        Approuvé sous conditions, mais sans accès au tableau de bord tant
+        que le paiement de l&apos;abonnement n&apos;est pas confirmé
+        ci-dessous.
+      </p>
       <div className="space-y-3">
-        {(!pending || pending.length === 0) && (
+        {(!awaiting || awaiting.length === 0) && (
           <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
-            Aucune inscription en attente.
+            Aucun paiement en attente de confirmation.
           </p>
         )}
-        {pending?.map((b) => (
+        {awaiting?.map((b) => (
           <div
             key={b.id}
             className="rounded-2xl border border-ink-900/10 bg-white p-4 shadow-sm dark:border-paper/10 dark:bg-ink-800"
@@ -88,15 +70,14 @@ export async function PendingSignupsSection({
             </p>
             <div className="flex flex-wrap gap-3 sm:items-center sm:justify-between">
               <div className="flex flex-wrap gap-3">
-                <ApproveSignupButton
+                <SubscriptionPaymentDialog
                   businessId={b.id}
                   businessName={b.name}
                   ownerName={ownerNameByBusiness.get(b.id)}
                   ownerWhatsapp={b.owner_whatsapp}
                   prices={priceByDuration}
-                  platformAccounts={platformAccounts}
-                  contactName={contactName}
-                  contactWhatsapp={contactWhatsapp}
+                  triggerLabel="Ils ont payé leur abonnement"
+                  sendWelcomeMessage
                 />
                 <ViewSignupDialog
                   details={{

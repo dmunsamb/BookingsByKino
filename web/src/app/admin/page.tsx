@@ -13,11 +13,14 @@ import {
   type PlatformPaymentSettings,
 } from "./platform-payment-settings-form";
 import { PendingSignupsSection } from "./pending-signups-section";
+import { AwaitingPaymentSection } from "./awaiting-payment-section";
+import { fetchPriceByDuration, resolveOwnerNames } from "./signup-shared";
 import { TestBadge } from "./test-badge";
 import Link from "next/link";
 
 const statusLabels: Record<string, string> = {
   pending_approval: "En attente",
+  awaiting_payment: "Sous conditions",
   approved: "Validé",
   rejected: "Refusé",
 };
@@ -29,8 +32,6 @@ const statusBadgeClasses: Record<SubscriptionStatus, string> = {
     "bg-kino-100 text-kino-700 dark:bg-kino-900 dark:text-kino-300",
   inactif: "bg-danger/10 text-danger",
 };
-
-const DURATION_MONTHS = [1, 3, 12] as const;
 
 export default async function AdminPage() {
   const profile = await getCurrentProfile();
@@ -53,16 +54,7 @@ export default async function AdminPage() {
     .neq("signup_status", "pending_approval")
     .order("created_at", { ascending: false });
 
-  const { data: prices } = await supabase
-    .from("subscription_prices")
-    .select("duration_months, amount_usd");
-
-  const priceByDuration = Object.fromEntries(
-    DURATION_MONTHS.map((m) => [
-      m,
-      prices?.find((p) => p.duration_months === m)?.amount_usd ?? 0,
-    ])
-  ) as Record<(typeof DURATION_MONTHS)[number], number>;
+  const priceByDuration = await fetchPriceByDuration(supabase);
 
   const { data: paymentSettingsRow } = await supabase
     .from("platform_payment_settings")
@@ -81,36 +73,9 @@ export default async function AdminPage() {
     contactWhatsapp: paymentSettingsRow?.contact_whatsapp ?? "",
   };
 
-  // Passe par business_owners (plutôt que profiles.business_id
-  // directement) : un gérant qui possède plusieurs établissements n'a
-  // qu'un seul business_id "actif" à la fois — ses autres établissements
-  // ne s'y retrouveraient pas sinon (voir migration 0021).
-  const businessIds = (businesses ?? []).map((b) => b.id);
-  const { data: ownerLinks } = businessIds.length
-    ? await supabase
-        .from("business_owners")
-        .select("business_id, profile_id")
-        .in("business_id", businessIds)
-    : { data: [] };
-
-  const ownerProfileIds = [
-    ...new Set((ownerLinks ?? []).map((l) => l.profile_id)),
-  ];
-  const { data: ownerProfiles } = ownerProfileIds.length
-    ? await supabase
-        .from("profiles")
-        .select("id, full_name")
-        .in("id", ownerProfileIds)
-    : { data: [] };
-
-  const nameByProfileId = new Map(
-    (ownerProfiles ?? []).map((p) => [p.id, p.full_name])
-  );
-  const ownerNameByBusiness = new Map(
-    (ownerLinks ?? []).map((l) => [
-      l.business_id,
-      nameByProfileId.get(l.profile_id) ?? null,
-    ])
+  const ownerNameByBusiness = await resolveOwnerNames(
+    supabase,
+    (businesses ?? []).map((b) => b.id)
   );
 
   const approved = (businesses ?? []).filter(
@@ -119,6 +84,9 @@ export default async function AdminPage() {
   const rejected = (businesses ?? []).filter(
     (b) => b.signup_status === "rejected"
   );
+  const awaitingPayment = (businesses ?? []).filter(
+    (b) => b.signup_status === "awaiting_payment"
+  );
 
   const approvedWithStatus = approved.map((b) => ({
     ...b,
@@ -126,13 +94,6 @@ export default async function AdminPage() {
   }));
   const needsAttention = approvedWithStatus.filter(
     (b) => b.subscriptionStatus !== "actif"
-  );
-  // Approuvé "sous réserve" (voir approveBusiness, migration 0029) :
-  // jamais facturé, donc "actif" par défaut (getSubscriptionStatus) —
-  // sans cette liste séparée, ces établissements n'apparaîtraient nulle
-  // part tant que le premier paiement n'a pas été enregistré.
-  const neverBilled = approvedWithStatus.filter(
-    (b) => b.subscription_paid_until === null
   );
 
   const needsAttentionIds = needsAttention.map((b) => b.id);
@@ -185,42 +146,7 @@ export default async function AdminPage() {
 
       <PendingSignupsSection />
 
-      <section className="mb-8">
-        <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
-          Premier paiement à enregistrer
-        </h2>
-        <p className="mb-3 text-xs text-ink-400">
-          Approuvé, accès déjà donné — l&apos;abonnement n&apos;est pas
-          encore facturé (on ne pénalise pas un gérant avant sa première
-          échéance). Enregistrez ici le paiement dès qu&apos;il arrive.
-        </p>
-        <div className="space-y-3">
-          {neverBilled.length === 0 && (
-            <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
-              Aucun premier paiement en attente.
-            </p>
-          )}
-          {neverBilled.map((b) => (
-            <div
-              key={b.id}
-              className="flex flex-col gap-3 rounded-2xl border border-ink-900/10 bg-white p-4 shadow-sm dark:border-paper/10 dark:bg-ink-800 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <p className="font-bold text-ink-900 dark:text-paper">
-                {b.name} {b.is_test && <TestBadge />}
-                <span className="ml-2 text-xs font-normal text-ink-400">
-                  {ownerNameByBusiness.get(b.id) ?? "—"}
-                </span>
-              </p>
-              <SubscriptionPaymentDialog
-                businessId={b.id}
-                businessName={b.name}
-                prices={priceByDuration}
-                triggerLabel="Ils ont payé leur abonnement"
-              />
-            </div>
-          ))}
-        </div>
-      </section>
+      <AwaitingPaymentSection />
 
       <section className="mb-8">
         <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
@@ -320,13 +246,28 @@ export default async function AdminPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-ink-900/8 dark:divide-paper/8">
-              {approved.length === 0 && rejected.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="p-4 text-center text-ink-400">
-                    Aucun autre établissement.
+              {approved.length === 0 &&
+                rejected.length === 0 &&
+                awaitingPayment.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="p-4 text-center text-ink-400">
+                      Aucun autre établissement.
+                    </td>
+                  </tr>
+                )}
+              {awaitingPayment.map((b) => (
+                <tr key={b.id}>
+                  <td className="p-3 font-medium text-ink-900 dark:text-paper">
+                    {b.name} {b.is_test && <TestBadge />}
+                  </td>
+                  <td className="p-3 text-ink-400">
+                    {ownerNameByBusiness.get(b.id) ?? "—"}
+                  </td>
+                  <td className="p-3 text-ink-400">
+                    {statusLabels[b.signup_status]}
                   </td>
                 </tr>
-              )}
+              ))}
               {approvedWithStatus.map((b) => (
                 <tr key={b.id}>
                   <td className="p-3 font-medium text-ink-900 dark:text-paper">

@@ -35,10 +35,14 @@ export async function SiteHeader() {
     displayName = profile?.full_name ?? user.email ?? null;
 
     if (profile?.role === "platform_admin") {
+      // Compte aussi "awaiting_payment" (approuvé sous conditions, en
+      // attente de confirmation de paiement — voir migration 0030) :
+      // sans ça, un gérant qui a payé pourrait rester bloqué sans accès
+      // si l'admin oublie l'étape 2/2 faute de rappel visuel.
       const { count } = await supabase
         .from("businesses")
         .select("id", { count: "exact", head: true })
-        .eq("signup_status", "pending_approval");
+        .in("signup_status", ["pending_approval", "awaiting_payment"]);
       pendingCount = count ?? 0;
     }
   }
