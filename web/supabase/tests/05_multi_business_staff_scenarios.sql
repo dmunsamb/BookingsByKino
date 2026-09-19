@@ -250,6 +250,11 @@ values ('8fa5d756-9910-46d7-9e3b-27521ef4e9da', '0ad3d5d9-76da-4d4a-9f60-cb5d828
 --     (is_owner_of étendu, policy de la migration 0022) — c'est ce qui
 --     permettra au sélecteur de gérer plusieurs salons sans changer
 --     d'onglet actif à chaque action.
+--
+--     Filtré sur "TEST Grâce" plutôt qu'un count(*) global : Nouschka a
+--     depuis accumulé de vrais membres d'équipe (Metty, Shanayah,
+--     Alaiah...) au fil du pilote, un compte total figé casserait ce test
+--     à chaque ajout réel sans rapport avec ce qui est testé ici.
 do $$
 declare
   v_count int;
@@ -258,7 +263,8 @@ begin
   where id = '0ad3d5d9-76da-4d4a-9f60-cb5d828cd7ad';
   set local role authenticated;
   perform set_config('request.jwt.claim.sub', '0ad3d5d9-76da-4d4a-9f60-cb5d828cd7ad', true);
-  select count(*) into v_count from staff_members where business_id = '8fa5d756-9910-46d7-9e3b-27521ef4e9da';
+  select count(*) into v_count from staff_members
+  where business_id = '8fa5d756-9910-46d7-9e3b-27521ef4e9da' and name = 'TEST Grâce';
   reset role;
   perform set_config('request.jwt.claim.sub', '', true);
   update profiles set business_id = '8fa5d756-9910-46d7-9e3b-27521ef4e9da'
