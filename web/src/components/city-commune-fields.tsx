@@ -15,13 +15,18 @@ const selectClass =
  * pour la prochaine (Lubumbashi...).
  */
 export function CityCommuneFields({
-  defaultCity = CITIES[0] ?? "",
+  defaultCity,
   defaultCommune = "",
 }: {
   defaultCity?: string;
   defaultCommune?: string;
 }) {
-  const [city, setCity] = useState(defaultCity);
+  // `|| CITIES[0]` (pas juste une valeur par défaut de paramètre) : un
+  // appelant qui passe explicitement "" ou undefined (ex. établissement
+  // créé avant l'existence du champ ville) doit quand même retomber sur
+  // une vraie ville, sinon la liste de communes se retrouve vide alors
+  // que le <select> Ville, lui, affiche silencieusement sa 1ère option.
+  const [city, setCity] = useState(defaultCity || CITIES[0] || "");
   const communes = communesForCity(city);
 
   return (

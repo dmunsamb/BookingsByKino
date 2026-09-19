@@ -4,9 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; city?: string; category?: string }>;
+  searchParams: Promise<{ q?: string; commune?: string; category?: string }>;
 }) {
-  const { q, city, category } = await searchParams;
+  const { q, commune, category } = await searchParams;
   const supabase = await createClient();
 
   let query = supabase
@@ -14,8 +14,8 @@ export default async function Home({
     .select("id, name, main_category, sub_category, city, commune, address")
     .order("name");
 
-  if (city) {
-    query = query.eq("city", city);
+  if (commune) {
+    query = query.eq("commune", commune);
   }
 
   if (category) {
@@ -31,7 +31,7 @@ export default async function Home({
   const term = q?.trim().replace(/[,()]/g, "");
   if (term) {
     query = query.or(
-      `name.ilike.%${term}%,sub_category.ilike.%${term}%,city.ilike.%${term}%,address.ilike.%${term}%`
+      `name.ilike.%${term}%,sub_category.ilike.%${term}%,city.ilike.%${term}%,commune.ilike.%${term}%,address.ilike.%${term}%`
     );
   }
 
@@ -53,16 +53,23 @@ export default async function Home({
     }
   }
 
-  const { data: cityRows } = await supabase
+  // Seulement les communes effectivement renseignées par au moins un
+  // établissement — pas la liste complète des 24 communes de Kinshasa,
+  // qui proposerait des filtres ne renvoyant jamais rien.
+  const { data: communeRows } = await supabase
     .from("businesses")
-    .select("city")
-    .not("city", "is", null);
+    .select("commune")
+    .not("commune", "is", null);
 
-  const cities = Array.from(
-    new Set((cityRows ?? []).map((c) => c.city).filter((c): c is string => !!c))
+  const communes = Array.from(
+    new Set(
+      (communeRows ?? [])
+        .map((c) => c.commune)
+        .filter((c): c is string => !!c)
+    )
   ).sort();
 
-  const hasFilters = !!term || !!city || !!category;
+  const hasFilters = !!term || !!commune || !!category;
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-12">
@@ -85,12 +92,12 @@ export default async function Home({
           className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/14 dark:bg-ink-800 dark:text-paper sm:flex-1"
         />
         <select
-          name="city"
-          defaultValue={city ?? ""}
+          name="commune"
+          defaultValue={commune ?? ""}
           className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 dark:border-paper/14 dark:bg-ink-800 dark:text-paper sm:w-56"
         >
           <option value="">Toutes les communes</option>
-          {cities.map((c) => (
+          {communes.map((c) => (
             <option key={c} value={c}>
               {c}
             </option>
@@ -112,7 +119,7 @@ export default async function Home({
           <Link
             href={{
               pathname: "/",
-              query: { ...(q ? { q } : {}), ...(city ? { city } : {}) },
+              query: { ...(q ? { q } : {}), ...(commune ? { commune } : {}) },
             }}
             className="text-xs font-bold text-ink-400 hover:underline"
           >
