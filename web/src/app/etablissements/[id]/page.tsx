@@ -7,6 +7,7 @@ import {
   minBookableDateIso,
   type AvailabilityRule,
   type SlotCapacity,
+  type BlockedStaffSlot,
 } from "@/lib/availability";
 import { BookingForm } from "./booking-form";
 import { WalkInForm } from "./walk-in-form";
@@ -214,30 +215,38 @@ export default async function BusinessPage({
         </>
       );
     } else {
-      const { data: allRules } = await supabase
-        .from("availability_rules")
-        .select(
-          "weekday, start_time, end_time, slot_duration_minutes, capacity"
-        )
-        .eq("business_id", id);
-
-      const { data: capacities } = await supabase.rpc("get_agenda_capacity", {
-        p_business_id: id,
-      });
+      const [{ data: allRules }, { data: capacities }, { data: blockRows }] =
+        await Promise.all([
+          supabase
+            .from("availability_rules")
+            .select(
+              "weekday, start_time, end_time, slot_duration_minutes, capacity, staff_id"
+            )
+            .eq("business_id", id),
+          supabase.rpc("get_agenda_capacity", { p_business_id: id }),
+          supabase
+            .from("agenda_entries")
+            .select("start_time, staff_id")
+            .eq("business_id", id)
+            .eq("source", "blokkering")
+            .gte("start_time", new Date().toISOString()),
+        ]);
 
       const rules = (allRules ?? []) as AvailabilityRule[];
       const bookingCapacities = (capacities ?? []) as SlotCapacity[];
+      const blockedSlots = (blockRows ?? []) as BlockedStaffSlot[];
 
       // Sans date explicitement choisie, on pré-sélectionne la première
       // date où le service est réellement réservable plutôt que "demain"
-      // à l'aveugle, qui peut très bien être complet ou fermé.
+      // à l'aveugle, qui peut très bien être complet, bloqué ou fermé.
       const effectiveDate = hasExplicitDate
         ? date
         : firstAvailableDateIso(
             rules,
             bookingCapacities,
             selectedService.duration_minutes,
-            minDate
+            minDate,
+            blockedSlots
           );
 
       const weekday = new Date(`${effectiveDate}T12:00:00+01:00`).getDay();
@@ -246,7 +255,8 @@ export default async function BusinessPage({
         rules.filter((r) => r.weekday === weekday),
         effectiveDate,
         bookingCapacities,
-        selectedService.duration_minutes
+        selectedService.duration_minutes,
+        blockedSlots
       );
 
       bookingSection = (

@@ -158,12 +158,13 @@ export async function deleteAvailabilityRule(formData: FormData) {
  * US-O14/US-S4). Ouvert au personnel comme au gérant, comme le permet
  * déjà la policy RLS staff_insert_manual_entries.
  *
- * Crée une ligne "blokkering" par créneau de la grille d'ouverture
- * recouvert par la plage choisie (même découpage que
- * generateSlotsForDate), regroupées par block_group_id pour pouvoir être
- * affichées et supprimées ensemble. get_agenda_capacity (migration 0018)
- * traite ensuite ces créneaux comme indisponibles, quelle que soit la
- * capacité configurée.
+ * Depuis 0027, un blocage peut viser un membre précis (staff_id) ou toute
+ * l'équipe (staff_id null) — la grille de créneaux générée (même
+ * découpage que generateSlotsForDate) ne porte alors que sur les horaires
+ * du ou des membres concernés. Regroupées par block_group_id pour
+ * pouvoir être affichées et supprimées ensemble ; enforce_agenda_capacity
+ * et generateSlotsForDate excluent ensuite la capacité du ou des membres
+ * bloqués sur ces créneaux exacts.
  */
 export type BlockFormState = { error?: string };
 
@@ -179,6 +180,9 @@ export async function createBlockingEntry(
     return { error: "Action non autorisée." };
   }
 
+  const staffIdRaw = formData.get("staff_id");
+  const staffId =
+    typeof staffIdRaw === "string" && staffIdRaw ? staffIdRaw : null;
   const date = formData.get("date");
   const startTime = formData.get("start_time");
   const endTime = formData.get("end_time");
@@ -200,11 +204,27 @@ export async function createBlockingEntry(
   const supabase = await createClient();
   const weekday = new Date(`${date}T12:00:00+01:00`).getDay();
 
-  const { data: rules } = await supabase
+  if (staffId) {
+    const { data: staffMember } = await supabase
+      .from("staff_members")
+      .select("id")
+      .eq("id", staffId)
+      .eq("business_id", profile.business_id)
+      .maybeSingle();
+    if (!staffMember) {
+      return { error: "Membre de l'équipe introuvable." };
+    }
+  }
+
+  let rulesQuery = supabase
     .from("availability_rules")
-    .select("weekday, start_time, end_time, slot_duration_minutes, capacity")
+    .select("weekday, start_time, end_time, slot_duration_minutes, capacity, staff_id")
     .eq("business_id", profile.business_id)
     .eq("weekday", weekday);
+  if (staffId) {
+    rulesQuery = rulesQuery.eq("staff_id", staffId);
+  }
+  const { data: rules } = await rulesQuery;
 
   const fromMinutes = timeToMinutes(startTime);
   const toMinutes = timeToMinutes(endTime);
@@ -216,6 +236,7 @@ export async function createBlockingEntry(
         business_id: profile.business_id as string,
         source: "blokkering" as const,
         block_group_id: blockGroupId,
+        staff_id: staffId,
         start_time: localSlotToIso(date, minutesToTime(startMinutes)),
         end_time: localSlotToIso(
           date,

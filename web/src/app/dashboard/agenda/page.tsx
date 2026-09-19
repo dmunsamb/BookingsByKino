@@ -84,18 +84,26 @@ export default async function AgendaPage() {
 
   const { data: blockRows } = await supabase
     .from("agenda_entries")
-    .select("id, block_group_id, start_time, end_time")
+    .select("id, block_group_id, start_time, end_time, staff_id")
     .eq("business_id", profile.business_id)
     .eq("source", "blokkering")
     .gte("start_time", new Date().toISOString())
     .order("start_time");
 
-  const blockGroups = new Map<string, { id: string; start: string; end: string }>();
+  const blockGroups = new Map<
+    string,
+    { id: string; start: string; end: string; staffId: string | null }
+  >();
   for (const row of blockRows ?? []) {
     const key = row.block_group_id ?? row.id;
     const existing = blockGroups.get(key);
     if (!existing) {
-      blockGroups.set(key, { id: key, start: row.start_time, end: row.end_time });
+      blockGroups.set(key, {
+        id: key,
+        start: row.start_time,
+        end: row.end_time,
+        staffId: row.staff_id,
+      });
     } else {
       if (row.start_time < existing.start) existing.start = row.start_time;
       if (row.end_time > existing.end) existing.end = row.end_time;
@@ -200,11 +208,15 @@ export default async function AgendaPage() {
           Congés et indisponibilités
         </h2>
         <p className="mb-4 text-sm text-ink-400">
-          Bloque une plage horaire : elle n&apos;apparaît plus disponible
-          pour les nouvelles réservations en ligne (FR-9.3).
+          Bloque une plage horaire pour un membre précis (ex. maladie) ou
+          toute l&apos;équipe (ex. congé collectif) : elle n&apos;apparaît
+          plus disponible pour les nouvelles réservations en ligne
+          (FR-9.3).
         </p>
 
-        {isStaffMember(profile) && <BlockingForm />}
+        {isStaffMember(profile) && (
+          <BlockingForm staffMembers={activeStaffMembers} />
+        )}
 
         <div className="space-y-2">
           {blocks.length === 0 && (
@@ -219,6 +231,11 @@ export default async function AgendaPage() {
             >
               <span className="text-ink-900 dark:text-paper">
                 {formatBlockRange(b.start, b.end)}
+                <span className="ml-2 text-xs font-bold text-ink-400">
+                  {b.staffId
+                    ? staffNameById.get(b.staffId) ?? "—"
+                    : "Toute l'équipe"}
+                </span>
               </span>
               {isStaffMember(profile) && (
                 <form action={deleteBlockingGroup}>

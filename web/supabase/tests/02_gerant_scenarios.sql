@@ -76,26 +76,24 @@ exception when others then
   insert into test_results values ('3_blocage_cree', 'ECHEC_INATTENDU', sqlerrm);
 end $$;
 
--- 4. get_agenda_capacity doit refléter le blocage (booked_count = 999999) pour ces 2 créneaux
+-- 4. Depuis 0027, get_agenda_capacity ne reflète plus les blocages (le
+--    flag 999999 de 0018 bloquait TOUT le monde, incompatible avec un
+--    blocage visant un seul membre) — elle ne compte que les vraies
+--    réservations (status in (...)), donc aucune ligne pour ces horaires
+--    purement bloqués (les lignes "blokkering" ont status NULL). Le rejet
+--    de la réservation reste vérifié par les tests 5/6 et la section
+--    dédiée plus bas.
 do $$
 declare
-  v_row record;
-  v_ok boolean := true;
-  v_seen int := 0;
+  v_seen int;
 begin
-  for v_row in
-    select * from get_agenda_capacity('8fa5d756-9910-46d7-9e3b-27521ef4e9da')
-    where start_time in ('2026-09-14T12:00:00+01:00'::timestamptz, '2026-09-14T12:30:00+01:00'::timestamptz)
-  loop
-    v_seen := v_seen + 1;
-    if v_row.booked_count <> 999999 then
-      v_ok := false;
-    end if;
-  end loop;
-  if v_ok and v_seen = 2 then
-    insert into test_results values ('4_capacite_reflete_blocage', 'OK', '2 créneaux à 999999');
+  select count(*) into v_seen
+  from get_agenda_capacity('8fa5d756-9910-46d7-9e3b-27521ef4e9da')
+  where start_time in ('2026-09-14T12:00:00+01:00'::timestamptz, '2026-09-14T12:30:00+01:00'::timestamptz);
+  if v_seen = 0 then
+    insert into test_results values ('4_capacite_ignore_le_blocage', 'OK', 'aucune ligne renvoyée pour ces créneaux');
   else
-    insert into test_results values ('4_capacite_reflete_blocage', 'BUG', 'vus=' || v_seen || ' ok=' || v_ok);
+    insert into test_results values ('4_capacite_ignore_le_blocage', 'BUG', 'vus=' || v_seen || ' (attendu 0)');
   end if;
 end $$;
 
@@ -139,6 +137,101 @@ select * from test_results order by step;
 rollback;
 
 -- ============================================================
+-- Blocage par membre de l'équipe (0027_staff_aware_blocking.sql)
+-- ============================================================
+--
+-- Nouschka est fermée le dimanche (aucune availability_rules existante
+-- ce jour-là) : on y crée deux règles temporaires, une par membre, pour
+-- isoler ce scénario de la capacité déjà configurée les autres jours.
+
+begin;
+
+create temp table test_results (step text, outcome text, detail text) on commit drop;
+grant insert, select on test_results to anon, authenticated;
+
+do $$
+declare
+  v_staff_a uuid := gen_random_uuid();
+  v_staff_b uuid := gen_random_uuid();
+  v_group uuid;
+  v_ref bigint;
+begin
+  insert into staff_members (id, business_id, name)
+  values
+    (v_staff_a, '8fa5d756-9910-46d7-9e3b-27521ef4e9da', 'TEST Membre A'),
+    (v_staff_b, '8fa5d756-9910-46d7-9e3b-27521ef4e9da', 'TEST Membre B');
+
+  insert into availability_rules (business_id, staff_id, weekday, start_time, end_time, slot_duration_minutes, capacity)
+  values
+    ('8fa5d756-9910-46d7-9e3b-27521ef4e9da', v_staff_a, 0, '10:00', '12:00', 30, 1),
+    ('8fa5d756-9910-46d7-9e3b-27521ef4e9da', v_staff_b, 0, '10:00', '12:00', 30, 1);
+
+  -- 10. Sans blocage, dimanche 13/09 10:00 : capacité totale 2 (A+B) —
+  --     deux réservations doivent passer, une 3e doit être refusée.
+  begin
+    select next_booking_reference() into v_ref;
+    insert into agenda_entries (business_id, service_id, source, status, client_name, client_phone, start_time, end_time, reference_number)
+    values ('8fa5d756-9910-46d7-9e3b-27521ef4e9da', '1a4cf0c2-bfb7-436e-88b8-0755394e97a2', 'manueel', 'confirmed', 'TEST Dim A', '0840000001', '2026-09-13T10:00:00+01:00', '2026-09-13T10:20:00+01:00', v_ref);
+    select next_booking_reference() into v_ref;
+    insert into agenda_entries (business_id, service_id, source, status, client_name, client_phone, start_time, end_time, reference_number)
+    values ('8fa5d756-9910-46d7-9e3b-27521ef4e9da', '1a4cf0c2-bfb7-436e-88b8-0755394e97a2', 'manueel', 'confirmed', 'TEST Dim B', '0840000002', '2026-09-13T10:00:00+01:00', '2026-09-13T10:20:00+01:00', v_ref);
+    insert into test_results values ('8_somme_des_membres_ok', 'OK', '2 réservations acceptées (capacité 1+1)');
+  exception when others then
+    insert into test_results values ('8_somme_des_membres_ok', 'BUG', sqlerrm);
+  end;
+
+  begin
+    insert into agenda_entries (business_id, service_id, source, status, client_name, client_phone, start_time, end_time, reference_number)
+    values ('8fa5d756-9910-46d7-9e3b-27521ef4e9da', '1a4cf0c2-bfb7-436e-88b8-0755394e97a2', 'manueel', 'confirmed', 'TEST Dim C', '0840000003', '2026-09-13T10:00:00+01:00', '2026-09-13T10:20:00+01:00', 999906);
+    insert into test_results values ('9_troisieme_refusee', 'BUG_AURAIT_DU_ECHOUER', 'insert accepté à tort (capacité 2/2 déjà atteinte)');
+  exception when others then
+    insert into test_results values ('9_troisieme_refusee', 'OK_REJETE_COMME_ATTENDU', sqlerrm);
+  end;
+
+  -- 12. Un blocage du seul membre A à 11:00 ne doit PAS empêcher une
+  --     réservation à 11:00 (le membre B, non bloqué, reste disponible).
+  v_group := gen_random_uuid();
+  insert into agenda_entries (business_id, source, block_group_id, staff_id, start_time, end_time)
+  values ('8fa5d756-9910-46d7-9e3b-27521ef4e9da', 'blokkering', v_group, v_staff_a, '2026-09-13T11:00:00+01:00', '2026-09-13T11:30:00+01:00');
+
+  begin
+    select next_booking_reference() into v_ref;
+    insert into agenda_entries (business_id, service_id, source, status, client_name, client_phone, start_time, end_time, reference_number)
+    values ('8fa5d756-9910-46d7-9e3b-27521ef4e9da', '1a4cf0c2-bfb7-436e-88b8-0755394e97a2', 'manueel', 'confirmed', 'TEST Dim D', '0840000004', '2026-09-13T11:00:00+01:00', '2026-09-13T11:20:00+01:00', v_ref);
+    insert into test_results values ('10_membre_b_dispo_malgre_blocage_a', 'OK', 'réservation acceptée malgré A bloqué (B reste dispo)');
+  exception when others then
+    insert into test_results values ('10_membre_b_dispo_malgre_blocage_a', 'BUG', sqlerrm);
+  end;
+
+  -- 13. Une 2e réservation à 11:00 doit maintenant être refusée : A est
+  --     bloqué, B est déjà pris, capacité effective 0.
+  begin
+    insert into agenda_entries (business_id, service_id, source, status, client_name, client_phone, start_time, end_time, reference_number)
+    values ('8fa5d756-9910-46d7-9e3b-27521ef4e9da', '1a4cf0c2-bfb7-436e-88b8-0755394e97a2', 'manueel', 'confirmed', 'TEST Dim E', '0840000005', '2026-09-13T11:00:00+01:00', '2026-09-13T11:20:00+01:00', 999907);
+    insert into test_results values ('11_plus_personne_dispo_a_11h', 'BUG_AURAIT_DU_ECHOUER', 'insert accepté à tort');
+  exception when others then
+    insert into test_results values ('11_plus_personne_dispo_a_11h', 'OK_REJETE_COMME_ATTENDU', sqlerrm);
+  end;
+
+  -- 14. Un blocage "toute l'équipe" (staff_id NULL) à 11:30 doit refuser
+  --     tout le monde, y compris un membre non explicitement cité.
+  insert into agenda_entries (business_id, source, block_group_id, staff_id, start_time, end_time)
+  values ('8fa5d756-9910-46d7-9e3b-27521ef4e9da', 'blokkering', gen_random_uuid(), null, '2026-09-13T11:30:00+01:00', '2026-09-13T12:00:00+01:00');
+
+  begin
+    insert into agenda_entries (business_id, service_id, source, status, client_name, client_phone, start_time, end_time, reference_number)
+    values ('8fa5d756-9910-46d7-9e3b-27521ef4e9da', '1a4cf0c2-bfb7-436e-88b8-0755394e97a2', 'manueel', 'confirmed', 'TEST Dim F', '0840000006', '2026-09-13T11:30:00+01:00', '2026-09-13T11:50:00+01:00', 999908);
+    insert into test_results values ('12_blocage_toute_equipe_bloque_tous', 'BUG_AURAIT_DU_ECHOUER', 'insert accepté à tort');
+  exception when others then
+    insert into test_results values ('12_blocage_toute_equipe_bloque_tous', 'OK_REJETE_COMME_ATTENDU', sqlerrm);
+  end;
+end $$;
+
+select * from test_results order by step;
+
+rollback;
+
+-- ============================================================
 -- Confidentialité du téléphone client (BR-8) — vue agenda_entries_for_dashboard
 -- ============================================================
 
@@ -161,9 +254,9 @@ declare
 begin
   select client_phone_display into v_display from agenda_entries_for_dashboard where reference_number = 999920;
   if v_display = '089 *** 66' then
-    insert into test_results values ('8_staff_voit_numero_masque', 'OK', v_display);
+    insert into test_results values ('13_staff_voit_numero_masque', 'OK', v_display);
   else
-    insert into test_results values ('8_staff_voit_numero_masque', 'BUG', 'obtenu: ' || coalesce(v_display, 'NULL'));
+    insert into test_results values ('13_staff_voit_numero_masque', 'BUG', 'obtenu: ' || coalesce(v_display, 'NULL'));
   end if;
 end $$;
 
@@ -180,9 +273,9 @@ declare
 begin
   select client_phone_display into v_display from agenda_entries_for_dashboard where reference_number = 999920;
   if v_display = '0899887766' then
-    insert into test_results values ('9_owner_voit_numero_complet', 'OK', v_display);
+    insert into test_results values ('14_owner_voit_numero_complet', 'OK', v_display);
   else
-    insert into test_results values ('9_owner_voit_numero_complet', 'BUG', 'obtenu: ' || coalesce(v_display, 'NULL'));
+    insert into test_results values ('14_owner_voit_numero_complet', 'BUG', 'obtenu: ' || coalesce(v_display, 'NULL'));
   end if;
 end $$;
 

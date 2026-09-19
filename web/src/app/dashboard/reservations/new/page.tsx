@@ -6,6 +6,7 @@ import {
   todayIso,
   type AvailabilityRule,
   type SlotCapacity,
+  type BlockedStaffSlot,
 } from "@/lib/availability";
 import { NewBookingForm } from "./new-booking-form";
 
@@ -59,21 +60,32 @@ export default async function NewReservationPage({
   if (selectedService) {
     const weekday = new Date(`${date}T12:00:00+01:00`).getDay();
 
-    const { data: rules } = await supabase
-      .from("availability_rules")
-      .select("weekday, start_time, end_time, slot_duration_minutes, capacity")
-      .eq("business_id", profile.business_id)
-      .eq("weekday", weekday);
-
-    const { data: capacities } = await supabase.rpc("get_agenda_capacity", {
-      p_business_id: profile.business_id,
-    });
+    const [{ data: rules }, { data: capacities }, { data: blockRows }] =
+      await Promise.all([
+        supabase
+          .from("availability_rules")
+          .select(
+            "weekday, start_time, end_time, slot_duration_minutes, capacity, staff_id"
+          )
+          .eq("business_id", profile.business_id)
+          .eq("weekday", weekday),
+        supabase.rpc("get_agenda_capacity", {
+          p_business_id: profile.business_id,
+        }),
+        supabase
+          .from("agenda_entries")
+          .select("start_time, staff_id")
+          .eq("business_id", profile.business_id)
+          .eq("source", "blokkering")
+          .gte("start_time", new Date().toISOString()),
+      ]);
 
     slots = generateSlotsForDate(
       (rules ?? []) as AvailabilityRule[],
       date,
       (capacities ?? []) as SlotCapacity[],
-      selectedService.duration_minutes
+      selectedService.duration_minutes,
+      (blockRows ?? []) as BlockedStaffSlot[]
     );
   }
 

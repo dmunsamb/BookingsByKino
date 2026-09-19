@@ -5,7 +5,11 @@ import { createBlockingEntry, type BlockFormState } from "./actions";
 
 const initialState: BlockFormState = {};
 
-export function BlockingForm() {
+export function BlockingForm({
+  staffMembers,
+}: {
+  staffMembers: { id: string; name: string }[];
+}) {
   const [state, formAction, pending] = useActionState(
     createBlockingEntry,
     initialState
@@ -16,6 +20,24 @@ export function BlockingForm() {
       action={formAction}
       className="mb-4 grid gap-3 rounded-2xl border border-ink-900/10 bg-white p-4 shadow-sm dark:border-paper/10 dark:bg-ink-800 sm:grid-cols-4 sm:items-end"
     >
+      <div>
+        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
+          Équipe
+        </label>
+        <select
+          name="staff_id"
+          defaultValue=""
+          className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
+        >
+          <option value="">Toute l&apos;équipe</option>
+          {staffMembers.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div>
         <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
           Date

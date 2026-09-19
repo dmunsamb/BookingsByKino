@@ -29,12 +29,20 @@ export type AvailabilityRule = {
   end_time: string;
   slot_duration_minutes: number;
   capacity: number;
+  staff_id?: string | null;
 };
 
 export type SlotCapacity = {
   start_time: string; // timestamptz ISO, renvoyé par Postgres
   end_time: string;
   booked_count: number;
+};
+
+/** Un blocage (congé/indisponibilité) sur un créneau exact — staff_id
+ * null signifie "toute l'équipe" (0027_staff_aware_blocking.sql). */
+export type BlockedStaffSlot = {
+  start_time: string; // timestamptz ISO
+  staff_id: string | null;
 };
 
 export type Slot = {
@@ -168,12 +176,18 @@ export function alignedSlotStartsInRange(
  * se cumulent qu'aux instants où les grilles coïncident exactement — pas
  * de fusion d'intervalles générale. Acceptable à l'échelle d'un pilote où
  * les membres d'une même équipe partagent en pratique le même pas.
+ *
+ * `blockedSlots` (congés/indisponibilités, 0027) retire la capacité d'un
+ * membre précis (staff_id) sur un créneau exact, ou celle de tout le
+ * monde si staff_id est null — même logique que le trigger
+ * enforce_agenda_capacity côté base.
  */
 export function generateSlotsForDate(
   rules: AvailabilityRule[],
   dateStr: string,
   capacities: SlotCapacity[],
-  serviceDurationMinutes: number
+  serviceDurationMinutes: number,
+  blockedSlots: BlockedStaffSlot[] = []
 ): Slot[] {
   const byStartMinutes = new Map<number, number>();
 
@@ -189,6 +203,16 @@ export function generateSlotsForDate(
       t + serviceDurationMinutes <= end;
       t += rule.slot_duration_minutes
     ) {
+      const startMs = new Date(
+        localSlotToIso(dateStr, minutesToTime(t))
+      ).getTime();
+      const isBlocked = blockedSlots.some(
+        (b) =>
+          new Date(b.start_time).getTime() === startMs &&
+          (b.staff_id === null || b.staff_id === rule.staff_id)
+      );
+      if (isBlocked) continue;
+
       byStartMinutes.set(t, (byStartMinutes.get(t) ?? 0) + rule.capacity);
     }
   }
@@ -241,6 +265,7 @@ export function firstAvailableDateIso(
   capacities: SlotCapacity[],
   serviceDurationMinutes: number,
   fromDateIso: string,
+  blockedSlots: BlockedStaffSlot[] = [],
   maxDaysAhead = 60
 ): string {
   let candidate = fromDateIso;
@@ -251,7 +276,8 @@ export function firstAvailableDateIso(
       rules.filter((r) => r.weekday === weekday),
       candidate,
       capacities,
-      serviceDurationMinutes
+      serviceDurationMinutes,
+      blockedSlots
     );
     if (slots.some((s) => s.available)) {
       return candidate;
