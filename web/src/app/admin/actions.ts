@@ -44,34 +44,26 @@ function addMonths(date: Date, months: number): Date {
 }
 
 /**
- * Approuve l'inscription et enregistre dans le même geste le premier
- * paiement d'abonnement (1, 3 ou 12 mois) — sinon l'établissement
- * basculerait immédiatement en "en attente" faute de date payée.
+ * Approuve l'inscription : accès immédiat au tableau de bord, mais "sous
+ * réserve" du paiement de l'abonnement — subscription_paid_until reste
+ * null (déjà traité comme "actif" par lib/subscription.ts, voir 0029).
+ * Le message WhatsApp envoyé au gérant (voir SubscriptionPaymentDialog/
+ * ApproveSignupButton) porte les tarifs et les numéros mobile money de
+ * KinoBooking ; le paiement lui-même s'enregistre séparément, une fois
+ * reçu, via recordSubscriptionPayment (même mécanisme qu'un renouvellement).
  */
 export async function approveBusiness(formData: FormData) {
   const admin = await requirePlatformAdmin();
   if (!admin) return;
 
   const id = formData.get("id");
-  const months = parseDurationMonths(formData);
-  const amountUsd = parseAmountUsd(formData);
-  if (typeof id !== "string" || months === null || amountUsd === null) return;
+  if (typeof id !== "string") return;
 
   const supabase = await createClient();
   await supabase
     .from("businesses")
-    .update({
-      signup_status: "approved",
-      subscription_paid_until: addMonths(new Date(), months).toISOString(),
-    })
+    .update({ signup_status: "approved" })
     .eq("id", id);
-
-  await supabase.from("subscription_payments").insert({
-    business_id: id,
-    amount_usd: amountUsd,
-    duration_months: months,
-    recorded_by: admin.id,
-  });
 
   revalidatePath("/admin");
 }
@@ -155,6 +147,42 @@ export async function updateSubscriptionPrices(formData: FormData) {
       .update({ amount_usd: amount, updated_at: new Date().toISOString() })
       .eq("duration_months", months);
     if (error) throw new Error("Erreur lors de l'enregistrement des tarifs.");
+  }
+
+  revalidatePath("/admin");
+}
+
+/**
+ * Numéros mobile money DE KINOBOOKING (pour recevoir l'abonnement des
+ * gérants) + contact de secours (Dino) — à ne pas confondre avec
+ * businesses.mpesa_number/orange_money_number, qui servent à un
+ * établissement à recevoir SES propres clientes.
+ */
+export async function updatePlatformPaymentSettings(formData: FormData) {
+  const admin = await requirePlatformAdmin();
+  if (!admin) throw new Error("Accès réservé à l'équipe KinoBooking.");
+
+  const field = (name: string) => {
+    const raw = formData.get(name);
+    return typeof raw === "string" && raw.trim() ? raw.trim() : null;
+  };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("platform_payment_settings")
+    .update({
+      mpesa_number: field("mpesa_number"),
+      mpesa_holder_name: field("mpesa_holder_name"),
+      orange_money_number: field("orange_money_number"),
+      orange_money_holder_name: field("orange_money_holder_name"),
+      contact_name: field("contact_name"),
+      contact_whatsapp: field("contact_whatsapp"),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", true);
+
+  if (error) {
+    throw new Error("Erreur lors de l'enregistrement.");
   }
 
   revalidatePath("/admin");

@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { rejectBusiness } from "./actions";
-import { SubscriptionPaymentDialog } from "./subscription-payment-dialog";
+import { ApproveSignupButton } from "./approve-signup-button";
 import { TestBadge } from "./test-badge";
+import type { MobileMoneyAccount } from "@/lib/whatsapp";
 
 const DURATION_MONTHS = [1, 3, 12] as const;
 
@@ -47,6 +48,35 @@ export async function PendingSignupsSection({
       prices?.find((p) => p.duration_months === m)?.amount_usd ?? 0,
     ])
   ) as Record<(typeof DURATION_MONTHS)[number], number>;
+
+  const { data: paymentSettings } = await supabase
+    .from("platform_payment_settings")
+    .select(
+      "mpesa_number, mpesa_holder_name, orange_money_number, orange_money_holder_name, contact_name, contact_whatsapp"
+    )
+    .eq("id", true)
+    .maybeSingle();
+
+  const platformAccounts: MobileMoneyAccount[] = (
+    [
+      [
+        "mpesa",
+        paymentSettings?.mpesa_number,
+        paymentSettings?.mpesa_holder_name,
+      ],
+      [
+        "orange_money",
+        paymentSettings?.orange_money_number,
+        paymentSettings?.orange_money_holder_name,
+      ],
+    ] as [MobileMoneyAccount["provider"], string | null | undefined, string | null | undefined][]
+  )
+    .filter(([, number]) => !!number)
+    .map(([provider, number, holderName]) => ({
+      provider,
+      number: number as string,
+      holderName: holderName ?? null,
+    }));
 
   // Passe par business_owners (plutôt que profiles.business_id
   // directement) : un gérant qui possède plusieurs établissements n'a
@@ -113,14 +143,15 @@ export async function PendingSignupsSection({
               )}
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <SubscriptionPaymentDialog
+              <ApproveSignupButton
                 businessId={b.id}
                 businessName={b.name}
                 ownerName={ownerNameByBusiness.get(b.id)}
                 ownerWhatsapp={b.owner_whatsapp}
                 prices={priceByDuration}
-                mode="approve"
-                triggerLabel="Approuver"
+                platformAccounts={platformAccounts}
+                contactName={paymentSettings?.contact_name}
+                contactWhatsapp={paymentSettings?.contact_whatsapp}
               />
               <form action={rejectBusiness}>
                 <input type="hidden" name="id" value={b.id} />

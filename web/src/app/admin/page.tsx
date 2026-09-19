@@ -8,6 +8,10 @@ import {
 } from "@/lib/subscription";
 import { SubscriptionPaymentDialog } from "./subscription-payment-dialog";
 import { SubscriptionPricesForm } from "./subscription-prices-form";
+import {
+  PlatformPaymentSettingsForm,
+  type PlatformPaymentSettings,
+} from "./platform-payment-settings-form";
 import { PendingSignupsSection } from "./pending-signups-section";
 import { TestBadge } from "./test-badge";
 import Link from "next/link";
@@ -60,6 +64,23 @@ export default async function AdminPage() {
     ])
   ) as Record<(typeof DURATION_MONTHS)[number], number>;
 
+  const { data: paymentSettingsRow } = await supabase
+    .from("platform_payment_settings")
+    .select(
+      "mpesa_number, mpesa_holder_name, orange_money_number, orange_money_holder_name, contact_name, contact_whatsapp"
+    )
+    .eq("id", true)
+    .maybeSingle();
+
+  const platformPaymentSettings: PlatformPaymentSettings = {
+    mpesaNumber: paymentSettingsRow?.mpesa_number ?? "",
+    mpesaHolderName: paymentSettingsRow?.mpesa_holder_name ?? "",
+    orangeMoneyNumber: paymentSettingsRow?.orange_money_number ?? "",
+    orangeMoneyHolderName: paymentSettingsRow?.orange_money_holder_name ?? "",
+    contactName: paymentSettingsRow?.contact_name ?? "",
+    contactWhatsapp: paymentSettingsRow?.contact_whatsapp ?? "",
+  };
+
   // Passe par business_owners (plutôt que profiles.business_id
   // directement) : un gérant qui possède plusieurs établissements n'a
   // qu'un seul business_id "actif" à la fois — ses autres établissements
@@ -106,6 +127,13 @@ export default async function AdminPage() {
   const needsAttention = approvedWithStatus.filter(
     (b) => b.subscriptionStatus !== "actif"
   );
+  // Approuvé "sous réserve" (voir approveBusiness, migration 0029) :
+  // jamais facturé, donc "actif" par défaut (getSubscriptionStatus) —
+  // sans cette liste séparée, ces établissements n'apparaîtraient nulle
+  // part tant que le premier paiement n'a pas été enregistré.
+  const neverBilled = approvedWithStatus.filter(
+    (b) => b.subscription_paid_until === null
+  );
 
   const needsAttentionIds = needsAttention.map((b) => b.id);
   const { data: stuckBookings } = needsAttentionIds.length
@@ -148,7 +176,51 @@ export default async function AdminPage() {
         <SubscriptionPricesForm initialPrices={priceByDuration} />
       </section>
 
+      <section className="mb-8">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
+          Numéros de paiement KinoBooking
+        </h2>
+        <PlatformPaymentSettingsForm initial={platformPaymentSettings} />
+      </section>
+
       <PendingSignupsSection />
+
+      <section className="mb-8">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
+          Premier paiement à enregistrer
+        </h2>
+        <p className="mb-3 text-xs text-ink-400">
+          Approuvé, accès déjà donné — l&apos;abonnement n&apos;est pas
+          encore facturé (on ne pénalise pas un gérant avant sa première
+          échéance). Enregistrez ici le paiement dès qu&apos;il arrive.
+        </p>
+        <div className="space-y-3">
+          {neverBilled.length === 0 && (
+            <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
+              Aucun premier paiement en attente.
+            </p>
+          )}
+          {neverBilled.map((b) => (
+            <div
+              key={b.id}
+              className="flex flex-col gap-3 rounded-2xl border border-ink-900/10 bg-white p-4 shadow-sm dark:border-paper/10 dark:bg-ink-800 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <p className="font-bold text-ink-900 dark:text-paper">
+                {b.name} {b.is_test && <TestBadge />}
+                <span className="ml-2 text-xs font-normal text-ink-400">
+                  {ownerNameByBusiness.get(b.id) ?? "—"}
+                </span>
+              </p>
+              <SubscriptionPaymentDialog
+                businessId={b.id}
+                businessName={b.name}
+                prices={priceByDuration}
+                triggerLabel="Ils ont payé leur abonnement"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
 
       <section className="mb-8">
         <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
@@ -211,7 +283,6 @@ export default async function AdminPage() {
                     businessId={b.id}
                     businessName={b.name}
                     prices={priceByDuration}
-                    mode="renew"
                     triggerLabel="Ils ont payé leur abonnement"
                   />
                   {reminderLink ? (

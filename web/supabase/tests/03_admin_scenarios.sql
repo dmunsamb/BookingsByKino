@@ -133,6 +133,86 @@ begin
   end if;
 end $$;
 
+-- ============================================================
+-- Numéros de paiement KinoBooking (platform_payment_settings, 0029)
+-- ============================================================
+
+-- 8. platform_admin peut lire ET modifier platform_payment_settings.
+do $$
+declare
+  v_number text;
+begin
+  set local role authenticated;
+  perform set_config('request.jwt.claim.sub', '0ad3d5d9-76da-4d4a-9f60-cb5d828cd7ad', true);
+  update platform_payment_settings set mpesa_number = '0810000000' where id = true;
+  select mpesa_number into v_number from platform_payment_settings where id = true;
+  reset role;
+  perform set_config('request.jwt.claim.sub', '', true);
+  if v_number = '0810000000' then
+    insert into test_results values ('8_admin_lit_et_ecrit_platform_settings', 'OK', '');
+  else
+    insert into test_results values ('8_admin_lit_et_ecrit_platform_settings', 'BUG', 'obtenu=' || coalesce(v_number, 'NULL'));
+  end if;
+end $$;
+
+-- 9. Un simple owner ne doit ni lire ni modifier platform_payment_settings
+--    (les numéros DE KINOBOOKING, pas ceux du gérant lui-même).
+do $$
+declare
+  v_visible boolean;
+begin
+  update profiles set role = 'owner' where id = '0ad3d5d9-76da-4d4a-9f60-cb5d828cd7ad';
+  set local role authenticated;
+  perform set_config('request.jwt.claim.sub', '0ad3d5d9-76da-4d4a-9f60-cb5d828cd7ad', true);
+  select exists(select 1 from platform_payment_settings) into v_visible;
+  reset role;
+  perform set_config('request.jwt.claim.sub', '', true);
+  update profiles set role = 'platform_admin' where id = '0ad3d5d9-76da-4d4a-9f60-cb5d828cd7ad';
+  if v_visible then
+    insert into test_results values ('9_owner_ne_voit_pas_platform_settings', 'BUG_TROU_DE_SECURITE', 'un simple owner voit les réglages de paiement plateforme');
+  else
+    insert into test_results values ('9_owner_ne_voit_pas_platform_settings', 'OK', 'invisible pour un owner, comme attendu');
+  end if;
+end $$;
+
+-- 10. Un visiteur anonyme ne doit ni lire ni écrire platform_payment_settings.
+do $$
+declare
+  v_visible boolean;
+begin
+  set local role anon;
+  select exists(select 1 from platform_payment_settings) into v_visible;
+  reset role;
+  if v_visible then
+    insert into test_results values ('10a_anon_ne_voit_pas_platform_settings', 'BUG_TROU_DE_SECURITE', 'anon voit les réglages de paiement plateforme');
+  else
+    insert into test_results values ('10a_anon_ne_voit_pas_platform_settings', 'OK_AUCUNE_LIGNE_VISIBLE', '');
+  end if;
+end $$;
+
+-- Une UPDATE bloquée par la clause USING d'une policy RLS ne lève PAS
+-- d'exception : elle touche silencieusement 0 ligne (contrairement à un
+-- INSERT rejeté par WITH CHECK, qui lève bien "violates row-level
+-- security policy"). Il faut donc vérifier ROW_COUNT, pas juste l'absence
+-- d'erreur.
+do $$
+declare
+  v_rows int;
+begin
+  set local role anon;
+  update platform_payment_settings set mpesa_number = 'hack' where id = true;
+  get diagnostics v_rows = row_count;
+  reset role;
+  if v_rows = 0 then
+    insert into test_results values ('10b_anon_ne_peut_pas_ecrire_platform_settings', 'OK_AUCUNE_LIGNE_MODIFIEE', '');
+  else
+    insert into test_results values ('10b_anon_ne_peut_pas_ecrire_platform_settings', 'BUG_TROU_DE_SECURITE', 'anon a modifié ' || v_rows || ' ligne(s)');
+  end if;
+exception when others then
+  reset role;
+  insert into test_results values ('10b_anon_ne_peut_pas_ecrire_platform_settings', 'OK_REJETE_COMME_ATTENDU', sqlerrm);
+end $$;
+
 select * from test_results order by step;
 
 rollback;
@@ -159,9 +239,9 @@ begin
     v_results := v_results || v_ok::text || ',';
   end loop;
   if v_results = 'true,true,true,false,' then
-    insert into test_results values ('8_rate_limit', 'OK', v_results);
+    insert into test_results values ('11_rate_limit', 'OK', v_results);
   else
-    insert into test_results values ('8_rate_limit', 'BUG', v_results);
+    insert into test_results values ('11_rate_limit', 'BUG', v_results);
   end if;
 end $$;
 
