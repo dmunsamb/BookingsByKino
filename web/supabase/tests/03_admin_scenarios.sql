@@ -14,8 +14,8 @@ create temp table test_results (step text, outcome text, detail text) on commit 
 grant insert, select on test_results to anon, authenticated;
 
 -- 1. Nouvelle inscription -> pending_approval, invisible du catalogue public
-insert into businesses (id, name, main_category, sub_category, signup_status, owner_email)
-values ('11111111-1111-1111-1111-111111111111', 'TEST Salon Pending', 'beauty', 'Salon de beauté', 'pending_approval', 'test@example.com');
+insert into businesses (id, name, main_category, categories, signup_status, owner_email)
+values ('11111111-1111-1111-1111-111111111111', 'TEST Salon Pending', 'beauty', array['Salon de beauté'], 'pending_approval', 'test@example.com');
 
 do $$
 declare

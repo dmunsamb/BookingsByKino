@@ -209,19 +209,22 @@ set local role anon;
 -- 13. Recherche par nom -> doit trouver Nouschka
 select '13_search_nom' as test,
   (select count(*) from businesses where signup_status = 'approved'
-    and (name ilike '%nouschka%' or sub_category ilike '%nouschka%' or coalesce(city,'') ilike '%nouschka%' or coalesce(address,'') ilike '%nouschka%')
+    and (name ilike '%nouschka%' or coalesce(city,'') ilike '%nouschka%' or coalesce(address,'') ilike '%nouschka%')
   ) as trouves_attendu_1;
 
--- 14. Recherche par type (sous-catégorie) -> doit trouver Nouschka ("Beauté & Coiffure")
+-- 14. Recherche par catégorie (categories est un tableau depuis la
+-- migration 0025 — plus de recherche ilike libre dessus côté app, mais
+-- on vérifie ici que la donnée reste cohérente : Nouschka doit avoir au
+-- moins une catégorie contenant "beauté")
 select '14_search_type' as test,
   (select count(*) from businesses where signup_status = 'approved'
-    and (name ilike '%beauté%' or sub_category ilike '%beauté%' or coalesce(city,'') ilike '%beauté%' or coalesce(address,'') ilike '%beauté%')
+    and exists (select 1 from unnest(categories) cat where cat ilike '%beauté%')
   ) as trouves_attendu_1;
 
 -- 15. Recherche sans correspondance -> doit renvoyer 0
 select '15_search_inexistant' as test,
   (select count(*) from businesses where signup_status = 'approved'
-    and (name ilike '%xyzabc123%' or sub_category ilike '%xyzabc123%' or coalesce(city,'') ilike '%xyzabc123%' or coalesce(address,'') ilike '%xyzabc123%')
+    and (name ilike '%xyzabc123%' or coalesce(city,'') ilike '%xyzabc123%' or coalesce(address,'') ilike '%xyzabc123%')
   ) as trouves_attendu_0;
 
 rollback;
@@ -235,8 +238,8 @@ begin;
 create temp table test_results (step text, outcome text, detail text) on commit drop;
 grant insert, select on test_results to anon, authenticated;
 
-insert into businesses (id, name, main_category, sub_category, signup_status, subscription_paid_until)
-values ('22222222-2222-2222-2222-222222222222', 'TEST Salon Inactif', 'beauty', 'Salon de beauté', 'approved', now() - interval '20 days');
+insert into businesses (id, name, main_category, categories, signup_status, subscription_paid_until)
+values ('22222222-2222-2222-2222-222222222222', 'TEST Salon Inactif', 'beauty', array['Salon de beauté'], 'approved', now() - interval '20 days');
 
 insert into services (id, business_id, name, duration_minutes, price_usd, deposit_usd)
 values ('33333333-3333-3333-3333-333333333333', '22222222-2222-2222-2222-222222222222', 'Test Service', 30, 10, 5);

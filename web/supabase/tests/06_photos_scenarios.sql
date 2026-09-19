@@ -22,8 +22,8 @@ begin;
 create temp table test_results (step text, outcome text, detail text) on commit drop;
 grant insert, select on test_results to anon, authenticated;
 
-insert into businesses (id, name, main_category, sub_category, signup_status, is_test)
-values ('77777777-7777-7777-7777-777777777777', 'TEST Salon C', 'beauty', 'Salon de beauté', 'pending_approval', true);
+insert into businesses (id, name, main_category, categories, signup_status, is_test)
+values ('77777777-7777-7777-7777-777777777777', 'TEST Salon C', 'beauty', array['Salon de beauté'], 'pending_approval', true);
 
 update profiles set role = 'owner' where id = '0ad3d5d9-76da-4d4a-9f60-cb5d828cd7ad';
 

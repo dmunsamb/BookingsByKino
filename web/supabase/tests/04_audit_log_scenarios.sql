@@ -59,8 +59,8 @@ do $$
 declare
   v_count int;
 begin
-  insert into businesses (id, name, main_category, sub_category, signup_status)
-  values ('44444444-4444-4444-4444-444444444444', 'TEST Audit Salon', 'beauty', 'Salon de beauté', 'pending_approval');
+  insert into businesses (id, name, main_category, categories, signup_status)
+  values ('44444444-4444-4444-4444-444444444444', 'TEST Audit Salon', 'beauty', array['Salon de beauté'], 'pending_approval');
   update businesses set signup_status = 'approved' where id = '44444444-4444-4444-4444-444444444444';
   select count(*) into v_count from audit_log
   where entity_id = '44444444-4444-4444-4444-444444444444' and action = 'business_signup_status_changed'
