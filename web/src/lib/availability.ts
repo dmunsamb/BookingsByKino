@@ -13,12 +13,11 @@
  * durée réellement bloquée est celle du service choisi. Un créneau n'est
  * proposé que si le service a le temps de se terminer avant la fermeture.
  *
- * Limite connue : la capacité (get_agenda_capacity) ne compare que des
- * horaires de début strictement identiques, elle ne détecte donc pas un
- * chevauchement entre deux services de durées différentes démarrant à des
- * heures voisines. Acceptable à l'échelle d'un pilote avec peu de
- * réservations simultanées ; à revoir si plusieurs services longs et
- * courts coexistent sur la même grille.
+ * Le nombre de réservations déjà en place sur un créneau candidat est
+ * calculé par chevauchement d'intervalles (start_time/end_time), pas par
+ * égalité stricte de l'heure de début (migration 0032) : un service de
+ * 60 min réservé à 10h00 doit aussi occuper la capacité du créneau 10h30,
+ * pas seulement du créneau 10h00 pile.
  */
 
 const BUSINESS_UTC_OFFSET = "+01:00";
@@ -221,11 +220,18 @@ export function generateSlotsForDate(
   for (const [t, capacity] of byStartMinutes) {
     const time = minutesToTime(t);
     const startMs = new Date(localSlotToIso(dateStr, time)).getTime();
+    const endMs = startMs + serviceDurationMinutes * 60_000;
 
-    const matching = capacities.find(
-      (c) => new Date(c.start_time).getTime() === startMs
-    );
-    const bookedCount = matching?.booked_count ?? 0;
+    // Chevauchement d'intervalles, pas égalité stricte de l'heure de début
+    // (migration 0032) : une réservation de 10h00-11h00 doit aussi compter
+    // dans la capacité déjà utilisée du créneau 10h30, pas seulement 10h00.
+    const bookedCount = capacities
+      .filter((c) => {
+        const cStart = new Date(c.start_time).getTime();
+        const cEnd = new Date(c.end_time).getTime();
+        return cStart < endMs && cEnd > startMs;
+      })
+      .reduce((sum, c) => sum + c.booked_count, 0);
 
     slots.push({
       time,

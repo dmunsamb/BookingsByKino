@@ -67,6 +67,19 @@ exception when others then
   insert into test_results values ('4_capacite_depassee', 'OK_REJETE_COMME_ATTENDU', sqlerrm);
 end $$;
 
+-- 4b. Chevauchement partiel (migration 0032) : capacité déjà à 3/3 sur
+-- 11:00-11:20 (tests 1+3) — un 5e client démarrant à 11:10 (donc
+-- 11:10-11:30, un horaire de DÉBUT différent mais qui chevauche) doit
+-- aussi être refusé, pas seulement une égalité stricte de start_time.
+do $$
+begin
+  insert into agenda_entries (business_id, service_id, source, status, client_name, client_phone, start_time, end_time, reference_number)
+  values ('8fa5d756-9910-46d7-9e3b-27521ef4e9da', '1a4cf0c2-bfb7-436e-88b8-0755394e97a2', 'klant_app', 'pending_approval', 'TEST Client E Chevauche', '0810000006', '2026-09-12T11:10:00+01:00', '2026-09-12T11:30:00+01:00', 999903);
+  insert into test_results values ('4b_chevauchement_partiel_refuse', 'BUG_ACCEPTE_CHEVAUCHEMENT', 'insert accepté malgré le chevauchement');
+exception when others then
+  insert into test_results values ('4b_chevauchement_partiel_refuse', 'OK_REJETE_COMME_ATTENDU', sqlerrm);
+end $$;
+
 select * from test_results order by step;
 
 rollback;
