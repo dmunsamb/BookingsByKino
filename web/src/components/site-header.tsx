@@ -89,8 +89,8 @@ export async function SiteHeader() {
           )}
           <details className="group relative">
             <summary
-              aria-label="Catégories"
-              title="Catégories"
+              aria-label="Menu"
+              title="Menu"
               className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full text-paper/80 transition hover:bg-paper/10 hover:text-paper"
             >
               <svg
@@ -107,6 +107,9 @@ export async function SiteHeader() {
               </svg>
             </summary>
             <div className="absolute right-0 z-20 mt-2 w-56 rounded-2xl border border-ink-900/10 bg-white p-2 shadow-lg dark:border-paper/10 dark:bg-ink-800">
+              <p className="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-widest text-ink-400">
+                Catégories
+              </p>
               <Link
                 href="/"
                 className="block rounded-xl px-3 py-2 text-sm font-bold text-ink-900 hover:bg-ink-900/5 dark:text-paper dark:hover:bg-paper/10"
@@ -122,6 +125,16 @@ export async function SiteHeader() {
                   {c.value}
                 </Link>
               ))}
+              <hr className="my-2 border-ink-900/10 dark:border-paper/10" />
+              <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-widest text-ink-400">
+                Gérants
+              </p>
+              <Link
+                href="/faq"
+                className="block rounded-xl px-3 py-2 text-sm font-bold text-ink-900 hover:bg-ink-900/5 dark:text-paper dark:hover:bg-paper/10"
+              >
+                FAQ — Questions fréquentes
+              </Link>
             </div>
           </details>
         </div>
