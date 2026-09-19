@@ -30,6 +30,12 @@ create policy "public_read_businesses"
 -- garde la main pour ses propres écritures manuelles (source != klant_app,
 -- comme pour l'abonnement), et le bypass walk_in existant (0018) n'est
 -- pas touché.
+-- Reprend intégralement la logique de chevauchement d'intervalles de la
+-- migration 0032 (déjà en production à ce stade) : ce create or replace
+-- remplace toute la fonction, donc il doit porter les DEUX correctifs
+-- (is_online et chevauchement) pour ne pas régresser 0032 en écrasant sa
+-- version par une plus ancienne basée sur une égalité stricte de
+-- start_time.
 create or replace function public.enforce_agenda_capacity()
 returns trigger
 language plpgsql
@@ -44,12 +50,14 @@ declare
   v_local_date date;
   v_paid_until timestamptz;
   v_is_online boolean;
+  v_end_time timestamptz;
 begin
   if new.source in ('blokkering', 'walk_in') then
     return new;
   end if;
 
   v_local_date := (new.start_time at time zone 'Africa/Kinshasa')::date;
+  v_end_time := coalesce(new.end_time, new.start_time);
 
   if tg_op = 'INSERT' and new.source = 'klant_app' then
     if v_local_date <= (now() at time zone 'Africa/Kinshasa')::date then
@@ -82,8 +90,9 @@ begin
       select 1
       from public.agenda_entries blk
       where blk.business_id = new.business_id
-        and blk.start_time = new.start_time
         and blk.source = 'blokkering'
+        and blk.start_time < v_end_time
+        and blk.end_time > new.start_time
         and (blk.staff_id is null or blk.staff_id = ar.staff_id)
     );
 
@@ -94,9 +103,10 @@ begin
   select count(*) into v_booked
   from public.agenda_entries
   where business_id = new.business_id
-    and start_time = new.start_time
     and status in ('pending_approval', 'approved_waiting_payment', 'confirmed')
-    and id <> new.id;
+    and id <> new.id
+    and start_time < v_end_time
+    and coalesce(end_time, start_time) > new.start_time;
 
   if v_booked >= v_capacity then
     raise exception 'Ce créneau est complet.';
