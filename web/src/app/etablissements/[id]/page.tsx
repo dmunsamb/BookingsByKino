@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/server";
 import {
   generateSlotsForDate,
+  firstAvailableDateIso,
   minBookableDateIso,
   type AvailabilityRule,
   type SlotCapacity,
@@ -41,11 +42,13 @@ export default async function BusinessPage({
   } = await searchParams;
   const isWalkInMode = mode === "walkin";
   const minDate = minBookableDateIso();
-  // Jamais le jour même : une date passée/aujourd'hui envoyée via l'URL
-  // (lien partagé, retour en arrière du navigateur...) est ramenée au
-  // premier jour réservable plutôt que de proposer des créneaux invalides.
-  const date =
-    dateParam && dateParam >= minDate ? dateParam : minDate;
+  // Une date explicitement choisie par la cliente (navigation dans le
+  // sélecteur) est toujours respectée telle quelle, même si elle s'avère
+  // complète — sinon, jamais le jour même : une date passée/aujourd'hui
+  // envoyée via l'URL (lien partagé, retour en arrière du navigateur...)
+  // n'est pas un vrai choix, donc traitée comme une absence de choix.
+  const hasExplicitDate = !!dateParam && dateParam >= minDate;
+  const date = hasExplicitDate ? (dateParam as string) : minDate;
 
   const supabase = await createClient();
 
@@ -211,24 +214,38 @@ export default async function BusinessPage({
         </>
       );
     } else {
-      const weekday = new Date(`${date}T12:00:00+01:00`).getDay();
-
-      const { data: rules } = await supabase
+      const { data: allRules } = await supabase
         .from("availability_rules")
         .select(
           "weekday, start_time, end_time, slot_duration_minutes, capacity"
         )
-        .eq("business_id", id)
-        .eq("weekday", weekday);
+        .eq("business_id", id);
 
       const { data: capacities } = await supabase.rpc("get_agenda_capacity", {
         p_business_id: id,
       });
 
+      const rules = (allRules ?? []) as AvailabilityRule[];
+      const bookingCapacities = (capacities ?? []) as SlotCapacity[];
+
+      // Sans date explicitement choisie, on pré-sélectionne la première
+      // date où le service est réellement réservable plutôt que "demain"
+      // à l'aveugle, qui peut très bien être complet ou fermé.
+      const effectiveDate = hasExplicitDate
+        ? date
+        : firstAvailableDateIso(
+            rules,
+            bookingCapacities,
+            selectedService.duration_minutes,
+            minDate
+          );
+
+      const weekday = new Date(`${effectiveDate}T12:00:00+01:00`).getDay();
+
       const slots = generateSlotsForDate(
-        (rules ?? []) as AvailabilityRule[],
-        date,
-        (capacities ?? []) as SlotCapacity[],
+        rules.filter((r) => r.weekday === weekday),
+        effectiveDate,
+        bookingCapacities,
         selectedService.duration_minutes
       );
 
@@ -239,7 +256,7 @@ export default async function BusinessPage({
             businessId={id}
             mainCategory={business.main_category}
             service={selectedService}
-            date={date}
+            date={effectiveDate}
             minDate={minDate}
             slots={slots}
           />

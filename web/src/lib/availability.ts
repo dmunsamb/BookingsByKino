@@ -214,3 +214,50 @@ export function generateSlotsForDate(
 
   return slots.sort((a, b) => a.time.localeCompare(b.time));
 }
+
+/** Ajoute `days` jours à une date locale ("YYYY-MM-DD"), sans dépendre du
+ * fuseau horaire d'exécution (le calcul se fait sur des composants
+ * calendaires, pas sur un instant réel). */
+function addDaysIso(dateStr: string, days: number): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  date.setUTCDate(date.getUTCDate() + days);
+  const yy = date.getUTCFullYear();
+  const mm = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+  const dd = date.getUTCDate().toString().padStart(2, "0");
+  return `${yy}-${mm}-${dd}`;
+}
+
+/**
+ * Première date (à partir de `fromDateIso`) où au moins un créneau est
+ * réellement disponible pour ce service — pré-sélectionnée à l'arrivée
+ * sur la fiche établissement plutôt que systématiquement "demain", qui
+ * peut très bien être complet, bloqué ou fermé. Au-delà de la fenêtre de
+ * recherche (aucune date dispo trouvée, ex. salon sans horaires), on
+ * retombe sur `fromDateIso`.
+ */
+export function firstAvailableDateIso(
+  rules: AvailabilityRule[],
+  capacities: SlotCapacity[],
+  serviceDurationMinutes: number,
+  fromDateIso: string,
+  maxDaysAhead = 60
+): string {
+  let candidate = fromDateIso;
+
+  for (let i = 0; i < maxDaysAhead; i++) {
+    const weekday = new Date(`${candidate}T12:00:00+01:00`).getDay();
+    const slots = generateSlotsForDate(
+      rules.filter((r) => r.weekday === weekday),
+      candidate,
+      capacities,
+      serviceDurationMinutes
+    );
+    if (slots.some((s) => s.available)) {
+      return candidate;
+    }
+    candidate = addDaysIso(candidate, 1);
+  }
+
+  return fromDateIso;
+}
