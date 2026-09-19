@@ -6,10 +6,14 @@
 
 export type PeriodType = "week" | "month" | "quarter" | "year";
 
-function kinshasaNow(): Date {
+function toKinshasaDate(date: Date): Date {
   return new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Africa/Kinshasa" })
+    date.toLocaleString("en-US", { timeZone: "Africa/Kinshasa" })
   );
+}
+
+function kinshasaNow(): Date {
+  return toKinshasaDate(new Date());
 }
 
 function pad(n: number): string {
@@ -171,18 +175,47 @@ export function formatYearLabel(yearStr: string): string {
   return yearStr;
 }
 
+
 // ============================================================
-// Listes d'options pour les sélecteurs sans <input> natif équivalent
-// (trimestre, année) — les `count` périodes les plus récentes.
+// Bornage des sélecteurs à la date d'inscription de l'établissement —
+// inutile de proposer un trimestre ou une année d'avant sa création.
 // ============================================================
 
-export function recentQuarters(count: number): string[] {
-  const now = kinshasaNow();
-  let year = now.getFullYear();
-  let q = Math.floor(now.getMonth() / 3) + 1;
+export function monthIsoOfDate(date: Date): string {
+  const d = toKinshasaDate(date);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+}
+
+export function quarterIsoOfDate(date: Date): string {
+  const d = toKinshasaDate(date);
+  const q = Math.floor(d.getMonth() / 3) + 1;
+  return `${d.getFullYear()}-Q${q}`;
+}
+
+export function yearIsoOfDate(date: Date): string {
+  return String(toKinshasaDate(date).getFullYear());
+}
+
+export function weekIsoOfDate(date: Date): string {
+  const { year, week } = getIsoWeek(toKinshasaDate(date));
+  return `${year}-W${pad(week)}`;
+}
+
+/** Trimestres du plus récent (actuel) jusqu'à `sinceQuarter` inclus. */
+export function quartersSince(sinceQuarter: string): string[] {
+  const [sinceYearStr, sinceQStr] = sinceQuarter.split("-Q");
+  const sinceYear = Number(sinceYearStr);
+  const sinceQ = Number(sinceQStr);
+
+  const [yearStr, qStr] = currentQuarterIso().split("-Q");
+  let year = Number(yearStr);
+  let q = Number(qStr);
+
   const result: string[] = [];
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < 400; i++) {
     result.push(`${year}-Q${q}`);
+    if (year === sinceYear && q === sinceQ) break;
+    if (year < sinceYear || (year === sinceYear && q < sinceQ)) break;
     q -= 1;
     if (q === 0) {
       q = 4;
@@ -192,7 +225,15 @@ export function recentQuarters(count: number): string[] {
   return result;
 }
 
-export function recentYears(count: number): string[] {
-  const year = kinshasaNow().getFullYear();
-  return Array.from({ length: count }, (_, i) => String(year - i));
+/** Années de l'actuelle jusqu'à `sinceYear` inclus. */
+export function yearsSince(sinceYear: string): string[] {
+  const since = Number(sinceYear);
+  let year = Number(currentYearIso());
+
+  const result: string[] = [];
+  for (let i = 0; i < 200 && year >= since; i++) {
+    result.push(String(year));
+    year -= 1;
+  }
+  return result;
 }

@@ -10,17 +10,21 @@ import {
   previousWeekIso,
   weekRange,
   formatWeekLabel,
+  weekIsoOfDate,
   currentMonthIso,
   monthRange,
   formatMonthLabel,
+  monthIsoOfDate,
   currentQuarterIso,
   quarterRange,
   formatQuarterLabel,
-  recentQuarters,
+  quarterIsoOfDate,
+  quartersSince,
   currentYearIso,
   yearRange,
   formatYearLabel,
-  recentYears,
+  yearIsoOfDate,
+  yearsSince,
 } from "@/lib/period-range";
 
 const PERIOD_TABS: { type: PeriodType; label: string }[] = [
@@ -175,6 +179,7 @@ export default async function GerantRapportsPage({
     { data: currentWeekEntries },
     { data: previousWeekEntries },
     { data: weekServices },
+    { data: businessRow },
   ] = await Promise.all([
     supabase
       .from("agenda_entries_for_dashboard")
@@ -201,7 +206,22 @@ export default async function GerantRapportsPage({
       .from("services")
       .select("id, name, price_usd, deposit_usd")
       .eq("business_id", profile.business_id),
+    supabase
+      .from("businesses")
+      .select("created_at")
+      .eq("id", profile.business_id)
+      .maybeSingle(),
   ]);
+
+  // Aucune période antérieure à l'inscription de l'établissement : ça
+  // n'aurait aucune donnée, autant ne pas la proposer dans les sélecteurs.
+  const registrationDate = businessRow?.created_at
+    ? new Date(businessRow.created_at)
+    : new Date();
+  const registrationWeek = weekIsoOfDate(registrationDate);
+  const registrationMonth = monthIsoOfDate(registrationDate);
+  const registrationQuarter = quarterIsoOfDate(registrationDate);
+  const registrationYear = yearIsoOfDate(registrationDate);
 
   const weekServiceById = new Map(
     (weekServices ?? []).map((s) => [s.id, s as WeekServiceInfo])
@@ -400,6 +420,7 @@ export default async function GerantRapportsPage({
               type="week"
               name="week"
               defaultValue={value}
+              min={registrationWeek}
               className="rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             />
           )}
@@ -408,6 +429,7 @@ export default async function GerantRapportsPage({
               type="month"
               name="month"
               defaultValue={value}
+              min={registrationMonth}
               className="rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             />
           )}
@@ -417,7 +439,7 @@ export default async function GerantRapportsPage({
               defaultValue={value}
               className="rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             >
-              {recentQuarters(8).map((q) => (
+              {quartersSince(registrationQuarter).map((q) => (
                 <option key={q} value={q}>
                   {formatQuarterLabel(q)}
                 </option>
@@ -430,7 +452,7 @@ export default async function GerantRapportsPage({
               defaultValue={value}
               className="rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             >
-              {recentYears(6).map((y) => (
+              {yearsSince(registrationYear).map((y) => (
                 <option key={y} value={y}>
                   {formatYearLabel(y)}
                 </option>

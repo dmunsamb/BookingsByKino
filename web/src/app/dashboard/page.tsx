@@ -499,6 +499,15 @@ export default async function DashboardPage() {
                         )}. Merci !`
                       )
                     : null;
+                // Ouvre directement la conversation WhatsApp du client, sans
+                // message prérempli : WhatsApp n'offre pas de lien "appel
+                // direct" fiable multiplateforme, donc le gérant atterrit
+                // dans le chat et appuie lui-même sur l'icône d'appel — utile
+                // pour discuter d'un empêchement ou proposer un autre créneau.
+                const callLink =
+                  canManageBusiness(profile) && entry.client_phone_display
+                    ? buildWhatsAppLink(entry.client_phone_display, "")
+                    : null;
 
                 return (
                 <BookingCard
@@ -512,6 +521,16 @@ export default async function DashboardPage() {
                   }
                   actions={
                     <>
+                      {callLink && (
+                        <a
+                          href={callLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-xl border border-ink-900/16 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
+                        >
+                          Appeler
+                        </a>
+                      )}
                       <ValidateWithWhatsAppButton
                         bookingId={entry.id}
                         whatsAppLink={whatsAppLink}
