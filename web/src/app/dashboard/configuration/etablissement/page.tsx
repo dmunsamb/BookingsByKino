@@ -3,8 +3,8 @@ import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { BusinessInfoForm } from "./business-info-form";
-import { AvailabilityForm } from "../../agenda/availability-form";
-import { deleteAvailabilityRule } from "../../agenda/actions";
+import { BusinessHoursForm } from "./business-hours-form";
+import { deleteBusinessHour } from "./business-hours-actions";
 
 const weekdayLabels = [
   "Dimanche",
@@ -19,9 +19,11 @@ const weekdayLabels = [
 /**
  * Regroupe en une page : les informations de l'établissement (nom,
  * catégorie, adresse, commune, ville, WhatsApp — jamais modifiables
- * après l'inscription jusqu'ici) et les horaires d'ouverture
- * (réutilise AvailabilityForm/deleteAvailabilityRule de /dashboard/agenda,
- * qui reste la page de référence pour les congés/indisponibilités).
+ * après l'inscription jusqu'ici) et les heures d'ouverture du salon
+ * (business_hours, migration 0026) — simple jour/début/fin, sans créneau
+ * ni capacité. Le créneau et la capacité se configurent PAR membre de
+ * l'équipe dans Horaires et capacité (/dashboard/agenda), qui reste aussi
+ * la page de référence pour les congés/indisponibilités.
  */
 export default async function EtablissementConfigPage() {
   const profile = await getCurrentProfile();
@@ -43,15 +45,15 @@ export default async function EtablissementConfigPage() {
   }
 
   const supabase = await createClient();
-  const [{ data: business }, { data: rules }] = await Promise.all([
+  const [{ data: business }, { data: hours }] = await Promise.all([
     supabase
       .from("businesses")
       .select("name, categories, address, commune, city, owner_whatsapp")
       .eq("id", profile.business_id)
       .maybeSingle(),
     supabase
-      .from("availability_rules")
-      .select("id, weekday, start_time, end_time, slot_duration_minutes, capacity")
+      .from("business_hours")
+      .select("id, weekday, start_time, end_time")
       .eq("business_id", profile.business_id)
       .order("weekday")
       .order("start_time"),
@@ -85,15 +87,16 @@ export default async function EtablissementConfigPage() {
         Heure d&apos;ouverture
       </h2>
       <p className="mb-4 text-sm text-ink-400">
-        Ces plages déterminent les créneaux proposés aux clients. Pour les
-        congés et indisponibilités ponctuelles, direction{" "}
+        Quand votre salon est ouvert. Le créneau et la capacité se
+        configurent par membre de l&apos;équipe, ainsi que les congés et
+        indisponibilités ponctuelles, dans{" "}
         <Link href="/dashboard/agenda" className="font-bold underline">
           Horaires et capacité
         </Link>
         .
       </p>
 
-      <AvailabilityForm />
+      <BusinessHoursForm />
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-ink-900/10 dark:border-paper/10">
         <table className="w-full text-left text-sm">
@@ -101,34 +104,28 @@ export default async function EtablissementConfigPage() {
             <tr>
               <th className="p-3">Jour</th>
               <th className="p-3">Horaire</th>
-              <th className="p-3">Durée créneau</th>
-              <th className="p-3">Capacité</th>
               <th className="p-3 text-right">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-ink-900/8 dark:divide-paper/8">
-            {(!rules || rules.length === 0) && (
+            {(!hours || hours.length === 0) && (
               <tr>
-                <td colSpan={5} className="p-4 text-center text-ink-400">
-                  Aucun horaire configuré pour l&apos;instant.
+                <td colSpan={3} className="p-4 text-center text-ink-400">
+                  Aucune heure d&apos;ouverture configurée pour l&apos;instant.
                 </td>
               </tr>
             )}
-            {rules?.map((rule) => (
-              <tr key={rule.id}>
+            {hours?.map((hour) => (
+              <tr key={hour.id}>
                 <td className="p-3 font-medium text-ink-900 dark:text-paper">
-                  {weekdayLabels[rule.weekday]}
+                  {weekdayLabels[hour.weekday]}
                 </td>
                 <td className="p-3 text-ink-400">
-                  {rule.start_time.slice(0, 5)} – {rule.end_time.slice(0, 5)}
+                  {hour.start_time.slice(0, 5)} – {hour.end_time.slice(0, 5)}
                 </td>
-                <td className="p-3 text-ink-400">
-                  {rule.slot_duration_minutes} min
-                </td>
-                <td className="p-3 text-ink-400">{rule.capacity}</td>
                 <td className="p-3 text-right">
-                  <form action={deleteAvailabilityRule}>
-                    <input type="hidden" name="id" value={rule.id} />
+                  <form action={deleteBusinessHour}>
+                    <input type="hidden" name="id" value={hour.id} />
                     <ConfirmDeleteButton />
                   </form>
                 </td>

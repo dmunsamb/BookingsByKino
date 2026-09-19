@@ -63,12 +63,24 @@ export default async function AgendaPage() {
   }
 
   const supabase = await createClient();
-  const { data: rules } = await supabase
-    .from("availability_rules")
-    .select("id, weekday, start_time, end_time, slot_duration_minutes, capacity")
-    .eq("business_id", profile.business_id)
-    .order("weekday")
-    .order("start_time");
+  const [{ data: rules }, { data: staff }] = await Promise.all([
+    supabase
+      .from("availability_rules")
+      .select(
+        "id, weekday, start_time, end_time, slot_duration_minutes, capacity, staff_id"
+      )
+      .eq("business_id", profile.business_id)
+      .order("weekday")
+      .order("start_time"),
+    supabase
+      .from("staff_members")
+      .select("id, name, active")
+      .eq("business_id", profile.business_id)
+      .order("name"),
+  ]);
+
+  const staffNameById = new Map((staff ?? []).map((s) => [s.id, s.name]));
+  const activeStaffMembers = (staff ?? []).filter((s) => s.active);
 
   const { data: blockRows } = await supabase
     .from("agenda_entries")
@@ -107,20 +119,35 @@ export default async function AgendaPage() {
           Horaires et capacité
         </h1>
         <p className="text-sm text-ink-400">
-          Définissez vos plages d&apos;ouverture et le nombre de places
-          disponibles en parallèle par créneau. Ces réglages détermineront
-          les créneaux réellement proposés aux clients (agenda centrale,
-          voir docs section 4.9).
+          Chaque horaire est assigné à un membre de l&apos;équipe et
+          détermine sa capacité (nombre de places en parallèle par
+          créneau) — la capacité totale proposée aux clients est la somme
+          des membres présents à un moment donné. L&apos;horaire doit
+          rester compris dans les heures d&apos;ouverture du salon
+          (Configuration → Mon établissement).
         </p>
       </div>
 
-      {canManageBusiness(profile) && <AvailabilityForm />}
+      {canManageBusiness(profile) &&
+        (activeStaffMembers.length > 0 ? (
+          <AvailabilityForm staffMembers={activeStaffMembers} />
+        ) : (
+          <p className="rounded-2xl border border-ink-900/10 bg-white p-4 text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
+            Ajoutez d&apos;abord un membre de l&apos;équipe pour lui définir
+            un horaire —{" "}
+            <Link href="/dashboard/equipe" className="font-bold underline">
+              Équipe
+            </Link>
+            .
+          </p>
+        ))}
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-ink-900/10 dark:border-paper/10">
         <table className="w-full text-left text-sm">
           <thead className="bg-kino-50/60 text-xs font-bold uppercase tracking-widest text-ink-400 dark:bg-ink-900">
             <tr>
               <th className="p-3">Jour</th>
+              <th className="p-3">Membre</th>
               <th className="p-3">Horaire</th>
               <th className="p-3">Durée créneau</th>
               <th className="p-3">Capacité</th>
@@ -132,7 +159,7 @@ export default async function AgendaPage() {
           <tbody className="divide-y divide-ink-900/8 dark:divide-paper/8">
             {(!rules || rules.length === 0) && (
               <tr>
-                <td colSpan={5} className="p-4 text-center text-ink-400">
+                <td colSpan={6} className="p-4 text-center text-ink-400">
                   Aucun horaire configuré pour l&apos;instant.
                 </td>
               </tr>
@@ -141,6 +168,9 @@ export default async function AgendaPage() {
               <tr key={rule.id}>
                 <td className="p-3 font-medium text-ink-900 dark:text-paper">
                   {weekdayLabels[rule.weekday]}
+                </td>
+                <td className="p-3 text-ink-400">
+                  {rule.staff_id ? staffNameById.get(rule.staff_id) ?? "—" : "—"}
                 </td>
                 <td className="p-3 text-ink-400">
                   {rule.start_time.slice(0, 5)} – {rule.end_time.slice(0, 5)}

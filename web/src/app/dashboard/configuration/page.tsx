@@ -132,6 +132,20 @@ export default async function ConfigurationPage() {
             </p>
           </Link>
         )}
+        {canManageBusiness(profile) && (
+          <Link
+            href="/dashboard/equipe"
+            className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
+          >
+            <span className="font-bold text-ink-900 dark:text-paper">
+              Équipe
+            </span>
+            <p className="mt-1 text-ink-400">
+              Gérer les membres de l&apos;équipe — à faire avant de définir
+              leurs horaires.
+            </p>
+          </Link>
+        )}
         <Link
           href="/dashboard/agenda"
           className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
@@ -164,20 +178,6 @@ export default async function ConfigurationPage() {
             </span>
             <p className="mt-1 text-ink-400">
               La galerie visible sur votre fiche établissement.
-            </p>
-          </Link>
-        )}
-        {canManageBusiness(profile) && (
-          <Link
-            href="/dashboard/equipe"
-            className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
-          >
-            <span className="font-bold text-ink-900 dark:text-paper">
-              Équipe
-            </span>
-            <p className="mt-1 text-ink-400">
-              Gérer les membres de l&apos;équipe, assignables à une
-              réservation.
             </p>
           </Link>
         )}

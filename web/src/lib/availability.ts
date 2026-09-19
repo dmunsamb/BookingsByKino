@@ -157,13 +157,25 @@ export function alignedSlotStartsInRange(
   return starts;
 }
 
+/**
+ * Une règle par membre de l'équipe peut désormais couvrir le même jour —
+ * leurs capacités doivent alors s'additionner au lieu de produire des
+ * créneaux en double. On regroupe donc d'abord par minute de début exacte
+ * (grille de CHAQUE règle) avant de générer les créneaux.
+ *
+ * Limite connue : si deux règles ont des grilles différentes (ex. 30 min
+ * vs 60 min) sans partager les mêmes points de départ, leurs capacités ne
+ * se cumulent qu'aux instants où les grilles coïncident exactement — pas
+ * de fusion d'intervalles générale. Acceptable à l'échelle d'un pilote où
+ * les membres d'une même équipe partagent en pratique le même pas.
+ */
 export function generateSlotsForDate(
   rules: AvailabilityRule[],
   dateStr: string,
   capacities: SlotCapacity[],
   serviceDurationMinutes: number
 ): Slot[] {
-  const slots: Slot[] = [];
+  const byStartMinutes = new Map<number, number>();
 
   for (const rule of rules) {
     const start = timeToMinutes(rule.start_time);
@@ -177,22 +189,27 @@ export function generateSlotsForDate(
       t + serviceDurationMinutes <= end;
       t += rule.slot_duration_minutes
     ) {
-      const time = minutesToTime(t);
-      const startMs = new Date(localSlotToIso(dateStr, time)).getTime();
-
-      const matching = capacities.find(
-        (c) => new Date(c.start_time).getTime() === startMs
-      );
-      const bookedCount = matching?.booked_count ?? 0;
-
-      slots.push({
-        time,
-        slotDurationMinutes: serviceDurationMinutes,
-        capacity: rule.capacity,
-        bookedCount,
-        available: bookedCount < rule.capacity,
-      });
+      byStartMinutes.set(t, (byStartMinutes.get(t) ?? 0) + rule.capacity);
     }
+  }
+
+  const slots: Slot[] = [];
+  for (const [t, capacity] of byStartMinutes) {
+    const time = minutesToTime(t);
+    const startMs = new Date(localSlotToIso(dateStr, time)).getTime();
+
+    const matching = capacities.find(
+      (c) => new Date(c.start_time).getTime() === startMs
+    );
+    const bookedCount = matching?.booked_count ?? 0;
+
+    slots.push({
+      time,
+      slotDurationMinutes: serviceDurationMinutes,
+      capacity,
+      bookedCount,
+      available: bookedCount < capacity,
+    });
   }
 
   return slots.sort((a, b) => a.time.localeCompare(b.time));

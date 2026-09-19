@@ -49,9 +49,12 @@ export default async function EquipePage() {
           Équipe
         </h1>
         <p className="text-sm text-ink-400">
-          Assignez un membre de l&apos;équipe à une réservation depuis sa
-          fiche — purement pour vous organiser, sans effet sur les
-          disponibilités affichées aux clientes.
+          Ajoutez vos membres ici avant de leur définir un horaire dans{" "}
+          <Link href="/dashboard/agenda" className="font-bold underline">
+            Horaires et capacité
+          </Link>
+          . Vous pouvez aussi les assigner à une réservation depuis sa
+          fiche.
         </p>
       </div>
 

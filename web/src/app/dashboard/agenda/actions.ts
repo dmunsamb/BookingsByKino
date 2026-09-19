@@ -20,7 +20,21 @@ import {
  * de toute façon restreinte au gérant côté base de données (policy
  * owner_write_availability_rules) ; on revérifie ici pour renvoyer un
  * message clair plutôt qu'une erreur RLS brute.
+ *
+ * Depuis la migration 0026, un horaire est obligatoirement assigné à un
+ * membre de l'équipe et doit être compris dans les heures d'ouverture du
+ * salon (business_hours, configurées dans Mon établissement).
  */
+
+const weekdayLabels = [
+  "dimanche",
+  "lundi",
+  "mardi",
+  "mercredi",
+  "jeudi",
+  "vendredi",
+  "samedi",
+];
 
 export type AvailabilityFormState = { error?: string };
 
@@ -36,6 +50,7 @@ export async function createAvailabilityRule(
     return { error: "Seul le gérant peut modifier les horaires." };
   }
 
+  const staffId = formData.get("staff_id");
   const weekdays = formData.getAll("weekday").map(Number);
   const startTime = formData.get("start_time");
   const endTime = formData.get("end_time");
@@ -43,6 +58,8 @@ export async function createAvailabilityRule(
   const capacity = Number(formData.get("capacity"));
 
   if (
+    typeof staffId !== "string" ||
+    !staffId ||
     weekdays.length === 0 ||
     weekdays.some((weekday) => Number.isNaN(weekday)) ||
     typeof startTime !== "string" ||
@@ -56,7 +73,7 @@ export async function createAvailabilityRule(
   ) {
     return {
       error:
-        "Sélectionnez au moins un jour et remplissez tous les champs correctement.",
+        "Sélectionnez un membre de l'équipe, au moins un jour, et remplissez tous les champs correctement.",
     };
   }
 
@@ -65,9 +82,45 @@ export async function createAvailabilityRule(
   }
 
   const supabase = await createClient();
+
+  const { data: staffMember } = await supabase
+    .from("staff_members")
+    .select("id")
+    .eq("id", staffId)
+    .eq("business_id", profile.business_id)
+    .maybeSingle();
+
+  if (!staffMember) {
+    return { error: "Membre de l'équipe introuvable." };
+  }
+
+  const { data: businessHours } = await supabase
+    .from("business_hours")
+    .select("weekday, start_time, end_time")
+    .eq("business_id", profile.business_id)
+    .in("weekday", weekdays);
+
+  const startMinutes = timeToMinutes(startTime);
+  const endMinutes = timeToMinutes(endTime);
+
+  for (const weekday of weekdays) {
+    const fitsWithinOpeningHours = (businessHours ?? []).some(
+      (h) =>
+        h.weekday === weekday &&
+        startMinutes >= timeToMinutes(h.start_time) &&
+        endMinutes <= timeToMinutes(h.end_time)
+    );
+    if (!fitsWithinOpeningHours) {
+      return {
+        error: `L'horaire proposé doit être compris dans les heures d'ouverture du salon pour le ${weekdayLabels[weekday]} (à définir dans Configuration → Mon établissement).`,
+      };
+    }
+  }
+
   const { error } = await supabase.from("availability_rules").insert(
     weekdays.map((weekday) => ({
       business_id: profile.business_id,
+      staff_id: staffId,
       weekday,
       start_time: startTime,
       end_time: endTime,

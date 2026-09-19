@@ -6,10 +6,10 @@ import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 import { uploadPhoto } from "@/lib/supabase/media-admin";
 
 /**
- * Liste nommée des membres du personnel (US demandée : "Équipe"). Voir
- * la note en tête de la migration 0021_multi_business_and_staff.sql :
- * purement organisationnel/affichage, sans effet sur la capacité de
- * réservation.
+ * Liste nommée des membres du personnel (US demandée : "Équipe").
+ * Assignable à une réservation pour affichage/organisation, et depuis la
+ * migration 0026, préalable obligatoire pour définir un horaire (chaque
+ * ligne d'availability_rules doit être rattachée à un membre actif).
  */
 
 export type StaffFormState = { error?: string };

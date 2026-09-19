@@ -2,9 +2,9 @@
 
 import { useActionState } from "react";
 import {
-  createAvailabilityRule,
-  type AvailabilityFormState,
-} from "./actions";
+  createBusinessHour,
+  type BusinessHoursFormState,
+} from "./business-hours-actions";
 
 const weekdayOptions = [
   { value: 1, label: "Lundi" },
@@ -16,15 +16,11 @@ const weekdayOptions = [
   { value: 0, label: "Dimanche" },
 ];
 
-const initialState: AvailabilityFormState = {};
+const initialState: BusinessHoursFormState = {};
 
-export function AvailabilityForm({
-  staffMembers,
-}: {
-  staffMembers: { id: string; name: string }[];
-}) {
+export function BusinessHoursForm() {
   const [state, formAction, pending] = useActionState(
-    createAvailabilityRule,
+    createBusinessHour,
     initialState
   );
 
@@ -33,27 +29,6 @@ export function AvailabilityForm({
       action={formAction}
       className="grid grid-cols-2 gap-3 rounded-2xl border border-ink-900/10 bg-white p-4 sm:grid-cols-4 dark:border-paper/10 dark:bg-ink-800"
     >
-      <div className="col-span-full">
-        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
-          Membre de l&apos;équipe
-        </label>
-        <select
-          name="staff_id"
-          required
-          defaultValue=""
-          className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
-        >
-          <option value="" disabled>
-            Choisir...
-          </option>
-          {staffMembers.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
       <div className="col-span-full">
         <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
           Jours (plusieurs choix possibles)
@@ -102,34 +77,6 @@ export function AvailabilityForm({
         />
       </div>
 
-      <div>
-        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
-          Créneau (min)
-        </label>
-        <input
-          type="number"
-          name="slot_duration_minutes"
-          min={5}
-          required
-          defaultValue={30}
-          className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
-          Capacité
-        </label>
-        <input
-          type="number"
-          name="capacity"
-          min={1}
-          required
-          defaultValue={1}
-          className="w-full rounded-xl border border-ink-900/16 bg-white p-2 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
-        />
-      </div>
-
       {state.error && (
         <p className="col-span-full rounded-xl bg-danger/10 p-2 text-xs text-danger">
           {state.error}
@@ -142,7 +89,7 @@ export function AvailabilityForm({
           disabled={pending}
           className="rounded-xl bg-kino-400 px-4 py-2 text-sm font-bold text-ink-900 transition hover:bg-kino-500 disabled:opacity-60"
         >
-          {pending ? "Ajout..." : "Ajouter ce créneau"}
+          {pending ? "Ajout..." : "Ajouter ces heures"}
         </button>
       </div>
     </form>
