@@ -50,6 +50,11 @@ export function StaffForm() {
       >
         {pending ? "Ajout..." : "Ajouter"}
       </button>
+      {state.success && (
+        <p className="w-full text-xs font-bold text-success">
+          Membre ajouté — visible dans la liste ci-dessous.
+        </p>
+      )}
     </form>
   );
 }

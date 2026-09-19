@@ -12,7 +12,7 @@ import { uploadPhoto } from "@/lib/supabase/media-admin";
  * ligne d'availability_rules doit être rattachée à un membre actif).
  */
 
-export type StaffFormState = { error?: string };
+export type StaffFormState = { error?: string; success?: boolean };
 
 export async function createStaffMember(
   _prevState: StaffFormState,
@@ -48,7 +48,7 @@ export async function createStaffMember(
   }
 
   revalidatePath("/dashboard/equipe");
-  return {};
+  return { success: true };
 }
 
 export async function updateStaffPhoto(formData: FormData) {
