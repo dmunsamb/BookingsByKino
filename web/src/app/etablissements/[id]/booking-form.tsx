@@ -91,7 +91,7 @@ export function BookingForm({
             </label>
             {slots.length === 0 && (
               <p className="text-sm text-ink-400">
-                Aucun horaire configuré pour ce jour par cet établissement.
+                Aucun créneau disponible pour ce jour à cet établissement.
               </p>
             )}
             <div className="flex flex-wrap gap-2">
