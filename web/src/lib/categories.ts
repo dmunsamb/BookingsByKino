@@ -10,7 +10,7 @@ export type MainCategory = "beauty" | "horeca";
 export const CATEGORIES: { value: string; mainCategory: MainCategory }[] = [
   { value: "Salon de coiffure", mainCategory: "beauty" },
   { value: "Salon de beauté", mainCategory: "beauty" },
-  { value: "Barbershop", mainCategory: "beauty" },
+  { value: "Barbershop (homme)", mainCategory: "beauty" },
   { value: "Restaurant", mainCategory: "horeca" },
   { value: "Café / Snack-bar", mainCategory: "horeca" },
   { value: "Autre", mainCategory: "beauty" },
