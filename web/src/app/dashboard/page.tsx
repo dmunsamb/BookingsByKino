@@ -61,6 +61,33 @@ function formatDateTime(iso: string) {
   });
 }
 
+/**
+ * Ouvre directement la conversation WhatsApp du client, sans message
+ * prérempli : WhatsApp n'offre pas de lien "appel direct" fiable
+ * multiplateforme, donc le gérant atterrit dans le chat et appuie
+ * lui-même sur l'icône d'appel — utile pour discuter d'un empêchement
+ * ou proposer un autre créneau, quel que soit le statut de la réservation.
+ */
+function CallButton({
+  phone,
+  enabled,
+}: {
+  phone: string | null;
+  enabled: boolean;
+}) {
+  if (!enabled || !phone) return null;
+  return (
+    <a
+      href={buildWhatsAppLink(phone, "")}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="rounded-xl border border-ink-900/16 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
+    >
+      Appeler
+    </a>
+  );
+}
+
 function BookingCard({
   entry,
   services,
@@ -499,16 +526,6 @@ export default async function DashboardPage() {
                         )}. Merci !`
                       )
                     : null;
-                // Ouvre directement la conversation WhatsApp du client, sans
-                // message prérempli : WhatsApp n'offre pas de lien "appel
-                // direct" fiable multiplateforme, donc le gérant atterrit
-                // dans le chat et appuie lui-même sur l'icône d'appel — utile
-                // pour discuter d'un empêchement ou proposer un autre créneau.
-                const callLink =
-                  canManageBusiness(profile) && entry.client_phone_display
-                    ? buildWhatsAppLink(entry.client_phone_display, "")
-                    : null;
-
                 return (
                 <BookingCard
                   key={entry.id}
@@ -521,16 +538,10 @@ export default async function DashboardPage() {
                   }
                   actions={
                     <>
-                      {callLink && (
-                        <a
-                          href={callLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-xl border border-ink-900/16 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
-                        >
-                          Appeler
-                        </a>
-                      )}
+                      <CallButton
+                        phone={entry.client_phone_display}
+                        enabled={canManageBusiness(profile)}
+                      />
                       <ValidateWithWhatsAppButton
                         bookingId={entry.id}
                         whatsAppLink={whatsAppLink}
@@ -569,6 +580,10 @@ export default async function DashboardPage() {
                   services={serviceInfo}
                   actions={
                     <>
+                      <CallButton
+                        phone={entry.client_phone_display}
+                        enabled={canManageBusiness(profile)}
+                      />
                       <form action={updateBookingStatus}>
                         <input type="hidden" name="id" value={entry.id} />
                         <input type="hidden" name="status" value="termine" />
@@ -617,11 +632,21 @@ export default async function DashboardPage() {
                       : undefined
                   }
                   actions={
-                    <form action={updateBookingStatus}>
-                      <input type="hidden" name="id" value={entry.id} />
-                      <input type="hidden" name="status" value="geannuleerd" />
-                      <ConfirmDeleteButton label="Annuler" dismissLabel="Non" />
-                    </form>
+                    <>
+                      <CallButton
+                        phone={entry.client_phone_display}
+                        enabled={canManageBusiness(profile)}
+                      />
+                      <form action={updateBookingStatus}>
+                        <input type="hidden" name="id" value={entry.id} />
+                        <input
+                          type="hidden"
+                          name="status"
+                          value="geannuleerd"
+                        />
+                        <ConfirmDeleteButton label="Annuler" dismissLabel="Non" />
+                      </form>
+                    </>
                   }
                 />
               ))}
@@ -680,6 +705,10 @@ export default async function DashboardPage() {
                   }
                   actions={
                     <>
+                      <CallButton
+                        phone={entry.client_phone_display}
+                        enabled={canManageBusiness(profile)}
+                      />
                       {resendLink && (
                         <a
                           href={resendLink}
