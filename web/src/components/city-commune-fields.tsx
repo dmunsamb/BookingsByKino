@@ -16,8 +16,10 @@ const selectClass =
  */
 export function CityCommuneFields({
   defaultCity = CITIES[0] ?? "",
+  defaultCommune = "",
 }: {
   defaultCity?: string;
+  defaultCommune?: string;
 }) {
   const [city, setCity] = useState(defaultCity);
   const communes = communesForCity(city);
@@ -28,7 +30,12 @@ export function CityCommuneFields({
         <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
           Commune
         </label>
-        <select key={city} name="commune" defaultValue="" className={selectClass}>
+        <select
+          key={city}
+          name="commune"
+          defaultValue={defaultCommune}
+          className={selectClass}
+        >
           <option value="">Choisir...</option>
           {communes.map((c) => (
             <option key={c} value={c}>

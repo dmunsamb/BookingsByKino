@@ -118,6 +118,20 @@ export default async function ConfigurationPage() {
       )}
 
       <div className="grid gap-3 sm:grid-cols-2">
+        {canManageBusiness(profile) && (
+          <Link
+            href="/dashboard/configuration/etablissement"
+            className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
+          >
+            <span className="font-bold text-ink-900 dark:text-paper">
+              Mon établissement
+            </span>
+            <p className="mt-1 text-ink-400">
+              Nom, catégorie, adresse, commune, WhatsApp et heure
+              d&apos;ouverture.
+            </p>
+          </Link>
+        )}
         <Link
           href="/dashboard/agenda"
           className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"

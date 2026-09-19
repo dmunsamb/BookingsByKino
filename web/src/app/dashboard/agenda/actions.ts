@@ -81,6 +81,7 @@ export async function createAvailabilityRule(
   }
 
   revalidatePath("/dashboard/agenda");
+  revalidatePath("/dashboard/configuration/etablissement");
   return {};
 }
 
@@ -95,6 +96,8 @@ export async function deleteAvailabilityRule(formData: FormData) {
   await supabase.from("availability_rules").delete().eq("id", id);
 
   revalidatePath("/dashboard/agenda");
+  // Les horaires sont aussi éditables depuis Configuration → Mon établissement.
+  revalidatePath("/dashboard/configuration/etablissement");
 }
 
 /**

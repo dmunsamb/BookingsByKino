@@ -1,0 +1,68 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
+import { isValidCategory, mainCategoryFor } from "@/lib/categories";
+
+export type BusinessInfoFormState = { error?: string; success?: boolean };
+
+/**
+ * Édition des informations de l'établissement après inscription — avant
+ * ça, nom/catégorie/adresse/commune/ville/WhatsApp n'étaient modifiables
+ * nulle part une fois le compte créé. L'écriture passe par le client
+ * normal (pas admin) : la policy RLS owner_update_business (migration
+ * 0002) autorise déjà le propriétaire à modifier sa propre ligne.
+ */
+export async function updateBusinessInfo(
+  _prevState: BusinessInfoFormState,
+  formData: FormData
+): Promise<BusinessInfoFormState> {
+  const profile = await getCurrentProfile();
+  if (!profile?.business_id) {
+    return { error: "Aucun établissement associé à votre compte." };
+  }
+  if (!canManageBusiness(profile)) {
+    return { error: "Seul le gérant peut modifier ces informations." };
+  }
+
+  const name = formData.get("name");
+  const type = formData.get("type");
+  const address = formData.get("address");
+  const commune = formData.get("commune");
+  const city = formData.get("city");
+  const whatsappRaw = formData.get("whatsapp");
+  const whatsapp = typeof whatsappRaw === "string" ? whatsappRaw.trim() : "";
+
+  if (
+    typeof name !== "string" ||
+    !name.trim() ||
+    typeof type !== "string" ||
+    !isValidCategory(type)
+  ) {
+    return { error: "Veuillez remplir tous les champs obligatoires." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("businesses")
+    .update({
+      name: name.trim(),
+      main_category: mainCategoryFor(type),
+      sub_category: type,
+      address: typeof address === "string" ? address.trim() || null : null,
+      commune: typeof commune === "string" ? commune.trim() || null : null,
+      city: typeof city === "string" ? city.trim() || null : null,
+      owner_whatsapp: whatsapp || null,
+    })
+    .eq("id", profile.business_id);
+
+  if (error) {
+    return { error: "Erreur lors de l'enregistrement. Merci de réessayer." };
+  }
+
+  revalidatePath("/dashboard/configuration/etablissement");
+  revalidatePath("/dashboard");
+  revalidatePath("/");
+  return { success: true };
+}
