@@ -12,6 +12,7 @@ import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { formatCdf } from "@/lib/currency";
 import { logout, updateBookingStatus } from "./actions";
 import { ValidateWithWhatsAppButton } from "./validate-with-whatsapp-button";
+import { ConfirmPaymentWithWhatsAppButton } from "./confirm-payment-with-whatsapp-button";
 import {
   buildWhatsAppLink,
   formatMobileMoneyAccounts,
@@ -659,8 +660,12 @@ export default async function DashboardPage() {
             </h2>
             <p className="mb-3 text-xs text-ink-400">
               Une fois l&apos;acompte reçu sur votre compte mobile money,
-              cliquez sur « Marquer payé ». Le délai de 30 minutes est
-              indicatif — aucune annulation automatique n&apos;a lieu.
+              cliquez sur « Marquer payé » : la réservation est confirmée et
+              WhatsApp s&apos;ouvre avec un message prérempli pour le client
+              (accusé de réception de l&apos;acompte, rendez-vous confirmé,
+              nom du membre de l&apos;équipe si assigné) — à vous de
+              l&apos;envoyer. Le délai de 30 minutes est indicatif — aucune
+              annulation automatique n&apos;a lieu.
             </p>
             <div className="space-y-3">
               {waitingPayment.length === 0 && (
@@ -691,6 +696,23 @@ export default async function DashboardPage() {
                         )}. Merci !`
                       )
                     : null;
+                const confirmationLink =
+                  canManageBusiness(profile) &&
+                  entry.client_phone_display &&
+                  service
+                    ? buildWhatsAppLink(
+                        entry.client_phone_display,
+                        `Bonjour ${entry.client_name ?? ""}, nous avons bien reçu votre acompte de $${service.deposit_usd.toFixed(
+                          2
+                        )} (${formatCdf(service.deposit_usd)}) pour "${
+                          service.name
+                        }" le ${formatDateTime(entry.start_time)} chez ${businessName}. Votre rendez-vous est confirmé${
+                          entry.staff_name ? ` avec ${entry.staff_name}` : ""
+                        } ! Référence : ${formatBookingReference(
+                          entry.reference_number
+                        )}. À bientôt !`
+                      )
+                    : null;
 
                 return (
                 <BookingCard
@@ -719,16 +741,10 @@ export default async function DashboardPage() {
                           Rappel WhatsApp
                         </a>
                       )}
-                      <form action={updateBookingStatus}>
-                        <input type="hidden" name="id" value={entry.id} />
-                        <input type="hidden" name="status" value="confirmed" />
-                        <button
-                          type="submit"
-                          className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500"
-                        >
-                          Marquer payé
-                        </button>
-                      </form>
+                      <ConfirmPaymentWithWhatsAppButton
+                        bookingId={entry.id}
+                        whatsAppLink={confirmationLink}
+                      />
                       <form action={updateBookingStatus}>
                         <input type="hidden" name="id" value={entry.id} />
                         <input
