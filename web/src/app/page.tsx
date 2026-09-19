@@ -11,7 +11,7 @@ export default async function Home({
 
   let query = supabase
     .from("businesses")
-    .select("id, name, main_category, sub_category, city, commune, address")
+    .select("id, name, main_category, categories, city, commune, address")
     .order("name");
 
   if (commune) {
@@ -19,7 +19,7 @@ export default async function Home({
   }
 
   if (category) {
-    query = query.eq("sub_category", category);
+    query = query.contains("categories", [category]);
   }
 
   // Les caractères structurants de la syntaxe de filtre PostgREST
@@ -28,10 +28,14 @@ export default async function Home({
   // un filtre — la policy RLS limite de toute façon cette requête aux
   // établissements approuvés, donc au pire une recherche mal formée ne
   // renvoie rien plutôt que de fuiter des données.
+  //
+  // categories est un tableau : pas de recherche partielle dessus via
+  // PostgREST (ilike ne s'applique pas à un text[]) — le menu de
+  // catégories couvre déjà ce cas en filtre exact.
   const term = q?.trim().replace(/[,()]/g, "");
   if (term) {
     query = query.or(
-      `name.ilike.%${term}%,sub_category.ilike.%${term}%,city.ilike.%${term}%,commune.ilike.%${term}%,address.ilike.%${term}%`
+      `name.ilike.%${term}%,city.ilike.%${term}%,commune.ilike.%${term}%,address.ilike.%${term}%`
     );
   }
 
@@ -154,10 +158,17 @@ export default async function Home({
                 />
               )}
               <div className="p-4">
-                {b.sub_category && (
-                  <span className="mb-2 inline-block rounded bg-kino-100 px-2 py-0.5 text-[10.5px] font-bold tracking-wide text-kino-700 dark:bg-kino-900 dark:text-kino-300">
-                    {b.sub_category.toUpperCase()}
-                  </span>
+                {b.categories && b.categories.length > 0 && (
+                  <div className="mb-2 flex flex-wrap gap-1">
+                    {b.categories.map((c: string) => (
+                      <span
+                        key={c}
+                        className="inline-block rounded bg-kino-100 px-2 py-0.5 text-[10.5px] font-bold tracking-wide text-kino-700 dark:bg-kino-900 dark:text-kino-300"
+                      >
+                        {c.toUpperCase()}
+                      </span>
+                    ))}
+                  </div>
                 )}
                 <h2 className="font-serif text-lg text-ink-900 dark:text-paper">
                   {b.name}

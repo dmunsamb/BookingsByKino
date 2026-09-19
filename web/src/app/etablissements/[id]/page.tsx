@@ -52,7 +52,7 @@ export default async function BusinessPage({
   const { data: business } = await supabase
     .from("businesses")
     .select(
-      "id, name, main_category, sub_category, city, commune, address, subscription_paid_until"
+      "id, name, main_category, city, commune, address, subscription_paid_until"
     )
     .eq("id", id)
     .maybeSingle();

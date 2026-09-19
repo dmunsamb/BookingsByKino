@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrentProfile, requireUser } from "@/lib/auth/dal";
-import { isValidCategory, mainCategoryFor } from "@/lib/categories";
+import { isValidCategory, mainCategoryForAny } from "@/lib/categories";
 
 /**
  * Plusieurs salons par gérant. `profiles.business_id` reste
@@ -28,7 +28,9 @@ export async function createAdditionalBusiness(
   }
 
   const businessName = formData.get("business_name");
-  const type = formData.get("type");
+  const categories = formData.getAll("categories").filter(
+    (v): v is string => typeof v === "string"
+  );
   const address = formData.get("address");
   const commune = formData.get("commune");
   const city = formData.get("city");
@@ -38,8 +40,8 @@ export async function createAdditionalBusiness(
   if (
     typeof businessName !== "string" ||
     !businessName.trim() ||
-    typeof type !== "string" ||
-    !isValidCategory(type)
+    categories.length === 0 ||
+    !categories.every(isValidCategory)
   ) {
     return { error: "Veuillez remplir tous les champs obligatoires." };
   }
@@ -51,8 +53,8 @@ export async function createAdditionalBusiness(
     .from("businesses")
     .insert({
       name: businessName.trim(),
-      main_category: mainCategoryFor(type),
-      sub_category: type,
+      main_category: mainCategoryForAny(categories),
+      categories,
       address: typeof address === "string" ? address.trim() || null : null,
       commune: typeof commune === "string" ? commune.trim() || null : null,
       city: typeof city === "string" ? city.trim() || null : null,

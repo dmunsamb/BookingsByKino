@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { createAdditionalBusiness, type NewBusinessFormState } from "../actions";
-import { CATEGORIES } from "@/lib/categories";
+import { CategoryCheckboxes } from "@/components/category-checkboxes";
 import { CityCommuneFields } from "@/components/city-commune-fields";
 
 const initialState: NewBusinessFormState = {};
@@ -28,26 +28,7 @@ export function NewBusinessForm() {
         />
       </div>
 
-      <div>
-        <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
-          Type d&apos;établissement
-        </label>
-        <select
-          name="type"
-          required
-          defaultValue=""
-          className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
-        >
-          <option value="" disabled>
-            Choisir...
-          </option>
-          {CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.value}
-            </option>
-          ))}
-        </select>
-      </div>
+      <CategoryCheckboxes />
 
       <div>
         <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">

@@ -44,7 +44,7 @@ export default async function AdminPage() {
   const { data: businesses } = await supabase
     .from("businesses")
     .select(
-      "id, name, main_category, sub_category, address, city, signup_status, subscription_paid_until, owner_whatsapp, is_test, created_at"
+      "id, name, main_category, address, city, signup_status, subscription_paid_until, owner_whatsapp, is_test, created_at"
     )
     .neq("signup_status", "pending_approval")
     .order("created_at", { ascending: false });

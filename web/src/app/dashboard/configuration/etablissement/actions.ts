@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
-import { isValidCategory, mainCategoryFor } from "@/lib/categories";
+import { isValidCategory, mainCategoryForAny } from "@/lib/categories";
 
 export type BusinessInfoFormState = { error?: string; success?: boolean };
 
@@ -27,7 +27,9 @@ export async function updateBusinessInfo(
   }
 
   const name = formData.get("name");
-  const type = formData.get("type");
+  const categories = formData.getAll("categories").filter(
+    (v): v is string => typeof v === "string"
+  );
   const address = formData.get("address");
   const commune = formData.get("commune");
   const city = formData.get("city");
@@ -37,8 +39,8 @@ export async function updateBusinessInfo(
   if (
     typeof name !== "string" ||
     !name.trim() ||
-    typeof type !== "string" ||
-    !isValidCategory(type)
+    categories.length === 0 ||
+    !categories.every(isValidCategory)
   ) {
     return { error: "Veuillez remplir tous les champs obligatoires." };
   }
@@ -48,8 +50,8 @@ export async function updateBusinessInfo(
     .from("businesses")
     .update({
       name: name.trim(),
-      main_category: mainCategoryFor(type),
-      sub_category: type,
+      main_category: mainCategoryForAny(categories),
+      categories,
       address: typeof address === "string" ? address.trim() || null : null,
       commune: typeof commune === "string" ? commune.trim() || null : null,
       city: typeof city === "string" ? city.trim() || null : null,

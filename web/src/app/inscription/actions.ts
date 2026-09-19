@@ -7,7 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { uploadPhoto } from "@/lib/supabase/media-admin";
 import { MAX_BUSINESS_PHOTOS } from "@/lib/media";
-import { isValidCategory, mainCategoryFor } from "@/lib/categories";
+import { isValidCategory, mainCategoryForAny } from "@/lib/categories";
 
 /**
  * Auto-inscription d'un nouveau gérant. Toutes les écritures passent par
@@ -54,7 +54,9 @@ export async function signup(
   const whatsappRaw = formData.get("whatsapp");
   const password = formData.get("password");
   const businessName = formData.get("business_name");
-  const type = formData.get("type");
+  const categories = formData.getAll("categories").filter(
+    (v): v is string => typeof v === "string"
+  );
   const address = formData.get("address");
   const commune = formData.get("commune");
   const city = formData.get("city");
@@ -70,8 +72,8 @@ export async function signup(
     typeof password !== "string" ||
     typeof businessName !== "string" ||
     !businessName.trim() ||
-    typeof type !== "string" ||
-    !isValidCategory(type)
+    categories.length === 0 ||
+    !categories.every(isValidCategory)
   ) {
     return { error: "Veuillez remplir tous les champs obligatoires." };
   }
@@ -121,8 +123,8 @@ export async function signup(
     .from("businesses")
     .insert({
       name: businessName.trim(),
-      main_category: mainCategoryFor(type),
-      sub_category: type,
+      main_category: mainCategoryForAny(categories),
+      categories,
       address: typeof address === "string" ? address.trim() || null : null,
       commune: typeof commune === "string" ? commune.trim() || null : null,
       city: typeof city === "string" ? city.trim() || null : null,

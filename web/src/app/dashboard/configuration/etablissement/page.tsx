@@ -46,7 +46,7 @@ export default async function EtablissementConfigPage() {
   const [{ data: business }, { data: rules }] = await Promise.all([
     supabase
       .from("businesses")
-      .select("name, sub_category, address, commune, city, owner_whatsapp")
+      .select("name, categories, address, commune, city, owner_whatsapp")
       .eq("id", profile.business_id)
       .maybeSingle(),
     supabase
@@ -72,7 +72,7 @@ export default async function EtablissementConfigPage() {
 
       <BusinessInfoForm
         name={business?.name ?? ""}
-        type={business?.sub_category ?? ""}
+        categories={business?.categories ?? []}
         address={business?.address ?? ""}
         commune={business?.commune ?? ""}
         city={business?.city ?? ""}

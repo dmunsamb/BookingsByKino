@@ -24,3 +24,10 @@ export function isValidCategory(value: string): boolean {
 export function mainCategoryFor(value: string): MainCategory {
   return CATEGORIES.find((c) => c.value === value)?.mainCategory ?? "beauty";
 }
+
+/** Un établissement peut cocher plusieurs catégories — "horeca" dès que l'une d'elles l'est. */
+export function mainCategoryForAny(categories: string[]): MainCategory {
+  return categories.some((c) => mainCategoryFor(c) === "horeca")
+    ? "horeca"
+    : "beauty";
+}
