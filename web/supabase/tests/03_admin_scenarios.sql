@@ -31,13 +31,15 @@ begin
   end if;
 end $$;
 
--- 2. Approbation (1 mois) : approved + subscription_paid_until = now + 1 mois, paiement tracé
+-- 2. Approbation (1 mois) : approved + subscription_paid_until = now + 1 mois, paiement tracé.
+--    is_online mis à true ici aussi (migration 0031) : la visibilité
+--    publique testée au scénario 3 exige désormais approved ET is_online.
 do $$
 declare
   v_paid_until timestamptz;
 begin
   update businesses
-  set signup_status = 'approved', subscription_paid_until = now() + interval '1 month'
+  set signup_status = 'approved', subscription_paid_until = now() + interval '1 month', is_online = true
   where id = '11111111-1111-1111-1111-111111111111'
   returning subscription_paid_until into v_paid_until;
 

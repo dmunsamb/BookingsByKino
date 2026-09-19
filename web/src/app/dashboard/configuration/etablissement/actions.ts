@@ -95,3 +95,26 @@ export async function updateBusinessInfo(
   revalidatePath("/");
   return { success: true };
 }
+
+/**
+ * Toggle "en ligne" (migration 0031) — indépendant de l'approbation
+ * KinoBooking et de l'abonnement : un nouveau salon démarre hors ligne,
+ * invisible du catalogue public, jusqu'à ce que le gérant l'active
+ * lui-même (une fois son catalogue/ses horaires prêts).
+ */
+export async function toggleBusinessOnline(formData: FormData) {
+  const profile = await getCurrentProfile();
+  if (!profile?.business_id || !canManageBusiness(profile)) return;
+
+  const isOnline = formData.get("is_online") === "true";
+
+  const supabase = await createClient();
+  await supabase
+    .from("businesses")
+    .update({ is_online: isOnline })
+    .eq("id", profile.business_id);
+
+  revalidatePath("/dashboard/configuration");
+  revalidatePath("/dashboard");
+  revalidatePath("/");
+}

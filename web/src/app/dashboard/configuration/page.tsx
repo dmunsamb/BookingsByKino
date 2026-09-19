@@ -3,6 +3,7 @@ import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { MobileMoneyForm } from "../mobile-money-form";
 import { DashboardNav } from "../dashboard-nav";
+import { OnlineToggle } from "./online-toggle";
 import type { MobileMoneyAccount, MobileMoneyProvider } from "@/lib/whatsapp";
 
 export default async function ConfigurationPage() {
@@ -22,7 +23,7 @@ export default async function ConfigurationPage() {
       supabase
         .from("businesses")
         .select(
-          "mpesa_number, mpesa_holder_name, orange_money_number, orange_money_holder_name, airtel_money_number, airtel_money_holder_name"
+          "mpesa_number, mpesa_holder_name, orange_money_number, orange_money_holder_name, airtel_money_number, airtel_money_holder_name, is_online"
         )
         .eq("id", profile.business_id)
         .maybeSingle(),
@@ -72,6 +73,10 @@ export default async function ConfigurationPage() {
       <h1 className="mb-6 font-serif text-2xl text-ink-900 dark:text-paper">
         Configuration
       </h1>
+
+      {canManageBusiness(profile) && (
+        <OnlineToggle isOnline={businessData?.is_online ?? false} />
+      )}
 
       {canManageBusiness(profile) && (!hasServices || !hasAvailability) && (
         <div className="mb-6 rounded-xl border border-kino-200 bg-kino-50 p-4 text-sm dark:border-kino-800 dark:bg-ink-800">

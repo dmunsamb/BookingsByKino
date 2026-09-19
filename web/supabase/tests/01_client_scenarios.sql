@@ -251,8 +251,11 @@ begin;
 create temp table test_results (step text, outcome text, detail text) on commit drop;
 grant insert, select on test_results to anon, authenticated;
 
-insert into businesses (id, name, main_category, categories, signup_status, subscription_paid_until)
-values ('22222222-2222-2222-2222-222222222222', 'TEST Salon Inactif', 'beauty', array['Salon de beauté'], 'approved', now() - interval '20 days');
+-- is_online = true : ce scénario teste l'abonnement (subscription_paid_until),
+-- pas le toggle en ligne (migration 0031) — sans ça, 17_booking_salon_en_grace
+-- échouerait pour la mauvaise raison (hors ligne, pas hors délai de grâce).
+insert into businesses (id, name, main_category, categories, signup_status, subscription_paid_until, is_online)
+values ('22222222-2222-2222-2222-222222222222', 'TEST Salon Inactif', 'beauty', array['Salon de beauté'], 'approved', now() - interval '20 days', true);
 
 insert into services (id, business_id, name, duration_minutes, price_usd, deposit_usd)
 values ('33333333-3333-3333-3333-333333333333', '22222222-2222-2222-2222-222222222222', 'Test Service', 30, 10, 5);
