@@ -1,9 +1,12 @@
+"use client";
+
 import { toggleBusinessOnline } from "./etablissement/actions";
 
 /**
- * Toggle "en ligne" (migration 0031) — soumission directe en formulaire
- * (pas de useActionState) : rien à valider côté client, juste inverser
- * l'état actuel, même principe que toggleStaffActive sur /dashboard/equipe.
+ * Case à cocher "en ligne" (migration 0031) — remplace l'ancien toggle
+ * (switch visuel jugé peu réactif/clair) : cochée = en ligne, décochée =
+ * hors ligne (état par défaut d'un nouveau salon). Soumission automatique
+ * au clic (checkbox seule ne déclenche pas d'envoi de formulaire).
  */
 export function OnlineToggle({ isOnline }: { isOnline: boolean }) {
   return (
@@ -25,22 +28,17 @@ export function OnlineToggle({ isOnline }: { isOnline: boolean }) {
         </p>
       </div>
       <form action={toggleBusinessOnline}>
-        <input type="hidden" name="is_online" value={(!isOnline).toString()} />
-        <button
-          type="submit"
-          role="switch"
-          aria-checked={isOnline}
-          aria-label={isOnline ? "Passer hors ligne" : "Passer en ligne"}
-          className={`relative h-7 w-12 flex-none rounded-full transition ${
-            isOnline ? "bg-success" : "bg-ink-900/20 dark:bg-paper/20"
-          }`}
-        >
-          <span
-            className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${
-              isOnline ? "translate-x-5" : "translate-x-0.5"
-            }`}
+        <label className="flex flex-none items-center gap-2 text-sm font-bold text-ink-900 dark:text-paper">
+          <input
+            type="checkbox"
+            name="is_online"
+            value="true"
+            defaultChecked={isOnline}
+            onChange={(e) => e.currentTarget.form?.requestSubmit()}
+            className="h-5 w-5 accent-success"
           />
-        </button>
+          En ligne
+        </label>
       </form>
     </div>
   );
