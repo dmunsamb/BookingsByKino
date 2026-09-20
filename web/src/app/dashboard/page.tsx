@@ -189,6 +189,7 @@ export default async function DashboardPage() {
   }
 
   let pending: BookingRow[] = [];
+  let queueWaiting: BookingRow[] = [];
   let toClose: BookingRow[] = [];
   let confirmedUpcoming: BookingRow[] = [];
   let waitingPayment: BookingRow[] = [];
@@ -312,6 +313,7 @@ export default async function DashboardPage() {
 
     const [
       { data: pendingData },
+      { data: queueData },
       { data: toCloseData },
       { data: confirmedData },
       { data: waitingData },
@@ -327,9 +329,23 @@ export default async function DashboardPage() {
         .eq("business_id", profile.business_id)
         .eq("status", "pending_approval")
         .order("start_time"),
+      // File d'attente "sans rendez-vous" (US-C4) : tickets walk_in pas
+      // encore clôturés, triés par ordre d'arrivée (created_at), pas par
+      // start_time — plusieurs tickets pris dans le même créneau
+      // partagent le même start_time et perdraient leur ordre réel.
+      supabase
+        .from("agenda_entries_for_dashboard")
+        .select(
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, staff_name"
+        )
+        .eq("business_id", profile.business_id)
+        .eq("source", "walk_in")
+        .eq("status", "confirmed")
+        .order("created_at"),
       // Un rendez-vous confirmé dont l'heure est passée n'a plus sa place
       // dans "à venir" : il faut le clôturer (service rendu / no-show),
-      // pas l'annuler après coup.
+      // pas l'annuler après coup. Les tickets walk_in ont leur propre
+      // section (file d'attente) juste au-dessus.
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
@@ -337,6 +353,7 @@ export default async function DashboardPage() {
         )
         .eq("business_id", profile.business_id)
         .eq("status", "confirmed")
+        .neq("source", "walk_in")
         .lt("start_time", nowIso)
         .order("start_time")
         .limit(20),
@@ -347,6 +364,7 @@ export default async function DashboardPage() {
         )
         .eq("business_id", profile.business_id)
         .eq("status", "confirmed")
+        .neq("source", "walk_in")
         .gte("start_time", nowIso)
         .order("start_time")
         .limit(20),
@@ -381,6 +399,7 @@ export default async function DashboardPage() {
     ]);
 
     pending = pendingData ?? [];
+    queueWaiting = queueData ?? [];
     toClose = toCloseData ?? [];
     confirmedUpcoming = confirmedData ?? [];
     waitingPayment = waitingData ?? [];
@@ -575,6 +594,56 @@ export default async function DashboardPage() {
                 />
                 );
               })}
+            </div>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
+              File d&apos;attente (sans rendez-vous)
+              {queueWaiting.length > 0 && ` — ${queueWaiting.length}`}
+            </h2>
+            <p className="mb-3 text-xs text-ink-400">
+              Tickets pris sur place sans rendez-vous, dans l&apos;ordre
+              d&apos;arrivée. Clôturez chaque ticket une fois le client pris
+              en charge pour faire avancer la file.
+            </p>
+            <div className="space-y-3">
+              {queueWaiting.length === 0 && (
+                <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
+                  Personne en attente pour l&apos;instant.
+                </p>
+              )}
+              {queueWaiting.map((entry, index) => (
+                <BookingCard
+                  key={entry.id}
+                  entry={entry}
+                  services={serviceInfo}
+                  statusLabel={`Ticket ${index + 1}`}
+                  actions={
+                    <>
+                      <CallButton
+                        phone={entry.client_phone_display}
+                        enabled={canManageBusiness(profile)}
+                      />
+                      <form action={updateBookingStatus}>
+                        <input type="hidden" name="id" value={entry.id} />
+                        <input type="hidden" name="status" value="termine" />
+                        <button
+                          type="submit"
+                          className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500"
+                        >
+                          Service rendu
+                        </button>
+                      </form>
+                      <form action={updateBookingStatus}>
+                        <input type="hidden" name="id" value={entry.id} />
+                        <input type="hidden" name="status" value="no_show" />
+                        <ConfirmDeleteButton label="Parti(e)" dismissLabel="Non" />
+                      </form>
+                    </>
+                  }
+                />
+              ))}
             </div>
           </section>
 
