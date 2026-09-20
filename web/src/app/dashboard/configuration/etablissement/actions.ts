@@ -118,3 +118,27 @@ export async function toggleBusinessOnline(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/");
 }
+
+/**
+ * Toggle "file d'attente ouverte/fermée" (migration 0033) — indépendant
+ * du toggle "en ligne" ci-dessus (qui ne concerne que les RDV) : le
+ * salon peut couper les nouveaux tickets sans rendez-vous (fin de
+ * journée, pause...) sans se rendre invisible du catalogue. Ouvert par
+ * défaut, y compris pour un nouveau salon.
+ */
+export async function toggleWalkinQueueOpen(formData: FormData) {
+  const profile = await getCurrentProfile();
+  if (!profile?.business_id || !canManageBusiness(profile)) return;
+
+  const isOpen = formData.get("walkin_queue_open") === "true";
+
+  const supabase = await createClient();
+  await supabase
+    .from("businesses")
+    .update({ walkin_queue_open: isOpen })
+    .eq("id", profile.business_id);
+
+  revalidatePath("/dashboard/configuration");
+  revalidatePath("/dashboard/configuration/file-attente");
+  revalidatePath("/dashboard");
+}

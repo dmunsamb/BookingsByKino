@@ -10,7 +10,6 @@ import {
   type BlockedStaffSlot,
 } from "@/lib/availability";
 import { BookingForm } from "./booking-form";
-import { WalkInForm } from "./walk-in-form";
 import { PhotoGallery } from "./photo-gallery";
 import { formatBookingReference } from "@/lib/booking-reference";
 import { getSubscriptionStatus } from "@/lib/subscription";
@@ -24,24 +23,13 @@ export default async function BusinessPage({
   searchParams: Promise<{
     date?: string;
     service?: string;
-    mode?: string;
     confirmed?: string;
-    walkin?: string;
     ref?: string;
-    ticket?: string;
   }>;
 }) {
   const { id } = await params;
-  const {
-    date: dateParam,
-    service: serviceIdParam,
-    mode,
-    confirmed,
-    walkin,
-    ref,
-    ticket,
-  } = await searchParams;
-  const isWalkInMode = mode === "walkin";
+  const { date: dateParam, service: serviceIdParam, confirmed, ref } =
+    await searchParams;
   const minDate = minBookableDateIso();
   // Une date explicitement choisie par la cliente (navigation dans le
   // sélecteur) est toujours respectée telle quelle, même si elle s'avère
@@ -178,101 +166,60 @@ export default async function BusinessPage({
       </>
     );
   } else {
-    const modeToggle = (
-      <div className="mb-4 flex gap-2.5">
-        <Link
-          href={`/etablissements/${id}?service=${selectedService.id}`}
-          className={`flex-1 rounded-xl px-4 py-3.5 text-sm font-bold ${
-            !isWalkInMode
-              ? "bg-kino-400 text-ink-900"
-              : "border border-ink-900/16 text-ink-900 dark:border-paper/16 dark:text-paper"
-          }`}
-        >
-          Avec rendez-vous
-        </Link>
-        <Link
-          href={`/etablissements/${id}?service=${selectedService.id}&mode=walkin`}
-          className={`flex-1 rounded-xl px-4 py-3.5 text-sm font-bold ${
-            isWalkInMode
-              ? "bg-kino-400 text-ink-900"
-              : "border border-ink-900/16 text-ink-900 dark:border-paper/16 dark:text-paper"
-          }`}
-        >
-          Sans rendez-vous
-        </Link>
-      </div>
+    const [{ data: allRules }, { data: capacities }, { data: blockRows }] =
+      await Promise.all([
+        supabase
+          .from("availability_rules")
+          .select(
+            "weekday, start_time, end_time, slot_duration_minutes, capacity, staff_id"
+          )
+          .eq("business_id", id),
+        supabase.rpc("get_agenda_capacity", { p_business_id: id }),
+        supabase
+          .from("agenda_entries")
+          .select("start_time, staff_id")
+          .eq("business_id", id)
+          .eq("source", "blokkering")
+          .gte("start_time", new Date().toISOString()),
+      ]);
+
+    const rules = (allRules ?? []) as AvailabilityRule[];
+    const bookingCapacities = (capacities ?? []) as SlotCapacity[];
+    const blockedSlots = (blockRows ?? []) as BlockedStaffSlot[];
+
+    // Sans date explicitement choisie, on pré-sélectionne la première
+    // date où le service est réellement réservable plutôt que "demain"
+    // à l'aveugle, qui peut très bien être complet, bloqué ou fermé.
+    const effectiveDate = hasExplicitDate
+      ? date
+      : firstAvailableDateIso(
+          rules,
+          bookingCapacities,
+          selectedService.duration_minutes,
+          minDate,
+          blockedSlots
+        );
+
+    const weekday = new Date(`${effectiveDate}T12:00:00+01:00`).getDay();
+
+    const slots = generateSlotsForDate(
+      rules.filter((r) => r.weekday === weekday),
+      effectiveDate,
+      bookingCapacities,
+      selectedService.duration_minutes,
+      blockedSlots
     );
 
-    if (isWalkInMode) {
-      bookingSection = (
-        <>
-          {modeToggle}
-          <WalkInForm
-            businessId={id}
-            serviceId={selectedService.id}
-            serviceName={selectedService.name}
-          />
-        </>
-      );
-    } else {
-      const [{ data: allRules }, { data: capacities }, { data: blockRows }] =
-        await Promise.all([
-          supabase
-            .from("availability_rules")
-            .select(
-              "weekday, start_time, end_time, slot_duration_minutes, capacity, staff_id"
-            )
-            .eq("business_id", id),
-          supabase.rpc("get_agenda_capacity", { p_business_id: id }),
-          supabase
-            .from("agenda_entries")
-            .select("start_time, staff_id")
-            .eq("business_id", id)
-            .eq("source", "blokkering")
-            .gte("start_time", new Date().toISOString()),
-        ]);
-
-      const rules = (allRules ?? []) as AvailabilityRule[];
-      const bookingCapacities = (capacities ?? []) as SlotCapacity[];
-      const blockedSlots = (blockRows ?? []) as BlockedStaffSlot[];
-
-      // Sans date explicitement choisie, on pré-sélectionne la première
-      // date où le service est réellement réservable plutôt que "demain"
-      // à l'aveugle, qui peut très bien être complet, bloqué ou fermé.
-      const effectiveDate = hasExplicitDate
-        ? date
-        : firstAvailableDateIso(
-            rules,
-            bookingCapacities,
-            selectedService.duration_minutes,
-            minDate,
-            blockedSlots
-          );
-
-      const weekday = new Date(`${effectiveDate}T12:00:00+01:00`).getDay();
-
-      const slots = generateSlotsForDate(
-        rules.filter((r) => r.weekday === weekday),
-        effectiveDate,
-        bookingCapacities,
-        selectedService.duration_minutes,
-        blockedSlots
-      );
-
-      bookingSection = (
-        <>
-          {modeToggle}
-          <BookingForm
-            businessId={id}
-            mainCategory={business.main_category}
-            service={selectedService}
-            date={effectiveDate}
-            minDate={minDate}
-            slots={slots}
-          />
-        </>
-      );
-    }
+    bookingSection = (
+      <BookingForm
+        businessId={id}
+        mainCategory={business.main_category}
+        service={selectedService}
+        date={effectiveDate}
+        minDate={minDate}
+        slots={slots}
+      />
+    );
   }
 
   return (
@@ -322,29 +269,13 @@ export default async function BusinessPage({
         </div>
       )}
 
-      {walkin && (
-        <div className="mb-6 rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-ink-900 dark:text-paper">
-          <p className="font-bold">Vous êtes dans la file d&apos;attente !</p>
-          {ticket && !Number.isNaN(Number(ticket)) && (
-            <>
-              <p className="mt-3 text-xs font-bold uppercase tracking-widest text-kino-600 dark:text-kino-300">
-                Votre numéro dans la file aujourd&apos;hui
-              </p>
-              <p className="font-serif text-3xl text-ink-900 dark:text-paper">
-                {ticket}
-              </p>
-            </>
-          )}
-          <p className="mt-3 text-xs text-ink-400">
-            Présentez-vous sur place, votre tour viendra dans l&apos;ordre
-            d&apos;arrivée — sans acompte à payer.
-          </p>
-          {ref && !Number.isNaN(Number(ref)) && (
-            <p className="mt-2 text-xs text-ink-400">
-              Référence : {formatBookingReference(Number(ref))}
-            </p>
-          )}
-        </div>
+      {!isInactive && !selectedService && (
+        <Link
+          href={`/etablissements/${id}/file-attente`}
+          className="mb-6 block rounded-xl border border-kino-200 bg-kino-50 p-4 text-sm font-bold text-ink-900 transition hover:shadow-md dark:border-kino-800 dark:bg-ink-800 dark:text-paper"
+        >
+          File d&apos;attente sans rendez-vous →
+        </Link>
       )}
 
       {bookingSection}

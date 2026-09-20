@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { MobileMoneyForm } from "../mobile-money-form";
 import { DashboardNav } from "../dashboard-nav";
 import { OnlineToggle } from "./online-toggle";
+import { WalkinQueueToggle } from "./walkin-queue-toggle";
 import type { MobileMoneyAccount, MobileMoneyProvider } from "@/lib/whatsapp";
 
 export default async function ConfigurationPage() {
@@ -23,7 +24,7 @@ export default async function ConfigurationPage() {
       supabase
         .from("businesses")
         .select(
-          "mpesa_number, mpesa_holder_name, orange_money_number, orange_money_holder_name, airtel_money_number, airtel_money_holder_name, is_online"
+          "mpesa_number, mpesa_holder_name, orange_money_number, orange_money_holder_name, airtel_money_number, airtel_money_holder_name, is_online, walkin_queue_open"
         )
         .eq("id", profile.business_id)
         .maybeSingle(),
@@ -76,6 +77,10 @@ export default async function ConfigurationPage() {
 
       {canManageBusiness(profile) && (
         <OnlineToggle isOnline={businessData?.is_online ?? false} />
+      )}
+
+      {canManageBusiness(profile) && (
+        <WalkinQueueToggle isOpen={businessData?.walkin_queue_open ?? true} />
       )}
 
       {canManageBusiness(profile) && (!hasServices || !hasAvailability) && (
@@ -173,6 +178,20 @@ export default async function ConfigurationPage() {
             Gérer les services proposés aux clients.
           </p>
         </Link>
+        {canManageBusiness(profile) && (
+          <Link
+            href="/dashboard/configuration/file-attente"
+            className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
+          >
+            <span className="font-bold text-ink-900 dark:text-paper">
+              File d&apos;attente
+            </span>
+            <p className="mt-1 text-ink-400">
+              Capacité et code QR à imprimer pour les clientes sans
+              rendez-vous.
+            </p>
+          </Link>
+        )}
         {canManageBusiness(profile) && (
           <Link
             href="/dashboard/photos"

@@ -23,6 +23,8 @@ import { formatBookingReference } from "@/lib/booking-reference";
 import { PendingSignupsSection } from "@/app/admin/pending-signups-section";
 import { BusinessSwitcher, type OwnedBusiness } from "./business-switcher";
 import { DashboardNav } from "./dashboard-nav";
+import { AssignStaffForm } from "./assign-staff-form";
+import { ShiftQueueButtons } from "./shift-queue-buttons";
 
 const roleLabels: Record<Profile["role"], string> = {
   owner: "Gérant / Propriétaire",
@@ -45,9 +47,23 @@ type BookingRow = {
   end_time: string | null;
   reference_number: number;
   staff_name: string | null;
+  client_note?: string | null;
+};
+
+type QueueRow = BookingRow & {
+  created_at: string;
+  queue_bumped_at: string | null;
+  queue_shift_used: boolean;
 };
 
 type HistoryRow = BookingRow & { status: string };
+
+/** Ordre réel de la file : coalesce(queue_bumped_at, created_at), voir
+ * migration 0033 et queue-actions.ts (Postgrest ne sait pas trier par un
+ * coalesce entre deux colonnes, donc trié ici après récupération). */
+function queueSortKey(row: { created_at: string; queue_bumped_at: string | null }) {
+  return new Date(row.queue_bumped_at ?? row.created_at).getTime();
+}
 
 type ServiceInfo = { name: string; price_usd: number; deposit_usd: number };
 
@@ -60,6 +76,22 @@ function formatDateTime(iso: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+/**
+ * Message "Prévenir par WhatsApp" (US demandée) — jamais de durée
+ * annoncée (impossible à estimer fiablement), juste le nombre de
+ * personnes encore devant, en toutes lettres pour rester naturel.
+ */
+const AHEAD_COUNT_WORDS: Record<number, string> = { 1: "une", 2: "deux", 3: "trois" };
+
+function buildQueueNotifyMessage(aheadCount: number, businessName: string): string {
+  if (aheadCount <= 0) {
+    return `Bonjour, c'est bientôt votre tour chez ${businessName} !`;
+  }
+  const word = aheadCount === 1 ? "personne" : "personnes";
+  const numberWord = AHEAD_COUNT_WORDS[aheadCount] ?? String(aheadCount);
+  return `Bonjour, il y a encore ${numberWord} ${word} devant vous chez ${businessName}.`;
 }
 
 /**
@@ -136,6 +168,11 @@ function BookingCard({
             {formatCdf(service.deposit_usd)})
           </p>
         )}
+        {entry.client_note && (
+          <p className="mt-1 text-xs italic text-ink-400">
+            « {entry.client_note} »
+          </p>
+        )}
       </div>
       <div className="flex items-center gap-3">
         {editHref && (
@@ -189,7 +226,9 @@ export default async function DashboardPage() {
   }
 
   let pending: BookingRow[] = [];
-  let queueWaiting: BookingRow[] = [];
+  let queueWaiting: QueueRow[] = [];
+  let queueInProgress: BookingRow[] = [];
+  let queueStaffOptions: { id: string; name: string }[] = [];
   let toClose: BookingRow[] = [];
   let confirmedUpcoming: BookingRow[] = [];
   let waitingPayment: BookingRow[] = [];
@@ -313,7 +352,9 @@ export default async function DashboardPage() {
 
     const [
       { data: pendingData },
-      { data: queueData },
+      { data: queueWaitingData },
+      { data: queueInProgressData },
+      { data: staffData },
       { data: toCloseData },
       { data: confirmedData },
       { data: waitingData },
@@ -329,19 +370,38 @@ export default async function DashboardPage() {
         .eq("business_id", profile.business_id)
         .eq("status", "pending_approval")
         .order("start_time"),
-      // File d'attente "sans rendez-vous" (US-C4) : tickets walk_in pas
-      // encore clôturés, triés par ordre d'arrivée (created_at), pas par
-      // start_time — plusieurs tickets pris dans le même créneau
-      // partagent le même start_time et perdraient leur ordre réel.
+      // File d'attente "sans rendez-vous" (US-C4 étendu) : tickets
+      // walk_in pas encore pris en charge (staff_id vide) — l'ordre réel
+      // (queueSortKey, coalesce bumped_at/created_at) est recalculé après
+      // coup, Postgrest ne sait pas trier par un coalesce entre colonnes.
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, staff_name"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, staff_name, client_note, queue_bumped_at, queue_shift_used, created_at"
         )
         .eq("business_id", profile.business_id)
         .eq("source", "walk_in")
         .eq("status", "confirmed")
-        .order("created_at"),
+        .is("staff_id", null),
+      // "En cours" : ticket sans rendez-vous déjà pris en charge par un
+      // membre de l'équipe (staff_id renseigné), pas encore clôturé —
+      // même distinction que ci-dessus, sans nouveau statut en base.
+      supabase
+        .from("agenda_entries_for_dashboard")
+        .select(
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, staff_name, client_note"
+        )
+        .eq("business_id", profile.business_id)
+        .eq("source", "walk_in")
+        .eq("status", "confirmed")
+        .not("staff_id", "is", null)
+        .order("start_time"),
+      supabase
+        .from("staff_members")
+        .select("id, name")
+        .eq("business_id", profile.business_id)
+        .eq("active", true)
+        .order("name"),
       // Un rendez-vous confirmé dont l'heure est passée n'a plus sa place
       // dans "à venir" : il faut le clôturer (service rendu / no-show),
       // pas l'annuler après coup. Les tickets walk_in ont leur propre
@@ -399,7 +459,11 @@ export default async function DashboardPage() {
     ]);
 
     pending = pendingData ?? [];
-    queueWaiting = queueData ?? [];
+    queueWaiting = ((queueWaitingData ?? []) as QueueRow[])
+      .slice()
+      .sort((a, b) => queueSortKey(a) - queueSortKey(b));
+    queueInProgress = queueInProgressData ?? [];
+    queueStaffOptions = staffData ?? [];
     toClose = toCloseData ?? [];
     confirmedUpcoming = confirmedData ?? [];
     waitingPayment = waitingData ?? [];
@@ -604,8 +668,8 @@ export default async function DashboardPage() {
             </h2>
             <p className="mb-3 text-xs text-ink-400">
               Tickets pris sur place sans rendez-vous, dans l&apos;ordre
-              d&apos;arrivée. Clôturez chaque ticket une fois le client pris
-              en charge pour faire avancer la file.
+              d&apos;arrivée. La prise en charge assigne un membre de
+              l&apos;équipe et fait passer le client en « En cours ».
             </p>
             <div className="space-y-3">
               {queueWaiting.length === 0 && (
@@ -613,12 +677,86 @@ export default async function DashboardPage() {
                   Personne en attente pour l&apos;instant.
                 </p>
               )}
-              {queueWaiting.map((entry, index) => (
+              {queueWaiting.map((entry, index) => {
+                const notifyLink = entry.client_phone_display
+                  ? buildWhatsAppLink(
+                      entry.client_phone_display,
+                      buildQueueNotifyMessage(index, businessName)
+                    )
+                  : null;
+                return (
+                  <BookingCard
+                    key={entry.id}
+                    entry={entry}
+                    services={serviceInfo}
+                    statusLabel={`Ticket ${index + 1}`}
+                    actions={
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <CallButton
+                          phone={entry.client_phone_display}
+                          enabled={canManageBusiness(profile)}
+                        />
+                        {notifyLink && (
+                          <a
+                            href={notifyLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-xl border border-ink-900/16 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
+                          >
+                            Prévenir par WhatsApp
+                          </a>
+                        )}
+                        <ShiftQueueButtons
+                          entryId={entry.id}
+                          used={entry.queue_shift_used}
+                        />
+                        <AssignStaffForm
+                          entryId={entry.id}
+                          staff={queueStaffOptions}
+                        />
+                        <form action={updateBookingStatus}>
+                          <input type="hidden" name="id" value={entry.id} />
+                          <input type="hidden" name="status" value="no_show" />
+                          <button
+                            type="submit"
+                            className="rounded-xl border border-ink-900/16 px-4 py-2 text-xs font-bold text-ink-900 hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
+                          >
+                            No-show
+                          </button>
+                        </form>
+                        <form action={updateBookingStatus}>
+                          <input type="hidden" name="id" value={entry.id} />
+                          <input
+                            type="hidden"
+                            name="status"
+                            value="geannuleerd"
+                          />
+                          <ConfirmDeleteButton label="Est parti" dismissLabel="Non" />
+                        </form>
+                      </div>
+                    }
+                  />
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
+              En cours (sans rendez-vous)
+              {queueInProgress.length > 0 && ` — ${queueInProgress.length}`}
+            </h2>
+            <div className="space-y-3">
+              {queueInProgress.length === 0 && (
+                <p className="rounded-2xl border border-ink-900/10 bg-white p-6 text-center text-sm text-ink-400 dark:border-paper/10 dark:bg-ink-800">
+                  Personne en cours de prise en charge.
+                </p>
+              )}
+              {queueInProgress.map((entry) => (
                 <BookingCard
                   key={entry.id}
                   entry={entry}
                   services={serviceInfo}
-                  statusLabel={`Ticket ${index + 1}`}
                   actions={
                     <>
                       <CallButton
@@ -638,7 +776,12 @@ export default async function DashboardPage() {
                       <form action={updateBookingStatus}>
                         <input type="hidden" name="id" value={entry.id} />
                         <input type="hidden" name="status" value="no_show" />
-                        <ConfirmDeleteButton label="Parti(e)" dismissLabel="Non" />
+                        <button
+                          type="submit"
+                          className="rounded-xl border border-ink-900/16 px-4 py-2 text-xs font-bold text-ink-900 hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
+                        >
+                          No-show
+                        </button>
                       </form>
                     </>
                   }

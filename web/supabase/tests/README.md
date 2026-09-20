@@ -33,6 +33,7 @@ psql "$DATABASE_URL" -f web/supabase/tests/03_admin_scenarios.sql
 psql "$DATABASE_URL" -f web/supabase/tests/04_audit_log_scenarios.sql
 psql "$DATABASE_URL" -f web/supabase/tests/05_multi_business_staff_scenarios.sql
 psql "$DATABASE_URL" -f web/supabase/tests/06_photos_scenarios.sql
+psql "$DATABASE_URL" -f web/supabase/tests/07_walkin_queue_scenarios.sql
 ```
 
 Chaque fichier se termine par un `select * from test_results` suivi d'un
@@ -77,3 +78,4 @@ réservation cliente le jour même ou dans le passé).
 | `04_audit_log_scenarios.sql` | Journal d'audit (transverse aux 3 rôles) | chaque action sensible génère bien une ligne (création de réservation, changement de statut, approbation de salon, changement de date d'abonnement, changement de rôle, suppression d'un service/horaire), confidentialité (ni anon ni un simple gérant ne le lit), infalsifiabilité (personne ne peut appeler `write_audit_log` directement, ni modifier/supprimer une ligne existante — même un platform_admin) |
 | `05_multi_business_staff_scenarios.sql` | Plusieurs salons (`business_owners`) + équipe (`staff_members`) | `is_owner_of` reconnaît un établissement non actif via `business_owners`, visibilité RLS d'un établissement en attente pour son propriétaire (mais pas pour anon), confidentialité de `business_owners`, lecture/écriture de l'équipe (gérant oui, anon non), isolation de l'équipe entre salons pour un simple membre du personnel, lecture de l'équipe d'un salon non actif par son propriétaire, assignation d'un membre d'équipe à une réservation (résolution dans `agenda_entries_for_dashboard`, suppression du membre sans casser la réservation) |
 | `06_photos_scenarios.sql` | Galerie de photos (`business_photos`) | visibilité publique de la galerie d'un salon approuvé, invisibilité pour un salon en attente, écriture réservée au propriétaire du salon concerné (refusée pour un autre salon ou pour anon) |
+| `07_walkin_queue_scenarios.sql` | File d'attente sans rendez-vous étendue (migration 0033) | vue publique anonymisée (`walkin_queue_public`, prénom + position, jamais le téléphone), confidentialité de l'agenda inchangée pour anon, ordre respecté après un "décalage" (`queue_bumped_at`), file fermée / capacité atteinte refusées à l'insertion puis acceptées une fois rouverte/relevée, un ticket pris en charge (`staff_id`) sort de la file publique, les UPDATE (prise en charge, clôture) jamais bloqués par une file fermée |
