@@ -5,6 +5,13 @@
  * du repo. Règles contraignantes (voir docs/brand-kit/README.md) :
  * une seule couleur par occurrence, orientation fixe (part en haut à
  * droite), jamais d'autre police ni d'autre couleur que celles prévues.
+ *
+ * Couleurs pilotées par des classes Tailwind (currentColor), pas des
+ * styles inline figés : `onDark` (bandeau d'en-tête, toujours sur fond
+ * encre ink-900 quel que soit le thème système) utilise des teintes
+ * fixes, tandis que le mode par défaut suit le thème clair/sombre du
+ * système (dark:) — un fond de page peut basculer, un bandeau d'en-tête
+ * fixe non.
  */
 
 const STROKE_WIDTH_BY_SIZE = (size: number) =>
@@ -12,11 +19,9 @@ const STROKE_WIDTH_BY_SIZE = (size: number) =>
 
 export function KinoBookingSymbol({
   size = 32,
-  color = "#D4AF4F",
-  className,
+  className = "text-ink-900 dark:text-kino-400",
 }: {
   size?: number;
-  color?: string;
   className?: string;
 }) {
   const strokeWidth = STROKE_WIDTH_BY_SIZE(size);
@@ -33,18 +38,19 @@ export function KinoBookingSymbol({
         cy="50"
         r="34"
         fill="none"
-        stroke={color}
+        stroke="currentColor"
         strokeWidth={strokeWidth}
         strokeDasharray="160 54"
         transform="rotate(-90 50 50)"
       />
-      <path d="M50 50V16A34 34 0 0 1 80 50Z" fill={color} />
+      <path d="M50 50V16A34 34 0 0 1 80 50Z" fill="currentColor" />
     </svg>
   );
 }
 
-/** Verrouillage horizontal symbole + nom. `onDark` pour un fond encre
- * (bandeau d'en-tête) ; sans, pour un fond clair. */
+/** Verrouillage horizontal symbole + nom. `onDark` pour un bandeau
+ * toujours sur fond encre (en-tête) ; sans, suit le thème clair/sombre
+ * du système (page normale, fond papier ou encre selon prefers-color-scheme). */
 export function KinoBookingLockup({
   size = 28,
   onDark = false,
@@ -52,27 +58,28 @@ export function KinoBookingLockup({
   size?: number;
   onDark?: boolean;
 }) {
-  const symbolColor = onDark ? "#D4AF4F" : "#17131C";
-  const kinoColor = onDark ? "#F7F4EF" : "#17131C";
-  const bookingColor = onDark ? "#D4AF4F" : "#94741F";
+  const symbolClass = onDark ? "text-kino-400" : "text-ink-900 dark:text-kino-400";
+  const kinoClass = onDark ? "text-paper" : "text-ink-900 dark:text-paper";
+  const bookingClass = onDark
+    ? "text-kino-400"
+    : "text-kino-600 dark:text-kino-400";
 
   return (
     <span className="inline-flex items-center" style={{ gap: size * 0.45 }}>
       <KinoBookingSymbol
         size={size * 1.3}
-        color={symbolColor}
-        className="flex-none"
+        className={`flex-none ${symbolClass}`}
       />
       <span className="inline-flex items-baseline">
         <span
-          className="font-serif leading-none"
-          style={{ fontSize: size, color: kinoColor }}
+          className={`font-serif leading-none ${kinoClass}`}
+          style={{ fontSize: size }}
         >
           Kino
         </span>
         <span
-          className="font-sans leading-none tracking-tight"
-          style={{ fontSize: size, color: bookingColor }}
+          className={`font-sans leading-none tracking-tight ${bookingClass}`}
+          style={{ fontSize: size }}
         >
           Booking
         </span>

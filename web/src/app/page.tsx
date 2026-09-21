@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { KinoBookingLockup } from "@/components/kino-booking-logo";
 
 export default async function Home({
   searchParams,
@@ -78,8 +79,8 @@ export default async function Home({
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-12">
       <div className="mb-10 text-center">
-        <h1 className="font-serif text-4xl text-ink-900 dark:text-paper">
-          KinoBooking
+        <h1 className="flex justify-center">
+          <KinoBookingLockup size={40} />
         </h1>
         <p className="mt-2 text-sm text-ink-400">
           Réservez vos soins à Kinshasa, sans faire la queue.
