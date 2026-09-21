@@ -1,0 +1,20 @@
+/* KinoBooking — jetons de marque. Charte v1. */
+:root {
+  --kb-ink: #17131C;          /* fond principal, texte sur papier */
+  --kb-ink-soft: #221C29;     /* cartes et blocs sur fond encre */
+  --kb-ink-line: #332B3D;     /* filets sur fond encre */
+  --kb-brass: #D4AF4F;        /* symbole et accents sur fond encre */
+  --kb-brass-dark: #94741F;   /* accents sur fond clair */
+  --kb-paper: #F7F4EF;        /* fond clair, texte sur fond encre */
+  --kb-paper-line: #E2DCD2;   /* filets sur fond clair */
+  --kb-muted-on-ink: #B7AEC2; /* texte secondaire sur encre */
+  --kb-muted-on-paper: #5C5366;/* texte secondaire sur papier */
+
+  --kb-font-display: "DM Serif Display", Georgia, serif;
+  --kb-font-sans: "DM Sans", Helvetica, Arial, sans-serif;
+
+  --kb-radius: 3px;
+  --kb-radius-icon: 9px;
+  --kb-tracking-eyebrow: 0.24em;
+  --kb-tracking-booking: -0.02em;
+}

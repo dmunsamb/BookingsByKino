@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   title: "KinoBooking",
   description:
     "Plateforme de réservation et de gestion de files d'attente pour les salons de beauté et établissements Horeca à Kinshasa et Lubumbashi.",
+  icons: {
+    icon: "/brand/favicon.svg",
+    apple: "/brand/app-icon-rounded.svg",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

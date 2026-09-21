@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #17131c; }
+  a { color: #e3c87a; }
+  a:hover { color: #f5ead0; }
+</style>
+</helmet>
+<div style="background:#17131c;color:#f7f4ef;font-family:'DM Sans',sans-serif;padding:64px 28px 120px;display:flex;flex-direction:column;align-items:center;gap:96px">
+
+  <header style="width:100%;max-width:1120px;display:flex;flex-direction:column;gap:36px">
+    <div style="display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:flex-end;border-bottom:1px solid #3a3242;padding-bottom:28px">
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:640px">
+        <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">Planche d'exploration — Nuit &amp; laiton</span>
+        <h1 style="font-family:'DM Serif Display',serif;font-size:clamp(38px,5.4vw,64px);line-height:1.02;margin:0;font-weight:400">Logo &amp; symbole<br />KinoBooking</h1>
+      </div>
+      <p style="margin:0;max-width:360px;font-size:15px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Tour 4 en tête : six variations sur J, la part gardée. Puis les tours précédents en archive, et le wordmark arrêté sur le n°&nbsp;4 — Kino serif + Booking sans. Tout est tracé en une seule couleur pour survivre au monochrome et au 32&nbsp;px.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:28px">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">Palette</span>
+        <div style="display:flex;gap:8px">
+          <span style="width:38px;height:38px;border-radius:50%;background:#17131c;border:1px solid #4a4155"></span>
+          <span style="width:38px;height:38px;border-radius:50%;background:#221c29"></span>
+          <span style="width:38px;height:38px;border-radius:50%;background:#f7f4ef"></span>
+          <span style="width:38px;height:38px;border-radius:50%;background:#d4af4f"></span>
+          <span style="width:38px;height:38px;border-radius:50%;background:#94741f"></span>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">Typographie</span>
+        <span style="font-family:'DM Serif Display',serif;font-size:26px;line-height:1">DM Serif Display</span>
+        <span style="font-size:14px;color:#b7aec2">DM Sans — interface</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">Contraintes</span>
+        <span style="font-size:14px;line-height:1.55;color:#b7aec2">Une couleur, pas de dégradé. Lisible à 32&nbsp;px, sur fond encre comme sur papier, et en noir et blanc pur.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">Rattachement</span>
+        <span style="font-size:14px;line-height:1.55;color:#b7aec2">Filiale de KINOCONGO.COM — un verrouillage d'endossement est proposé plus bas.</span>
+      </div>
+    </div>
+  </header>
+
+  <section style="width:100%;max-width:1120px;display:flex;flex-direction:column;gap:32px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">01 — Tour 4 · la part gardée</span>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:clamp(28px,3.4vw,40px);margin:0;font-weight:400">Six variations sur J</h2>
+      <p style="margin:0;max-width:620px;font-size:15px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Une idée tenue : un cercle, et une part qui vous appartient. Chaque variation déplace un seul paramètre — la taille de la part, son détachement, l'épaisseur de l'anneau, le sens de lecture.</p>
+    </div>
+
+    <div id="tour4" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px">
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:40px;display:flex;justify-content:center;align-items:center;min-height:200px">
+          <svg viewBox="0 0 100 100" width="126" height="126" aria-label="Variation J1">
+            <circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="9" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle>
+            <path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path>
+          </svg>
+        </div>
+        <div style="padding:22px 28px 28px;border-top:1px solid #332b3d;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">J1</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:21px;margin:0;font-weight:400">La référence</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Le quart plein collé à l'anneau, l'anneau ouvert sur le reste du tour. C'est le point de départ que vous avez retenu.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:40px;display:flex;justify-content:center;align-items:center;min-height:200px">
+          <svg viewBox="0 0 100 100" width="126" height="126" aria-label="Variation J2">
+            <circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="9"></circle>
+            <path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#d4af4f"></path>
+          </svg>
+        </div>
+        <div style="padding:22px 28px 28px;border-top:1px solid #332b3d;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">J2</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:21px;margin:0;font-weight:400">La part détachée</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">L'anneau se referme, et la part glisse vers l'extérieur. On voit le geste : quelqu'un a pris sa place. C'est la plus narrative des six.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:40px;display:flex;justify-content:center;align-items:center;min-height:200px">
+          <svg viewBox="0 0 100 100" width="126" height="126" aria-label="Variation J3">
+            <circle cx="50" cy="50" r="30" fill="none" stroke="#d4af4f" stroke-width="17" stroke-dasharray="141.4 47.1" transform="rotate(-90 50 50)"></circle>
+          </svg>
+        </div>
+        <div style="padding:22px 28px 28px;border-top:1px solid #332b3d;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">J3</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:21px;margin:0;font-weight:400">L'entaille</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Plus de remplissage : un anneau épais dont un quart manque. Le vide devient le sujet — le créneau qui reste à prendre. La plus solide à très petite taille.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:40px;display:flex;justify-content:center;align-items:center;min-height:200px">
+          <svg viewBox="0 0 100 100" width="126" height="126" aria-label="Variation J4">
+            <circle cx="50" cy="50" r="34" fill="#d4af4f"></circle>
+            <path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#221c29"></path>
+          </svg>
+        </div>
+        <div style="padding:22px 28px 28px;border-top:1px solid #332b3d;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">J4</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:21px;margin:0;font-weight:400">Le disque entamé</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">L'inverse : le disque est plein, la part est le creux. Une masse franche, très visible en favicon, mais qui demande un fond propre pour que la découpe se lise.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:40px;display:flex;justify-content:center;align-items:center;min-height:200px">
+          <svg viewBox="0 0 100 100" width="126" height="126" aria-label="Variation J5">
+            <circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="9" stroke-dasharray="44.5 8.9" transform="rotate(-90 50 50)"></circle>
+            <path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path>
+          </svg>
+        </div>
+        <div style="padding:22px 28px 28px;border-top:1px solid #332b3d;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">J5</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:21px;margin:0;font-weight:400">La journée découpée</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">L'anneau devient une suite de créneaux égaux, dont un seul est pris. Le plus riche et le plus explicite ; à surveiller sous 24&nbsp;px, où les tirets se referment.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:40px;display:flex;justify-content:center;align-items:center;min-height:200px">
+          <svg viewBox="0 0 100 100" width="126" height="126" aria-label="Variation J6">
+            <circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="9" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle>
+            <path d="M50 50V16A34 34 0 0 1 80 50Z" fill="none" stroke="#d4af4f" stroke-width="9" stroke-linejoin="round"></path>
+          </svg>
+        </div>
+        <div style="padding:22px 28px 28px;border-top:1px solid #332b3d;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">J6</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:21px;margin:0;font-weight:400">Tout en trait</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">La part est cernée, pas remplie : même graisse partout, une seule matière. La plus légère, la plus proche du wordmark en trait fin — et la plus fragile en petit.</p>
+        </div>
+      </article>
+
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px">
+      <div style="background:#17131c;border:1px solid #332b3d;border-radius:4px;padding:32px;display:flex;flex-direction:column;gap:22px;align-items:center;justify-content:center">
+        <span style="display:inline-flex;align-items:center;gap:15px">
+          <svg viewBox="0 0 100 100" width="42" height="42" style="flex:none"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="9"></circle><path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#d4af4f"></path></svg>
+          <span style="display:inline-flex;align-items:baseline">
+            <span style="font-family:'DM Serif Display',serif;font-size:32px;line-height:1;color:#f7f4ef">Kino</span>
+            <span style="font-family:'DM Sans',sans-serif;font-size:32px;letter-spacing:-0.02em;line-height:1;color:#d4af4f">Booking</span>
+          </span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398;white-space:nowrap">J2 + wordmark 4</span>
+      </div>
+      <div style="background:#f7f4ef;border-radius:4px;padding:32px;display:flex;flex-direction:column;gap:22px;align-items:center;justify-content:center">
+        <span style="display:inline-flex;align-items:center;gap:15px">
+          <svg viewBox="0 0 100 100" width="42" height="42" style="flex:none"><circle cx="50" cy="50" r="30" fill="none" stroke="#17131c" stroke-width="17" stroke-dasharray="141.4 47.1" transform="rotate(-90 50 50)"></circle></svg>
+          <span style="display:inline-flex;align-items:baseline">
+            <span style="font-family:'DM Serif Display',serif;font-size:32px;line-height:1;color:#17131c">Kino</span>
+            <span style="font-family:'DM Sans',sans-serif;font-size:32px;letter-spacing:-0.02em;line-height:1;color:#94741f">Booking</span>
+          </span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#5c5366;white-space:nowrap">J3 + wordmark 4</span>
+      </div>
+      <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:32px;display:flex;flex-direction:column;gap:18px;align-items:center;justify-content:center">
+        <span style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;justify-content:center">
+          <span style="width:44px;height:44px;border-radius:9px;background:#17131c;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="11" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path></svg></span>
+          <span style="width:44px;height:44px;border-radius:9px;background:#17131c;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="11"></circle><path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#d4af4f"></path></svg></span>
+          <span style="width:44px;height:44px;border-radius:9px;background:#f7f4ef;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="30" fill="none" stroke="#17131c" stroke-width="19" stroke-dasharray="141.4 47.1" transform="rotate(-90 50 50)"></circle></svg></span>
+          <span style="width:44px;height:44px;border-radius:9px;background:#f7f4ef;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="34" fill="#17131c"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#f7f4ef"></path></svg></span>
+          <span style="width:44px;height:44px;border-radius:9px;background:#000;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="34" fill="none" stroke="#fff" stroke-width="11" stroke-dasharray="44.5 8.9" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#fff"></path></svg></span>
+          <span style="width:44px;height:44px;border-radius:9px;background:#d4af4f;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="34" fill="none" stroke="#17131c" stroke-width="11" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="none" stroke="#17131c" stroke-width="11" stroke-linejoin="round"></path></svg></span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398;white-space:nowrap">J1 à J6 à 32 px</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="width:100%;max-width:1120px;display:flex;flex-direction:column;gap:32px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">02 — Tour 3 · quatre angles abstraits</span>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:clamp(28px,3.4vw,40px);margin:0;font-weight:400">Sortir de l'image de la file</h2>
+      <p style="margin:0;max-width:620px;font-size:15px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Quatre marques purement géométriques, chacune partant d'une idée différente : la rencontre, la place gardée, le temps, le pivot. Aucune ne dessine un objet — elles vivent du contraste laiton sur encre et du wordmark à côté.</p>
+    </div>
+
+    <div id="tour3" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px">
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:40px;display:flex;justify-content:center;align-items:center;min-height:200px">
+          <svg viewBox="0 0 100 100" width="132" height="132" aria-label="Piste I">
+            <path d="M10 20c30 0 40 12 50 30M10 80c30 0 40-12 50-30" fill="none" stroke="#d4af4f" stroke-width="11" stroke-linecap="round"></path>
+            <circle cx="79" cy="50" r="11" fill="#d4af4f"></circle>
+          </svg>
+        </div>
+        <div style="padding:22px 28px 28px;border-top:1px solid #332b3d;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">I</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin:0;font-weight:400">La rencontre</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Deux courbes venues de côtés opposés et un point où elles aboutissent : la cliente et le salon tombent d'accord sur une heure. Symétrique, donc stable en icône carrée.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:40px;display:flex;justify-content:center;align-items:center;min-height:200px">
+          <svg viewBox="0 0 100 100" width="132" height="132" aria-label="Piste J">
+            <circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="9" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle>
+            <path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path>
+          </svg>
+        </div>
+        <div style="padding:22px 28px 28px;border-top:1px solid #332b3d;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">J</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin:0;font-weight:400">La part gardée</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Un cercle dont un quart est plein : la tranche d'heure qui vous appartient. La même forme sert d'indicateur de remplissage dans l'agenda du gérant.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:40px;display:flex;justify-content:center;align-items:center;min-height:200px">
+          <svg viewBox="0 0 100 100" width="132" height="132" aria-label="Piste K">
+            <path d="M14 14h72L14 86h72" fill="none" stroke="#d4af4f" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div style="padding:22px 28px 28px;border-top:1px solid #332b3d;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">K</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin:0;font-weight:400">Le temps plié</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Un seul trait qui part, revient et repart : le sablier réduit à son geste, sans verre ni sable. Trois segments, rien de plus — c'est la piste qui tient le mieux à très petite taille.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:40px;display:flex;justify-content:center;align-items:center;min-height:200px">
+          <svg viewBox="0 0 100 100" width="132" height="132" aria-label="Piste L">
+            <path d="M50 14a36 36 0 1 1-25.5 10.5" fill="none" stroke="#d4af4f" stroke-width="11" stroke-linecap="round"></path>
+            <circle cx="50" cy="50" r="10" fill="#d4af4f"></circle>
+          </svg>
+        </div>
+        <div style="padding:22px 28px 28px;border-top:1px solid #332b3d;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">L</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin:0;font-weight:400">Le pivot</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Un point fixe et une boucle presque fermée autour de lui : la journée qui tourne, le salon qui reste au centre. L'ouverture en haut laisse la place au trait suivant — une marque qui respire.</p>
+        </div>
+      </article>
+
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px">
+      <div style="background:#17131c;border:1px solid #332b3d;border-radius:4px;padding:32px;display:flex;flex-direction:column;gap:22px;align-items:center;justify-content:center">
+        <span style="display:inline-flex;align-items:center;gap:15px">
+          <svg viewBox="0 0 100 100" width="42" height="42" style="flex:none"><path d="M14 14h72L14 86h72" fill="none" stroke="#d4af4f" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"></path></svg>
+          <span style="display:inline-flex;align-items:baseline">
+            <span style="font-family:'DM Serif Display',serif;font-size:32px;line-height:1;color:#f7f4ef">Kino</span>
+            <span style="font-family:'DM Sans',sans-serif;font-size:32px;letter-spacing:-0.02em;line-height:1;color:#d4af4f">Booking</span>
+          </span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398;white-space:nowrap">K + wordmark 4</span>
+      </div>
+      <div style="background:#f7f4ef;border-radius:4px;padding:32px;display:flex;flex-direction:column;gap:22px;align-items:center;justify-content:center">
+        <span style="display:inline-flex;align-items:center;gap:15px">
+          <svg viewBox="0 0 100 100" width="42" height="42" style="flex:none"><path d="M50 14a36 36 0 1 1-25.5 10.5" fill="none" stroke="#17131c" stroke-width="11" stroke-linecap="round"></path><circle cx="50" cy="50" r="10" fill="#17131c"></circle></svg>
+          <span style="display:inline-flex;align-items:baseline">
+            <span style="font-family:'DM Serif Display',serif;font-size:32px;line-height:1;color:#17131c">Kino</span>
+            <span style="font-family:'DM Sans',sans-serif;font-size:32px;letter-spacing:-0.02em;line-height:1;color:#94741f">Booking</span>
+          </span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#5c5366;white-space:nowrap">L + wordmark 4</span>
+      </div>
+      <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:32px;display:flex;flex-direction:column;gap:18px;align-items:center;justify-content:center">
+        <span style="display:flex;gap:10px;align-items:center">
+          <span style="width:48px;height:48px;border-radius:9px;background:#17131c;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><path d="M10 20c30 0 40 12 50 30M10 80c30 0 40-12 50-30" fill="none" stroke="#d4af4f" stroke-width="13" stroke-linecap="round"></path><circle cx="81" cy="50" r="11" fill="#d4af4f"></circle></svg></span>
+          <span style="width:48px;height:48px;border-radius:9px;background:#f7f4ef;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="34" fill="none" stroke="#17131c" stroke-width="11" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#17131c"></path></svg></span>
+          <span style="width:48px;height:48px;border-radius:9px;background:#000;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><path d="M14 16h72L14 84h72" fill="none" stroke="#fff" stroke-width="13" stroke-linejoin="round" stroke-linecap="round"></path></svg></span>
+          <span style="width:48px;height:48px;border-radius:9px;background:#d4af4f;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><path d="M50 14a36 36 0 1 1-25.5 10.5" fill="none" stroke="#17131c" stroke-width="13" stroke-linecap="round"></path><circle cx="50" cy="50" r="11" fill="#17131c"></circle></svg></span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398;white-space:nowrap">I, J, K, L à 32 px</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="width:100%;max-width:1120px;display:flex;flex-direction:column;gap:32px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">03 — Tour 2 · la file, rendue lisible</span>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:clamp(28px,3.4vw,40px);margin:0;font-weight:400">Trois façons de raconter la file</h2>
+      <p style="margin:0;max-width:620px;font-size:15px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Même idée que la piste C, mais le geste est explicité : on doit voir une file, et quelqu'un qui en sort. Le K seul est écarté ; la piste lettrée devient un KB lié. Wordmark verrouillé sur le n°&nbsp;4, Kino serif + Booking sans.</p>
+    </div>
+
+    <div id="tour2" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px">
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:40px;display:flex;justify-content:center;align-items:center;min-height:200px">
+          <svg viewBox="0 0 100 100" width="132" height="132" aria-label="Piste F">
+            <g fill="#d4af4f">
+              <rect x="12" y="22" width="42" height="11" rx="5.5"></rect>
+              <rect x="12" y="45" width="28" height="11" rx="5.5"></rect>
+            </g>
+            <path d="M18 72h14c22 0 34-13 38-31" fill="none" stroke="#d4af4f" stroke-width="11" stroke-linecap="round"></path>
+            <circle cx="74" cy="27" r="9" fill="#d4af4f"></circle>
+          </svg>
+        </div>
+        <div style="padding:22px 28px 28px;border-top:1px solid #332b3d;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">F</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin:0;font-weight:400">Celle qui sort de la file</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Deux traits restent alignés, le troisième s'échappe et porte un point : la cliente qui a réservé. Le point donne une tête au mouvement, donc un sens — c'est ce qui manquait à la version abstraite.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:40px;display:flex;justify-content:center;align-items:center;min-height:200px">
+          <svg viewBox="0 0 100 100" width="132" height="132" aria-label="Piste G">
+            <g fill="#d4af4f">
+              <circle cx="22" cy="72" r="9"></circle>
+              <circle cx="48" cy="72" r="9"></circle>
+              <circle cx="74" cy="72" r="9"></circle>
+              <circle cx="74" cy="26" r="9"></circle>
+            </g>
+            <path d="M11 46h78" fill="none" stroke="#d4af4f" stroke-width="10" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div style="padding:22px 28px 28px;border-top:1px solid #332b3d;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">G</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin:0;font-weight:400">Le pas de côté</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Trois points en rang sous une barre — la file et le comptoir. Le dernier point est monté au-dessus : il est passé devant sans attendre. Lecture immédiate, même en tampon.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:40px;display:flex;justify-content:center;align-items:center;min-height:200px">
+          <svg viewBox="0 0 100 100" width="132" height="132" aria-label="Piste H">
+            <path d="M39 16h13v68H39z" fill="#d4af4f"></path>
+            <path d="M39 50 14 18h15l22 28zM39 50 14 82h15l22-28z" fill="#d4af4f"></path>
+            <path d="M50 22h9a14 14 0 0 1 0 28h-9M50 50h11a15 15 0 0 1 0 30H50" fill="none" stroke="#d4af4f" stroke-width="12"></path>
+          </svg>
+        </div>
+        <div style="padding:22px 28px 28px;border-top:1px solid #332b3d;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">H</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin:0;font-weight:400">Le KB lié</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Si la marque doit porter des lettres, les deux ensemble : K et B partagent un seul fût. Le K ouvre à gauche, le B referme à droite — un bloc compact, plus solide qu'une initiale isolée.</p>
+        </div>
+      </article>
+
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px">
+      <div style="background:#17131c;border:1px solid #332b3d;border-radius:4px;padding:32px;display:flex;flex-direction:column;gap:22px;align-items:center;justify-content:center">
+        <span style="display:inline-flex;align-items:center;gap:15px">
+          <svg viewBox="0 0 100 100" width="42" height="42" style="flex:none"><g fill="#d4af4f"><rect x="12" y="22" width="42" height="11" rx="5.5"></rect><rect x="12" y="45" width="28" height="11" rx="5.5"></rect></g><path d="M18 72h14c22 0 34-13 38-31" fill="none" stroke="#d4af4f" stroke-width="11" stroke-linecap="round"></path><circle cx="74" cy="27" r="9" fill="#d4af4f"></circle></svg>
+          <span style="display:inline-flex;align-items:baseline">
+            <span style="font-family:'DM Serif Display',serif;font-size:32px;line-height:1;color:#f7f4ef">Kino</span>
+            <span style="font-family:'DM Sans',sans-serif;font-size:32px;letter-spacing:-0.02em;line-height:1;color:#d4af4f">Booking</span>
+          </span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398;white-space:nowrap">F + wordmark 4</span>
+      </div>
+      <div style="background:#f7f4ef;border-radius:4px;padding:32px;display:flex;flex-direction:column;gap:22px;align-items:center;justify-content:center">
+        <span style="display:inline-flex;align-items:center;gap:15px">
+          <svg viewBox="0 0 100 100" width="42" height="42" style="flex:none"><g fill="#17131c"><circle cx="22" cy="72" r="9"></circle><circle cx="48" cy="72" r="9"></circle><circle cx="74" cy="72" r="9"></circle><circle cx="74" cy="26" r="9"></circle></g><path d="M11 46h78" fill="none" stroke="#17131c" stroke-width="10" stroke-linecap="round"></path></svg>
+          <span style="display:inline-flex;align-items:baseline">
+            <span style="font-family:'DM Serif Display',serif;font-size:32px;line-height:1;color:#17131c">Kino</span>
+            <span style="font-family:'DM Sans',sans-serif;font-size:32px;letter-spacing:-0.02em;line-height:1;color:#94741f">Booking</span>
+          </span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#5c5366;white-space:nowrap">G + wordmark 4</span>
+      </div>
+      <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:32px;display:flex;flex-direction:column;gap:18px;align-items:center;justify-content:center">
+        <span style="display:flex;gap:12px;align-items:center">
+          <span style="width:48px;height:48px;border-radius:9px;background:#17131c;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><g fill="#d4af4f"><rect x="12" y="22" width="42" height="12" rx="6"></rect><rect x="12" y="45" width="28" height="12" rx="6"></rect></g><path d="M18 72h14c22 0 34-13 38-31" fill="none" stroke="#d4af4f" stroke-width="12" stroke-linecap="round"></path><circle cx="74" cy="27" r="9.5" fill="#d4af4f"></circle></svg></span>
+          <span style="width:48px;height:48px;border-radius:9px;background:#f7f4ef;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><g fill="#17131c"><circle cx="22" cy="72" r="10"></circle><circle cx="48" cy="72" r="10"></circle><circle cx="74" cy="72" r="10"></circle><circle cx="74" cy="25" r="10"></circle></g><path d="M10 46h80" fill="none" stroke="#17131c" stroke-width="11" stroke-linecap="round"></path></svg></span>
+          <span style="width:48px;height:48px;border-radius:9px;background:#000;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><path d="M39 16h13v68H39z" fill="#fff"></path><path d="M39 50 14 18h15l22 28zM39 50 14 82h15l22-28z" fill="#fff"></path><path d="M50 22h9a14 14 0 0 1 0 28h-9M50 50h11a15 15 0 0 1 0 30H50" fill="none" stroke="#fff" stroke-width="12"></path></svg></span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398;text-align:center;white-space:nowrap">F, G, H à 32 px</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="width:100%;max-width:1120px;display:flex;flex-direction:column;gap:32px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">04 — Wordmark · n° 4 retenu</span>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:clamp(28px,3.4vw,40px);margin:0;font-weight:400">Quatre traitements du nom</h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px">
+
+      <article style="background:#f7f4ef;border-radius:4px;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:52px 36px;display:flex;align-items:center;justify-content:center;min-height:150px">
+          <span style="font-family:'DM Serif Display',serif;color:#17131c;font-size:clamp(30px,4vw,44px);letter-spacing:-0.015em;line-height:1">KinoBooking</span>
+        </div>
+        <div style="padding:20px 28px 26px;border-top:1px solid #e2dcd2;display:flex;flex-direction:column;gap:8px">
+          <h3 style="font-family:'DM Serif Display',serif;font-size:19px;margin:0;font-weight:400;color:#17131c">1 · DM Serif Display, réglé</h3>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#5c5366;text-wrap:pretty">L'existant, resserré : approche négative, K et B ramenés à la même hauteur de capitale. Rien à réapprendre, tout se joue sur le réglage.</p>
+        </div>
+      </article>
+
+      <article style="background:#f7f4ef;border-radius:4px;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:52px 36px;display:flex;align-items:center;justify-content:center;min-height:150px">
+          <span style="display:inline-flex;align-items:baseline;gap:2px;color:#17131c">
+            <svg viewBox="0 0 62 100" width="27" height="44" fill="#17131c" style="align-self:flex-end;margin-bottom:0.11em"><path d="M4 8h13v84H4z"></path><path d="M21 52 52 8h10L31 54z"></path><path d="M31 50 62 92H50L21 52z"></path></svg>
+            <span style="font-family:'DM Serif Display',serif;font-size:clamp(30px,4vw,44px);letter-spacing:-0.015em;line-height:1">inoBooking</span>
+          </span>
+        </div>
+        <div style="padding:20px 28px 26px;border-top:1px solid #e2dcd2;display:flex;flex-direction:column;gap:8px">
+          <h3 style="font-family:'DM Serif Display',serif;font-size:19px;margin:0;font-weight:400;color:#17131c">2 · Le K dessiné</h3>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#5c5366;text-wrap:pretty">Le K du wordmark est le symbole lui-même, sans empattements. Le mot et l'icône deviennent une seule chose : le détachement du K en favicon va de soi.</p>
+        </div>
+      </article>
+
+      <article style="background:#f7f4ef;border-radius:4px;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:52px 36px;display:flex;align-items:center;justify-content:center;min-height:150px">
+          <span style="font-family:'Instrument Serif',serif;color:#17131c;font-size:clamp(34px,4.6vw,52px);letter-spacing:0.005em;line-height:1">KinoBooking</span>
+        </div>
+        <div style="padding:20px 28px 26px;border-top:1px solid #e2dcd2;display:flex;flex-direction:column;gap:8px">
+          <h3 style="font-family:'DM Serif Display',serif;font-size:19px;margin:0;font-weight:400;color:#17131c">3 · Une serif plus actuelle</h3>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#5c5366;text-wrap:pretty">Instrument Serif : plus étroite, plus contrastée, elle tient mieux les noms longs dans un bandeau mobile. À réserver au logo, DM Serif Display restant en titrage.</p>
+        </div>
+      </article>
+
+      <article style="background:#f7f4ef;border-radius:4px;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:52px 36px;display:flex;align-items:center;justify-content:center;min-height:150px">
+          <span style="display:inline-flex;align-items:baseline;color:#17131c">
+            <span style="font-family:'DM Serif Display',serif;font-size:clamp(30px,4vw,44px);line-height:1">Kino</span>
+            <span style="font-family:'DM Sans',sans-serif;font-weight:400;font-size:clamp(30px,4vw,44px);letter-spacing:-0.02em;line-height:1;color:#94741f">Booking</span>
+          </span>
+        </div>
+        <div style="padding:20px 28px 26px;border-top:1px solid #e2dcd2;display:flex;flex-direction:column;gap:8px">
+          <h3 style="font-family:'DM Serif Display',serif;font-size:19px;margin:0;font-weight:400;color:#17131c">4 · Kino serif + Booking sans</h3>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#5c5366;text-wrap:pretty">Le jeu de mots devient visible : la ville en serif, le service en sans. Le laiton sur la seconde moitié tient en monochrome, la coupure restant portée par le dessin des lettres.</p>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section style="width:100%;max-width:1120px;display:flex;flex-direction:column;gap:40px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">Tour 1 · archive — symbole</span>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:clamp(28px,3.4vw,40px);margin:0;font-weight:400">Cinq pistes</h2>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px">
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:44px;display:flex;justify-content:center;align-items:center;min-height:210px">
+          <svg viewBox="0 0 100 100" width="132" height="132" fill="#d4af4f" aria-label="Symbole A">
+            <path d="M26 18h13v64H26z"></path>
+            <path d="M43 50 70 18h13L53 52z"></path>
+            <path d="M53 48 83 82H70L43 50z"></path>
+          </svg>
+        </div>
+        <div style="padding:0 28px 28px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #332b3d;padding-top:22px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">A</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin:0;font-weight:400">Le K taillé</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Le K de Kino réduit à trois traits taillés en biseau. Le bras bas part vers l'avant comme une flèche : on avance, on ne fait pas la queue. La piste la plus directe et la plus sûre en microformat.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:44px;display:flex;justify-content:center;align-items:center;min-height:210px">
+          <svg viewBox="0 0 100 100" width="132" height="132" aria-label="Symbole B">
+            <circle cx="50" cy="50" r="33" fill="none" stroke="#d4af4f" stroke-width="9" stroke-dasharray="152 56" transform="rotate(-52 50 50)"></circle>
+            <path d="M50 50V28M50 50h20" fill="none" stroke="#d4af4f" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </div>
+        <div style="padding:0 28px 28px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #332b3d;padding-top:22px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">B</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin:0;font-weight:400">L'heure juste</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Un cadran ouvert : l'anneau s'interrompt là où le créneau se libère. Les deux aiguilles à l'équerre disent l'heure tenue sans dessiner une horloge complète.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:44px;display:flex;justify-content:center;align-items:center;min-height:210px">
+          <svg viewBox="0 0 100 100" width="132" height="132" aria-label="Symbole C">
+            <g fill="#d4af4f">
+              <rect x="14" y="24" width="34" height="10" rx="5"></rect>
+              <rect x="14" y="45" width="24" height="10" rx="5"></rect>
+            </g>
+            <path d="M19 71h12c22 0 34-12 39-32" fill="none" stroke="#d4af4f" stroke-width="10" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <div style="padding:0 28px 28px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #332b3d;padding-top:22px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">C</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin:0;font-weight:400">La file dénouée</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Trois traits empilés — la file d'attente — dont le dernier s'échappe en une courbe. Raconte la promesse du produit plus que le secteur, donc valable aussi le jour où l'horeca s'ouvre.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:44px;display:flex;justify-content:center;align-items:center;min-height:210px">
+          <svg viewBox="0 0 100 100" width="132" height="132" aria-label="Symbole D">
+            <path d="M50 8 78 50 50 92 22 50Z" fill="none" stroke="#d4af4f" stroke-width="9"></path>
+            <path d="M50 34 61 50 50 66 39 50Z" fill="#d4af4f"></path>
+          </svg>
+        </div>
+        <div style="padding:0 28px 28px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #332b3d;padding-top:22px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">D</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin:0;font-weight:400">Le losange</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Le module losange, unité de base de presque tous les motifs textiles d'ici, réduit à sa forme nue. Aucune figuration, une géométrie qui se répète en bandeau ou en fond d'écran.</p>
+        </div>
+      </article>
+
+      <article style="background:#221c29;border:1px solid #332b3d;border-radius:4px;display:flex;flex-direction:column">
+        <div style="padding:44px;display:flex;justify-content:center;align-items:center;min-height:210px">
+          <svg viewBox="0 0 100 100" width="132" height="132" aria-label="Symbole E">
+            <path d="M32 18a40 40 0 0 0 0 64M68 18a40 40 0 0 1 0 64" fill="none" stroke="#d4af4f" stroke-width="10" stroke-linecap="round"></path>
+            <circle cx="50" cy="50" r="11" fill="#d4af4f"></circle>
+          </svg>
+        </div>
+        <div style="padding:0 28px 28px;display:flex;flex-direction:column;gap:10px;border-top:1px solid #332b3d;padding-top:22px">
+          <div style="display:flex;gap:12px;align-items:baseline">
+            <span style="font-size:12px;color:#8d8398;letter-spacing:.1em">E</span>
+            <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin:0;font-weight:400">Le créneau</h3>
+          </div>
+          <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Deux arcs qui s'ouvrent autour d'un point : la place réservée, tenue pour quelqu'un. Purement abstrait, c'est la piste la plus large — et la plus dépendante du wordmark pour être comprise.</p>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section style="width:100%;max-width:1120px;display:flex;flex-direction:column;gap:32px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">Tour 1 · archive — épreuve</span>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:clamp(28px,3.4vw,40px);margin:0;font-weight:400">Les cinq à 32 px, et en noir et blanc</h2>
+      <p style="margin:0;max-width:620px;font-size:15px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Taille réelle d'un favicon et d'une icône d'app. C'est ce test, plus que la planche en grand, qui départage les pistes.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:16px">
+
+      <div style="display:flex;flex-direction:column;gap:14px;background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:22px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">A · Le K taillé</span>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="width:52px;height:52px;border-radius:9px;background:#17131c;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32" fill="#d4af4f"><path d="M26 18h13v64H26z"></path><path d="M43 50 70 18h13L53 52z"></path><path d="M53 48 83 82H70L43 50z"></path></svg></span>
+          <span style="width:52px;height:52px;border-radius:9px;background:#f7f4ef;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32" fill="#17131c"><path d="M26 18h13v64H26z"></path><path d="M43 50 70 18h13L53 52z"></path><path d="M53 48 83 82H70L43 50z"></path></svg></span>
+          <span style="width:52px;height:52px;border-radius:9px;background:#000;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32" fill="#fff"><path d="M26 18h13v64H26z"></path><path d="M43 50 70 18h13L53 52z"></path><path d="M53 48 83 82H70L43 50z"></path></svg></span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:22px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">B · L'heure juste</span>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="width:52px;height:52px;border-radius:9px;background:#17131c;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="33" fill="none" stroke="#d4af4f" stroke-width="12" stroke-dasharray="152 56" transform="rotate(-52 50 50)"></circle><path d="M50 50V28M50 50h20" fill="none" stroke="#d4af4f" stroke-width="12" stroke-linecap="round"></path></svg></span>
+          <span style="width:52px;height:52px;border-radius:9px;background:#f7f4ef;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="33" fill="none" stroke="#17131c" stroke-width="12" stroke-dasharray="152 56" transform="rotate(-52 50 50)"></circle><path d="M50 50V28M50 50h20" fill="none" stroke="#17131c" stroke-width="12" stroke-linecap="round"></path></svg></span>
+          <span style="width:52px;height:52px;border-radius:9px;background:#000;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><circle cx="50" cy="50" r="33" fill="none" stroke="#fff" stroke-width="12" stroke-dasharray="152 56" transform="rotate(-52 50 50)"></circle><path d="M50 50V28M50 50h20" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"></path></svg></span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:22px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">C · La file dénouée</span>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="width:52px;height:52px;border-radius:9px;background:#17131c;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><g fill="#d4af4f"><rect x="14" y="22" width="34" height="13" rx="6.5"></rect><rect x="14" y="44" width="24" height="13" rx="6.5"></rect></g><path d="M20 71h11c22 0 34-12 39-32" fill="none" stroke="#d4af4f" stroke-width="13" stroke-linecap="round"></path></svg></span>
+          <span style="width:52px;height:52px;border-radius:9px;background:#f7f4ef;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><g fill="#17131c"><rect x="14" y="22" width="34" height="13" rx="6.5"></rect><rect x="14" y="44" width="24" height="13" rx="6.5"></rect></g><path d="M20 71h11c22 0 34-12 39-32" fill="none" stroke="#17131c" stroke-width="13" stroke-linecap="round"></path></svg></span>
+          <span style="width:52px;height:52px;border-radius:9px;background:#000;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><g fill="#fff"><rect x="14" y="22" width="34" height="13" rx="6.5"></rect><rect x="14" y="44" width="24" height="13" rx="6.5"></rect></g><path d="M20 71h11c22 0 34-12 39-32" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round"></path></svg></span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:22px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">D · Le losange</span>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="width:52px;height:52px;border-radius:9px;background:#17131c;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><path d="M50 8 78 50 50 92 22 50Z" fill="none" stroke="#d4af4f" stroke-width="12"></path><path d="M50 34 61 50 50 66 39 50Z" fill="#d4af4f"></path></svg></span>
+          <span style="width:52px;height:52px;border-radius:9px;background:#f7f4ef;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><path d="M50 8 78 50 50 92 22 50Z" fill="none" stroke="#17131c" stroke-width="12"></path><path d="M50 34 61 50 50 66 39 50Z" fill="#17131c"></path></svg></span>
+          <span style="width:52px;height:52px;border-radius:9px;background:#000;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><path d="M50 8 78 50 50 92 22 50Z" fill="none" stroke="#fff" stroke-width="12"></path><path d="M50 34 61 50 50 66 39 50Z" fill="#fff"></path></svg></span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:22px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">E · Le créneau</span>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="width:52px;height:52px;border-radius:9px;background:#17131c;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><path d="M32 18a40 40 0 0 0 0 64M68 18a40 40 0 0 1 0 64" fill="none" stroke="#d4af4f" stroke-width="13" stroke-linecap="round"></path><circle cx="50" cy="50" r="12" fill="#d4af4f"></circle></svg></span>
+          <span style="width:52px;height:52px;border-radius:9px;background:#f7f4ef;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><path d="M32 18a40 40 0 0 0 0 64M68 18a40 40 0 0 1 0 64" fill="none" stroke="#17131c" stroke-width="13" stroke-linecap="round"></path><circle cx="50" cy="50" r="12" fill="#17131c"></circle></svg></span>
+          <span style="width:52px;height:52px;border-radius:9px;background:#000;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 100 100" width="32" height="32"><path d="M32 18a40 40 0 0 0 0 64M68 18a40 40 0 0 1 0 64" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round"></path><circle cx="50" cy="50" r="12" fill="#fff"></circle></svg></span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section style="width:100%;max-width:1120px;display:flex;flex-direction:column;gap:32px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">Tour 1 · archive — verrouillages</span>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:clamp(28px,3.4vw,40px);margin:0;font-weight:400">Verrouillages du tour 1</h2>
+      <p style="margin:0;max-width:620px;font-size:15px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Construits sur le K taillé, écarté depuis. Les règles de zone de protection et de taille minimale restent valables pour la piste qui sera retenue.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px">
+
+      <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:44px 32px;display:flex;flex-direction:column;gap:28px;align-items:center;justify-content:center;min-height:210px">
+        <span style="display:inline-flex;align-items:center;gap:16px">
+          <svg viewBox="0 0 100 100" width="46" height="46" fill="#d4af4f"><path d="M26 18h13v64H26z"></path><path d="M43 50 70 18h13L53 52z"></path><path d="M53 48 83 82H70L43 50z"></path></svg>
+          <span style="font-family:'DM Serif Display',serif;font-size:36px;letter-spacing:-0.015em;line-height:1;color:#f7f4ef">KinoBooking</span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">Horizontal — en-tête, fond encre</span>
+      </div>
+
+      <div style="background:#f7f4ef;border-radius:4px;padding:44px 32px;display:flex;flex-direction:column;gap:28px;align-items:center;justify-content:center;min-height:210px">
+        <span style="display:inline-flex;flex-direction:column;align-items:center;gap:14px">
+          <svg viewBox="0 0 100 100" width="54" height="54" fill="#17131c"><path d="M26 18h13v64H26z"></path><path d="M43 50 70 18h13L53 52z"></path><path d="M53 48 83 82H70L43 50z"></path></svg>
+          <span style="font-family:'DM Serif Display',serif;font-size:30px;letter-spacing:-0.015em;line-height:1;color:#17131c">KinoBooking</span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#5c5366">Vertical — vitrine, réseaux</span>
+      </div>
+
+      <div style="background:#d4af4f;border-radius:4px;padding:44px 32px;display:flex;flex-direction:column;gap:28px;align-items:center;justify-content:center;min-height:210px">
+        <span style="display:inline-flex;align-items:center;gap:16px">
+          <svg viewBox="0 0 100 100" width="46" height="46" fill="#17131c"><path d="M26 18h13v64H26z"></path><path d="M43 50 70 18h13L53 52z"></path><path d="M53 48 83 82H70L43 50z"></path></svg>
+          <span style="font-family:'DM Serif Display',serif;font-size:36px;letter-spacing:-0.015em;line-height:1;color:#17131c">KinoBooking</span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#2a2009">Sur aplat laiton</span>
+      </div>
+
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px">
+      <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:36px 32px;display:flex;flex-direction:column;gap:22px;justify-content:space-between;min-height:150px">
+        <span style="display:inline-flex;flex-direction:column;gap:10px">
+          <span style="display:inline-flex;align-items:center;gap:14px">
+            <svg viewBox="0 0 100 100" width="38" height="38" fill="#f7f4ef"><path d="M26 18h13v64H26z"></path><path d="M43 50 70 18h13L53 52z"></path><path d="M53 48 83 82H70L43 50z"></path></svg>
+            <span style="font-family:'DM Serif Display',serif;font-size:30px;letter-spacing:-0.015em;line-height:1;color:#f7f4ef">KinoBooking</span>
+          </span>
+          <span style="font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#b7aec2;padding-left:52px">Une entreprise kinshasa.io</span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">Endossement — signature du groupe</span>
+      </div>
+      <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:36px 32px;display:flex;flex-direction:column;gap:16px;min-height:150px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">Zone de protection</span>
+        <p style="margin:0;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Un vide égal à la hauteur du K tout autour du verrouillage. Taille minimale : 24&nbsp;px de haut pour le symbole seul, 110&nbsp;px de large pour la version horizontale.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="width:100%;max-width:1120px;display:flex;flex-direction:column;gap:32px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">Tour 1 · archive — en situation</span>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:clamp(28px,3.4vw,40px);margin:0;font-weight:400">Cinq usages réels</h2>
+      <p style="margin:0;max-width:620px;font-size:15px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Encore au symbole du tour 1 : je les refais avec la piste retenue et le wordmark n° 4 dès votre choix.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:24px">
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">Onglet navigateur</span>
+        <div style="background:#2c2535;border-radius:8px 8px 4px 4px;padding:10px 10px 0;display:flex;gap:8px;align-items:flex-end">
+          <span style="background:#17131c;border-radius:8px 8px 0 0;padding:11px 16px;display:flex;align-items:center;gap:9px;min-width:0">
+            <svg viewBox="0 0 100 100" width="16" height="16" fill="#d4af4f" style="flex:none"><path d="M26 18h13v64H26z"></path><path d="M43 50 70 18h13L53 52z"></path><path d="M53 48 83 82H70L43 50z"></path></svg>
+            <span style="font-size:12px;color:#d9d3e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">KinoBooking — Réservez sans…</span>
+          </span>
+          <span style="background:#221c29;border-radius:8px 8px 0 0;padding:11px 14px;font-size:12px;color:#8d8398">kinocongo.com</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">En-tête du site</span>
+        <div style="background:#17131c;border:1px solid #332b3d;border-radius:4px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+          <span style="display:inline-flex;align-items:center;gap:11px">
+            <svg viewBox="0 0 100 100" width="26" height="26" fill="#d4af4f" style="flex:none"><path d="M26 18h13v64H26z"></path><path d="M43 50 70 18h13L53 52z"></path><path d="M53 48 83 82H70L43 50z"></path></svg>
+            <span style="font-family:'DM Serif Display',serif;font-size:21px;letter-spacing:-0.015em;color:#f7f4ef">KinoBooking</span>
+          </span>
+          <span style="background:#d4af4f;color:#17131c;font-size:13px;font-weight:500;padding:9px 16px;border-radius:3px;white-space:nowrap">Réserver</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">Profil WhatsApp Business</span>
+        <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:20px;display:flex;align-items:center;gap:14px">
+          <span style="width:56px;height:56px;border-radius:50%;background:#17131c;display:flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 100 100" width="30" height="30" fill="#d4af4f"><path d="M26 18h13v64H26z"></path><path d="M43 50 70 18h13L53 52z"></path><path d="M53 48 83 82H70L43 50z"></path></svg></span>
+          <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+            <span style="font-size:15px;font-weight:500;color:#f7f4ef">KinoBooking</span>
+            <span style="font-size:13px;color:#8d8398;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Votre créneau est confirmé ✓</span>
+          </span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">Autocollant vitrine</span>
+        <div style="background:#17131c;border:2px solid #d4af4f;border-radius:4px;padding:26px 22px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+          <svg viewBox="0 0 100 100" width="34" height="34" fill="#d4af4f"><path d="M26 18h13v64H26z"></path><path d="M43 50 70 18h13L53 52z"></path><path d="M53 48 83 82H70L43 50z"></path></svg>
+          <span style="font-family:'DM Serif Display',serif;font-size:22px;color:#f7f4ef;line-height:1.15">Réservez ici,<br />sans faire la queue</span>
+          <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#d4af4f">kinobooking.cd</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">Reçu monochrome</span>
+        <div style="background:#fff;border-radius:4px;padding:24px 22px;display:flex;flex-direction:column;gap:14px;font-family:'DM Sans',sans-serif">
+          <span style="display:inline-flex;align-items:center;gap:9px">
+            <svg viewBox="0 0 100 100" width="20" height="20" fill="#000"><path d="M26 18h13v64H26z"></path><path d="M43 50 70 18h13L53 52z"></path><path d="M53 48 83 82H70L43 50z"></path></svg>
+            <span style="font-family:'DM Serif Display',serif;font-size:17px;color:#000">KinoBooking</span>
+          </span>
+          <span style="border-top:1px dashed #b9b9b9"></span>
+          <span style="display:flex;justify-content:space-between;font-size:13px;color:#000"><span>Acompte — Mpesa</span><span>15 000 FC</span></span>
+          <span style="display:flex;justify-content:space-between;font-size:13px;color:#555"><span>Créneau</span><span>sam. 14h30</span></span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer style="width:100%;max-width:1120px;border-top:1px solid #3a3242;padding-top:28px;display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:baseline">
+    <p style="margin:0;max-width:520px;font-size:14px;line-height:1.6;color:#8d8398;text-wrap:pretty">Prochaine étape : retenez une variation de J, et je pousse la combinaison avec le wordmark n° 4 jusqu'aux mises en situation puis aux fichiers finaux (SVG, favicon, variantes).</p>
+    <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">Nuit &amp; laiton — v4</span>
+  </footer>
+
+</div>
+</x-dc>
+</body>
+</html>

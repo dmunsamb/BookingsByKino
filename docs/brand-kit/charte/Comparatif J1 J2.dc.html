@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; background: #17131c; }
+  a { color: #e3c87a; }
+  a:hover { color: #f5ead0; }
+</style>
+</helmet>
+<div style="background:#17131c;color:#f7f4ef;font-family:'DM Sans',sans-serif;padding:56px 24px 100px;display:flex;flex-direction:column;align-items:center;gap:72px">
+
+  <header style="width:100%;max-width:1160px;display:flex;flex-direction:column;gap:26px;border-bottom:1px solid #3a3242;padding-bottom:26px">
+    <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">Comparatif — tour 4</span>
+    <h1 style="font-family:'DM Serif Display',serif;font-size:clamp(34px,4.6vw,54px);line-height:1.04;margin:0;font-weight:400">J1 la référence, J2 la part détachée</h1>
+    <p style="margin:0;max-width:640px;font-size:15px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Mêmes usages, même wordmark, même échelle. Seul le symbole change : à gauche l'anneau ouvert avec la part collée, à droite l'anneau refermé avec la part sortie.</p>
+  </header>
+
+  <section style="width:100%;max-width:1160px;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px">
+    <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:48px 32px;display:flex;flex-direction:column;align-items:center;gap:26px">
+      <svg viewBox="0 0 100 100" width="150" height="150" aria-label="J1">
+        <circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="9" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle>
+        <path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path>
+      </svg>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center">
+        <span style="font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">J1</span>
+        <h2 style="font-family:'DM Serif Display',serif;font-size:24px;margin:0;font-weight:400">La référence</h2>
+        <p style="margin:0;max-width:340px;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Une seule masse continue. L'ouverture de l'anneau et la part pleine se lisent comme un même mouvement.</p>
+      </div>
+    </div>
+    <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:48px 32px;display:flex;flex-direction:column;align-items:center;gap:26px">
+      <svg viewBox="0 0 100 100" width="150" height="150" aria-label="J2">
+        <circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="9"></circle>
+        <path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#d4af4f"></path>
+      </svg>
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center">
+        <span style="font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">J2</span>
+        <h2 style="font-family:'DM Serif Display',serif;font-size:24px;margin:0;font-weight:400">La part détachée</h2>
+        <p style="margin:0;max-width:340px;font-size:14px;line-height:1.6;color:#b7aec2;text-wrap:pretty">Deux éléments distincts. Le cercle reste entier, la part s'en extrait — le geste de réserver devient visible.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="width:100%;max-width:1160px;display:flex;flex-direction:column;gap:26px">
+    <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">Verrouillage horizontal</span>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px">
+      <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:46px 30px;display:flex;flex-direction:column;gap:22px;align-items:center">
+        <span style="display:inline-flex;align-items:center;gap:16px">
+          <svg viewBox="0 0 100 100" width="46" height="46" style="flex:none"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="9" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path></svg>
+          <span style="display:inline-flex;align-items:baseline">
+            <span style="font-family:'DM Serif Display',serif;font-size:34px;line-height:1;color:#f7f4ef">Kino</span>
+            <span style="font-size:34px;letter-spacing:-0.02em;line-height:1;color:#d4af4f">Booking</span>
+          </span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">J1 — fond encre</span>
+      </div>
+      <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:46px 30px;display:flex;flex-direction:column;gap:22px;align-items:center">
+        <span style="display:inline-flex;align-items:center;gap:16px">
+          <svg viewBox="0 0 100 100" width="46" height="46" style="flex:none"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="9"></circle><path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#d4af4f"></path></svg>
+          <span style="display:inline-flex;align-items:baseline">
+            <span style="font-family:'DM Serif Display',serif;font-size:34px;line-height:1;color:#f7f4ef">Kino</span>
+            <span style="font-size:34px;letter-spacing:-0.02em;line-height:1;color:#d4af4f">Booking</span>
+          </span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">J2 — fond encre</span>
+      </div>
+      <div style="background:#f7f4ef;border-radius:4px;padding:46px 30px;display:flex;flex-direction:column;gap:22px;align-items:center">
+        <span style="display:inline-flex;align-items:center;gap:16px">
+          <svg viewBox="0 0 100 100" width="46" height="46" style="flex:none"><circle cx="50" cy="50" r="34" fill="none" stroke="#17131c" stroke-width="9" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#17131c"></path></svg>
+          <span style="display:inline-flex;align-items:baseline">
+            <span style="font-family:'DM Serif Display',serif;font-size:34px;line-height:1;color:#17131c">Kino</span>
+            <span style="font-size:34px;letter-spacing:-0.02em;line-height:1;color:#94741f">Booking</span>
+          </span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#5c5366">J1 — papier</span>
+      </div>
+      <div style="background:#f7f4ef;border-radius:4px;padding:46px 30px;display:flex;flex-direction:column;gap:22px;align-items:center">
+        <span style="display:inline-flex;align-items:center;gap:16px">
+          <svg viewBox="0 0 100 100" width="46" height="46" style="flex:none"><circle cx="50" cy="50" r="34" fill="none" stroke="#17131c" stroke-width="9"></circle><path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#17131c"></path></svg>
+          <span style="display:inline-flex;align-items:baseline">
+            <span style="font-family:'DM Serif Display',serif;font-size:34px;line-height:1;color:#17131c">Kino</span>
+            <span style="font-size:34px;letter-spacing:-0.02em;line-height:1;color:#94741f">Booking</span>
+          </span>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#5c5366">J2 — papier</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="width:100%;max-width:1160px;display:flex;flex-direction:column;gap:26px">
+    <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">Échelles</span>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px">
+      <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:38px 30px;display:flex;flex-direction:column;gap:24px;align-items:center">
+        <span style="display:flex;align-items:flex-end;gap:20px">
+          <svg viewBox="0 0 100 100" width="64" height="64"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="9" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path></svg>
+          <svg viewBox="0 0 100 100" width="40" height="40"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="10" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path></svg>
+          <svg viewBox="0 0 100 100" width="24" height="24"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="12" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path></svg>
+          <svg viewBox="0 0 100 100" width="16" height="16"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="14" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path></svg>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">J1 — 64 / 40 / 24 / 16 px</span>
+      </div>
+      <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:38px 30px;display:flex;flex-direction:column;gap:24px;align-items:center">
+        <span style="display:flex;align-items:flex-end;gap:20px">
+          <svg viewBox="0 0 100 100" width="64" height="64"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="9"></circle><path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#d4af4f"></path></svg>
+          <svg viewBox="0 0 100 100" width="40" height="40"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="10"></circle><path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#d4af4f"></path></svg>
+          <svg viewBox="0 0 100 100" width="24" height="24"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="12"></circle><path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#d4af4f"></path></svg>
+          <svg viewBox="0 0 100 100" width="16" height="16"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="14"></circle><path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#d4af4f"></path></svg>
+        </span>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">J2 — 64 / 40 / 24 / 16 px</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="width:100%;max-width:1160px;display:flex;flex-direction:column;gap:26px">
+    <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">En-tête du site</span>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="background:#17131c;border:1px solid #332b3d;border-radius:4px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+          <span style="display:inline-flex;align-items:center;gap:12px">
+            <svg viewBox="0 0 100 100" width="26" height="26" style="flex:none"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="11" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path></svg>
+            <span style="display:inline-flex;align-items:baseline">
+              <span style="font-family:'DM Serif Display',serif;font-size:21px;line-height:1;color:#f7f4ef">Kino</span>
+              <span style="font-size:21px;letter-spacing:-0.02em;line-height:1;color:#d4af4f">Booking</span>
+            </span>
+          </span>
+          <span style="background:#d4af4f;color:#17131c;font-size:13px;font-weight:500;padding:9px 16px;border-radius:3px;white-space:nowrap">Réserver</span>
+        </div>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">J1</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="background:#17131c;border:1px solid #332b3d;border-radius:4px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+          <span style="display:inline-flex;align-items:center;gap:12px">
+            <svg viewBox="0 0 100 100" width="26" height="26" style="flex:none"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="11"></circle><path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#d4af4f"></path></svg>
+            <span style="display:inline-flex;align-items:baseline">
+              <span style="font-family:'DM Serif Display',serif;font-size:21px;line-height:1;color:#f7f4ef">Kino</span>
+              <span style="font-size:21px;letter-spacing:-0.02em;line-height:1;color:#d4af4f">Booking</span>
+            </span>
+          </span>
+          <span style="background:#d4af4f;color:#17131c;font-size:13px;font-weight:500;padding:9px 16px;border-radius:3px;white-space:nowrap">Réserver</span>
+        </div>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">J2</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="width:100%;max-width:1160px;display:flex;flex-direction:column;gap:26px">
+    <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">Onglet et profil WhatsApp</span>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="background:#2c2535;border-radius:8px 8px 4px 4px;padding:10px 10px 0;display:flex;gap:8px;align-items:flex-end">
+          <span style="background:#17131c;border-radius:8px 8px 0 0;padding:11px 16px;display:flex;align-items:center;gap:9px;min-width:0">
+            <svg viewBox="0 0 100 100" width="16" height="16" style="flex:none"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="14" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path></svg>
+            <span style="font-size:12px;color:#d9d3e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">KinoBooking — Réservez sans…</span>
+          </span>
+          <span style="background:#221c29;border-radius:8px 8px 0 0;padding:11px 14px;font-size:12px;color:#8d8398">kinocongo.com</span>
+        </div>
+        <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:20px;display:flex;align-items:center;gap:14px">
+          <span style="width:56px;height:56px;border-radius:50%;background:#17131c;display:flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 100 100" width="30" height="30"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="11" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path></svg></span>
+          <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+            <span style="font-size:15px;font-weight:500;color:#f7f4ef">KinoBooking</span>
+            <span style="font-size:13px;color:#8d8398;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Votre créneau est confirmé ✓</span>
+          </span>
+        </div>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">J1</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="background:#2c2535;border-radius:8px 8px 4px 4px;padding:10px 10px 0;display:flex;gap:8px;align-items:flex-end">
+          <span style="background:#17131c;border-radius:8px 8px 0 0;padding:11px 16px;display:flex;align-items:center;gap:9px;min-width:0">
+            <svg viewBox="0 0 100 100" width="16" height="16" style="flex:none"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="14"></circle><path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#d4af4f"></path></svg>
+            <span style="font-size:12px;color:#d9d3e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">KinoBooking — Réservez sans…</span>
+          </span>
+          <span style="background:#221c29;border-radius:8px 8px 0 0;padding:11px 14px;font-size:12px;color:#8d8398">kinocongo.com</span>
+        </div>
+        <div style="background:#221c29;border:1px solid #332b3d;border-radius:4px;padding:20px;display:flex;align-items:center;gap:14px">
+          <span style="width:56px;height:56px;border-radius:50%;background:#17131c;display:flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 100 100" width="30" height="30"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="11"></circle><path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#d4af4f"></path></svg></span>
+          <span style="display:flex;flex-direction:column;gap:3px;min-width:0">
+            <span style="font-size:15px;font-weight:500;color:#f7f4ef">KinoBooking</span>
+            <span style="font-size:13px;color:#8d8398;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Votre créneau est confirmé ✓</span>
+          </span>
+        </div>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">J2</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="width:100%;max-width:1160px;display:flex;flex-direction:column;gap:26px">
+    <span style="font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:#d4af4f">Vitrine et reçu monochrome</span>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="background:#17131c;border:2px solid #d4af4f;border-radius:4px;padding:26px 22px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+          <svg viewBox="0 0 100 100" width="36" height="36"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="10" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#d4af4f"></path></svg>
+          <span style="font-family:'DM Serif Display',serif;font-size:22px;color:#f7f4ef;line-height:1.15">Réservez ici,<br />sans faire la queue</span>
+          <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#d4af4f">kinobooking.cd</span>
+        </div>
+        <div style="background:#fff;border-radius:4px;padding:24px 22px;display:flex;flex-direction:column;gap:14px">
+          <span style="display:inline-flex;align-items:center;gap:10px">
+            <svg viewBox="0 0 100 100" width="20" height="20"><circle cx="50" cy="50" r="34" fill="none" stroke="#000" stroke-width="12" stroke-dasharray="160 54" transform="rotate(-90 50 50)"></circle><path d="M50 50V16A34 34 0 0 1 80 50Z" fill="#000"></path></svg>
+            <span style="display:inline-flex;align-items:baseline">
+              <span style="font-family:'DM Serif Display',serif;font-size:17px;color:#000">Kino</span>
+              <span style="font-size:17px;letter-spacing:-0.02em;color:#000">Booking</span>
+            </span>
+          </span>
+          <span style="border-top:1px dashed #b9b9b9"></span>
+          <span style="display:flex;justify-content:space-between;font-size:13px;color:#000"><span>Acompte — Mpesa</span><span>15 000 FC</span></span>
+          <span style="display:flex;justify-content:space-between;font-size:13px;color:#555"><span>Créneau</span><span>sam. 14h30</span></span>
+        </div>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">J1</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="background:#17131c;border:2px solid #d4af4f;border-radius:4px;padding:26px 22px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+          <svg viewBox="0 0 100 100" width="36" height="36"><circle cx="50" cy="50" r="34" fill="none" stroke="#d4af4f" stroke-width="10"></circle><path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#d4af4f"></path></svg>
+          <span style="font-family:'DM Serif Display',serif;font-size:22px;color:#f7f4ef;line-height:1.15">Réservez ici,<br />sans faire la queue</span>
+          <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#d4af4f">kinobooking.cd</span>
+        </div>
+        <div style="background:#fff;border-radius:4px;padding:24px 22px;display:flex;flex-direction:column;gap:14px">
+          <span style="display:inline-flex;align-items:center;gap:10px">
+            <svg viewBox="0 0 100 100" width="20" height="20"><circle cx="50" cy="50" r="34" fill="none" stroke="#000" stroke-width="12"></circle><path d="M53 47V19.2A30.8 30.8 0 0 1 80.8 47Z" fill="#000"></path></svg>
+            <span style="display:inline-flex;align-items:baseline">
+              <span style="font-family:'DM Serif Display',serif;font-size:17px;color:#000">Kino</span>
+              <span style="font-size:17px;letter-spacing:-0.02em;color:#000">Booking</span>
+            </span>
+          </span>
+          <span style="border-top:1px dashed #b9b9b9"></span>
+          <span style="display:flex;justify-content:space-between;font-size:13px;color:#000"><span>Acompte — Mpesa</span><span>15 000 FC</span></span>
+          <span style="display:flex;justify-content:space-between;font-size:13px;color:#555"><span>Créneau</span><span>sam. 14h30</span></span>
+        </div>
+        <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">J2</span>
+      </div>
+    </div>
+  </section>
+
+  <footer style="width:100%;max-width:1160px;border-top:1px solid #3a3242;padding-top:26px;display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:baseline">
+    <p style="margin:0;max-width:560px;font-size:14px;line-height:1.6;color:#8d8398;text-wrap:pretty">J1 tient mieux sous 20&nbsp;px : la part reste soudée à l'anneau. J2 gagne en grand, où le détachement se voit et raconte quelque chose.</p>
+    <span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8d8398">Nuit &amp; laiton — comparatif</span>
+  </footer>
+
+</div>
+</x-dc>
+</body>
+</html>

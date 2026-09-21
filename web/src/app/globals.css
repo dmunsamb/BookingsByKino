@@ -45,6 +45,12 @@
   --color-ink-400: #7c7485;
   --color-paper: #f7f4ef;
 
+  /* kit de marque v1 (docs/brand-kit) — filets et texte secondaire */
+  --color-ink-line: #332b3d;
+  --color-paper-line: #e2dcd2;
+  --color-muted-on-ink: #b7aec2;
+  --color-muted-on-paper: #5c5366;
+
   /* sémantique */
   --color-success: #3e7d62;
   --color-warning: #b8922f;

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { HeaderMenu } from "./header-menu";
+import { KinoBookingLockup } from "./kino-booking-logo";
 
 /**
  * En-tête persistant sur toutes les pages : logo cliquable vers l'accueil.
@@ -51,7 +52,7 @@ export async function SiteHeader() {
     <header className="bg-ink-900">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3.5">
         <Link href="/" className="flex items-center gap-2">
-          <span className="font-serif text-xl text-paper">KinoBooking</span>
+          <KinoBookingLockup size={20} onDark />
         </Link>
         <div className="flex items-center gap-2">
           {pendingCount > 0 && (
