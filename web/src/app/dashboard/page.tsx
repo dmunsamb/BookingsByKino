@@ -228,7 +228,8 @@ export default async function DashboardPage() {
   let pending: BookingRow[] = [];
   let queueWaiting: QueueRow[] = [];
   let queueInProgress: BookingRow[] = [];
-  let queueStaffOptions: { id: string; name: string }[] = [];
+  let queueStaffOptions: { id: string; name: string; serviceIds: string[] }[] =
+    [];
   let toClose: BookingRow[] = [];
   let confirmedUpcoming: BookingRow[] = [];
   let waitingPayment: BookingRow[] = [];
@@ -396,9 +397,12 @@ export default async function DashboardPage() {
         .eq("status", "confirmed")
         .not("staff_id", "is", null)
         .order("start_time"),
+      // Compétences (staff_member_services, migration 0034) chargées ici
+      // pour filtrer le choix proposé à la "prise en charge" du numéro 1
+      // de la file selon le service qu'il a choisi.
       supabase
         .from("staff_members")
-        .select("id, name")
+        .select("id, name, staff_member_services(service_id)")
         .eq("business_id", profile.business_id)
         .eq("active", true)
         .order("name"),
@@ -463,7 +467,13 @@ export default async function DashboardPage() {
       .slice()
       .sort((a, b) => queueSortKey(a) - queueSortKey(b));
     queueInProgress = queueInProgressData ?? [];
-    queueStaffOptions = staffData ?? [];
+    queueStaffOptions = (staffData ?? []).map((s) => ({
+      id: s.id,
+      name: s.name,
+      serviceIds: (
+        (s.staff_member_services ?? []) as { service_id: string }[]
+      ).map((x) => x.service_id),
+    }));
     toClose = toCloseData ?? [];
     confirmedUpcoming = confirmedData ?? [];
     waitingPayment = waitingData ?? [];
@@ -668,8 +678,11 @@ export default async function DashboardPage() {
             </h2>
             <p className="mb-3 text-xs text-ink-400">
               Tickets pris sur place sans rendez-vous, dans l&apos;ordre
-              d&apos;arrivée. La prise en charge assigne un membre de
-              l&apos;équipe et fait passer le client en « En cours ».
+              d&apos;arrivée. Seul le numéro 1 peut être pris en charge —
+              utilisez « Décaler » s&apos;il n&apos;est pas prêt, pour ne
+              pas bloquer la file. La prise en charge assigne un membre de
+              l&apos;équipe qualifié pour le service demandé et fait
+              passer le client en « En cours ».
             </p>
             <div className="space-y-3">
               {queueWaiting.length === 0 && (
@@ -710,10 +723,21 @@ export default async function DashboardPage() {
                           entryId={entry.id}
                           used={entry.queue_shift_used}
                         />
-                        <AssignStaffForm
-                          entryId={entry.id}
-                          staff={queueStaffOptions}
-                        />
+                        {index === 0 ? (
+                          <AssignStaffForm
+                            entryId={entry.id}
+                            staff={queueStaffOptions.filter(
+                              (s) =>
+                                s.serviceIds.length === 0 ||
+                                (entry.service_id != null &&
+                                  s.serviceIds.includes(entry.service_id))
+                            )}
+                          />
+                        ) : (
+                          <span className="text-xs text-ink-400">
+                            Prise en charge réservée au numéro 1
+                          </span>
+                        )}
                         <form action={updateBookingStatus}>
                           <input type="hidden" name="id" value={entry.id} />
                           <input type="hidden" name="status" value="no_show" />
