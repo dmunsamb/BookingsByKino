@@ -164,12 +164,20 @@ export default async function AdminPage() {
         <h1 className="font-serif text-2xl text-ink-900 dark:text-paper">
           Administration KinoBooking
         </h1>
-        <Link
-          href="/admin/rapports"
-          className="text-xs font-bold text-kino-600 hover:underline dark:text-kino-500"
-        >
-          Rapports financiers →
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/dashboard/compte"
+            className="text-xs font-bold text-kino-600 hover:underline dark:text-kino-500"
+          >
+            Mon compte
+          </Link>
+          <Link
+            href="/admin/rapports"
+            className="text-xs font-bold text-kino-600 hover:underline dark:text-kino-500"
+          >
+            Rapports financiers →
+          </Link>
+        </div>
       </div>
 
       <section className="mb-8">
@@ -450,9 +458,17 @@ async function SalesOverview({ salesProfileId }: { salesProfileId: string }) {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
-      <h1 className="mb-6 font-serif text-2xl text-ink-900 dark:text-paper">
-        Tous les établissements
-      </h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="font-serif text-2xl text-ink-900 dark:text-paper">
+          Tous les établissements
+        </h1>
+        <Link
+          href="/dashboard/compte"
+          className="text-xs font-bold text-kino-600 hover:underline dark:text-kino-300"
+        >
+          Mon compte
+        </Link>
+      </div>
       <p className="mb-6 text-sm text-ink-400">
         Vous voyez tous les salons de la plateforme. Vous ne pouvez
         administrer (« voir en tant que ») que ceux qui vous sont assignés.
