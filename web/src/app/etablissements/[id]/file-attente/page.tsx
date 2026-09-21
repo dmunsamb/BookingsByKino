@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { QUEUE_QR_PARAM, QUEUE_QR_VALUE } from "@/lib/qr";
 import { QueueModule } from "./queue-module";
+import { HowItWorks } from "./how-it-works";
 
 export default async function WalkinQueuePage({
   params,
@@ -68,6 +69,8 @@ export default async function WalkinQueuePage({
           startUnlocked={startUnlocked}
         />
       )}
+
+      <HowItWorks />
     </div>
   );
 }
