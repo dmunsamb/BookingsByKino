@@ -1,4 +1,4 @@
-import { getCurrentProfile } from "@/lib/auth/dal";
+import { getRealProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 import {
@@ -17,6 +17,7 @@ import { AwaitingPaymentSection } from "./awaiting-payment-section";
 import { fetchPriceByDuration, resolveOwnerNames } from "./signup-shared";
 import { TestBadge } from "./test-badge";
 import { SalesAssignmentSelect, type SalesRep } from "./sales-assignment-select";
+import { SalesTeamSection } from "./sales-team-section";
 import Link from "next/link";
 
 const statusLabels: Record<string, string> = {
@@ -50,7 +51,7 @@ function formatMemberSince(createdAt: string): string {
 }
 
 export default async function AdminPage() {
-  const profile = await getCurrentProfile();
+  const profile = await getRealProfile();
 
   if (!profile || (profile.role !== "platform_admin" && profile.role !== "sales")) {
     return (
@@ -177,6 +178,8 @@ export default async function AdminPage() {
         </h2>
         <PlatformPaymentSettingsForm initial={platformPaymentSettings} />
       </section>
+
+      <SalesTeamSection />
 
       <PendingSignupsSection />
 

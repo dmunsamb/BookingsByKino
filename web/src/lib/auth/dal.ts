@@ -54,6 +54,18 @@ const fetchRealProfile = cache(async (): Promise<Profile | null> => {
 });
 
 /**
+ * Alias public de fetchRealProfile — à utiliser dans tout /admin/**
+ * (page + server actions). /admin est le panneau de contrôle de
+ * l'admin/sales LUI-MÊME : il doit rester utilisable avec les vrais
+ * droits du compte connecté même pendant une session "voir en tant que"
+ * ouverte ailleurs (sinon un admin qui a une session active resterait
+ * bloqué hors de /admin tant qu'il n'a pas cliqué "Quitter" — piège
+ * repéré en relisant l'impersonation). Seul /dashboard/** doit lire le
+ * profil effectif via getCurrentProfile().
+ */
+export const getRealProfile = fetchRealProfile;
+
+/**
  * Renvoie le profil "effectif" de l'utilisateur connecté : son propre
  * profil normalement, ou — s'il est platform_admin/sales et a un cookie
  * "voir en tant que" valide (voir lib/impersonation.ts) — un profil dont

@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getCurrentProfile } from "@/lib/auth/dal";
+import { getRealProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import {
   startImpersonation,
@@ -12,11 +12,12 @@ import {
 /**
  * Démarre une session "voir en tant que" — appelée uniquement depuis le
  * formulaire de choix de rôle (impersonate/[businessId]/page.tsx).
- * getCurrentProfile() ici renvoie encore le VRAI profil : pas de cookie
- * d'impersonation posé avant cet appel.
+ * getRealProfile() (jamais getCurrentProfile) : on veut toujours les vrais
+ * droits de l'acteur, même s'il a déjà une session "voir en tant que"
+ * ouverte ailleurs sans l'avoir quittée.
  */
 export async function startImpersonationAction(formData: FormData) {
-  const profile = await getCurrentProfile();
+  const profile = await getRealProfile();
   if (!profile) redirect("/login");
 
   const businessId = formData.get("business_id");

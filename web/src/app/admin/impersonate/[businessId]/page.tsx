@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getCurrentProfile } from "@/lib/auth/dal";
+import { getRealProfile } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { startImpersonationAction } from "../actions";
 
@@ -9,7 +9,7 @@ export default async function ImpersonateChoicePage({
   params: Promise<{ businessId: string }>;
 }) {
   const { businessId } = await params;
-  const profile = await getCurrentProfile();
+  const profile = await getRealProfile();
 
   if (!profile || (profile.role !== "platform_admin" && profile.role !== "sales")) {
     redirect("/dashboard");
