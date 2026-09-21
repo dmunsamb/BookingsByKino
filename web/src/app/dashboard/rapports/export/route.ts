@@ -1,5 +1,9 @@
 import { NextRequest } from "next/server";
-import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
+import {
+  getCurrentProfile,
+  canManageBusiness,
+  isImpersonationRestricted,
+} from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { formatBookingReference } from "@/lib/booking-reference";
 import {
@@ -56,6 +60,15 @@ export async function GET(request: NextRequest) {
     return new Response("Accès réservé au gérant de l'établissement.", {
       status: 403,
     });
+  }
+
+  // Export des coordonnées clients (nom, téléphone) — désactivé en mode
+  // "voir en tant que" pour un commercial (décision produit).
+  if (await isImpersonationRestricted()) {
+    return new Response(
+      "Export désactivé en mode « voir en tant que ».",
+      { status: 403 }
+    );
   }
 
   const params = request.nextUrl.searchParams;

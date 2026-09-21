@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { readImpersonation, type ActingRole } from "@/lib/impersonation";
 
 /**
  * Data Access Layer pour l'authentification — voir le guide Next.js
@@ -16,7 +17,7 @@ export type Profile = {
   id: string;
   business_id: string | null;
   full_name: string | null;
-  role: "owner" | "staff" | "platform_admin";
+  role: "owner" | "staff" | "platform_admin" | "sales";
 };
 
 /** Redirige vers /login si personne n'est connecté ; sinon renvoie l'utilisateur Supabase Auth. */
@@ -34,12 +35,12 @@ export const requireUser = cache(async () => {
 });
 
 /**
- * Renvoie le profil KinoBooking (rôle, établissement) de l'utilisateur connecté.
- * `null` signifie : connecté, mais sans profil KinoBooking associé (compte
- * mal configuré) — distinct du cas "pas connecté", qui redirige déjà vers
- * /login via requireUser().
+ * Le vrai profil du compte connecté, jamais modifié par le mode "voir en
+ * tant que" — c'est CE profil qui sert à vérifier le droit d'entrer/rester
+ * en impersonation, et à distinguer platform_admin (exempté des blocages,
+ * voir isImpersonationRestricted) d'un sales impersonant.
  */
-export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
+const fetchRealProfile = cache(async (): Promise<Profile | null> => {
   const user = await requireUser();
   const supabase = await createClient();
 
@@ -50,6 +51,102 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
     .maybeSingle();
 
   return profile;
+});
+
+/**
+ * Renvoie le profil "effectif" de l'utilisateur connecté : son propre
+ * profil normalement, ou — s'il est platform_admin/sales et a un cookie
+ * "voir en tant que" valide (voir lib/impersonation.ts) — un profil dont
+ * business_id/role sont ceux du salon/rôle choisis. C'est le seul point de
+ * bascule : le reste du tableau de bord (dashboard/**) lit déjà
+ * profile.business_id et canManageBusiness/isStaffMember partout, donc rien
+ * d'autre à changer pour que l'impersonation "marche" sur toutes les pages.
+ *
+ * `null` signifie : connecté, mais sans profil KinoBooking associé (compte
+ * mal configuré) — distinct du cas "pas connecté", qui redirige déjà vers
+ * /login via requireUser().
+ */
+export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
+  const real = await fetchRealProfile();
+  if (!real) return null;
+
+  if (real.role !== "platform_admin" && real.role !== "sales") return real;
+
+  const impersonation = await readImpersonation(real.id);
+  if (!impersonation) return real;
+
+  if (real.role === "sales") {
+    const supabase = await createClient();
+    const { data: assignment } = await supabase
+      .from("business_sales_reps")
+      .select("business_id")
+      .eq("business_id", impersonation.businessId)
+      .eq("profile_id", real.id)
+      .maybeSingle();
+    // Le salon a pu être réassigné pendant la session en cours : on ne
+    // fait pas confiance au cookie seul, on revérifie à chaque appel.
+    if (!assignment) return real;
+  }
+
+  return {
+    id: real.id,
+    business_id: impersonation.businessId,
+    full_name: real.full_name,
+    role: impersonation.actingRole,
+  };
+});
+
+export type ImpersonationBanner = {
+  businessId: string;
+  businessName: string;
+  actingRole: ActingRole;
+  realRole: "platform_admin" | "sales";
+};
+
+/** Info d'affichage du bandeau persistant pendant une session "voir en tant que" — `null` si aucune session active. */
+export const getImpersonationBanner = cache(
+  async (): Promise<ImpersonationBanner | null> => {
+    const real = await fetchRealProfile();
+    if (!real || (real.role !== "platform_admin" && real.role !== "sales")) {
+      return null;
+    }
+
+    const impersonation = await readImpersonation(real.id);
+    if (!impersonation) return null;
+
+    const supabase = await createClient();
+    const { data: business } = await supabase
+      .from("businesses")
+      .select("id, name")
+      .eq("id", impersonation.businessId)
+      .maybeSingle();
+    if (!business) return null;
+
+    return {
+      businessId: business.id,
+      businessName: business.name,
+      actingRole: impersonation.actingRole,
+      realRole: real.role,
+    };
+  }
+);
+
+/**
+ * true si l'action en cours se fait pendant une session "voir en tant que"
+ * PAR UN COMPTE AUTRE QUE LE SUPER ADMIN — décision produit explicite :
+ * platform_admin (le seul, "moi seulement") reste libre-service partout ;
+ * sales, lui, ne doit jamais pouvoir faire les actions sensibles listées
+ * (suppression du compte, changement de mot de passe/email, changement des
+ * coordonnées de paiement, suppression d'un membre du personnel, export des
+ * données clients) — à appeler dans chaque action serveur concernée.
+ */
+export const isImpersonationRestricted = cache(async (): Promise<boolean> => {
+  const real = await fetchRealProfile();
+  if (!real || real.role === "platform_admin") return false;
+  if (real.role !== "sales") return false;
+
+  const impersonation = await readImpersonation(real.id);
+  return impersonation !== null;
 });
 
 /**

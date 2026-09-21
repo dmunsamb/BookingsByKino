@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
+import {
+  getCurrentProfile,
+  canManageBusiness,
+  isImpersonationRestricted,
+} from "@/lib/auth/dal";
 import { uploadPhoto } from "@/lib/supabase/media-admin";
 
 /**
@@ -94,6 +98,10 @@ export async function toggleStaffActive(formData: FormData) {
 export async function deleteStaffMember(formData: FormData) {
   const profile = await getCurrentProfile();
   if (!profile || !canManageBusiness(profile)) return;
+
+  // Suppression irréversible d'un membre du personnel — bloquée en mode
+  // "voir en tant que" pour un commercial (décision produit).
+  if (await isImpersonationRestricted()) return;
 
   const id = formData.get("id");
   if (typeof id !== "string") return;

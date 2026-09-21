@@ -30,6 +30,7 @@ const roleLabels: Record<Profile["role"], string> = {
   owner: "Gérant / Propriétaire",
   staff: "Personnel",
   platform_admin: "Administrateur KinoBooking",
+  sales: "Commercial KinoBooking",
 };
 
 const historyStatusLabels: Record<string, string> = {

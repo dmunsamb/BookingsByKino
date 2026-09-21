@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
+import {
+  getCurrentProfile,
+  canManageBusiness,
+  isImpersonationRestricted,
+} from "@/lib/auth/dal";
 import { isValidCategory, mainCategoryForAny } from "@/lib/categories";
 
 export type BusinessInfoFormState = {
@@ -70,6 +74,22 @@ export async function updateBusinessInfo(
   }
 
   const supabase = await createClient();
+
+  // Le numéro WhatsApp du salon sert de contact client ET de canal de
+  // réclamation — un commercial en mode "voir en tant que" ne doit jamais
+  // pouvoir le détourner (risque de fraude/détournement des clientes).
+  // Seul le gérant lui-même (session réelle) ou le super admin peut le
+  // changer ; le reste du formulaire (nom, catégories, adresse...) reste
+  // modifiable pour ne pas empêcher une assistance légitime.
+  const restricted = await isImpersonationRestricted();
+  const { data: currentBusiness } = restricted
+    ? await supabase
+        .from("businesses")
+        .select("owner_whatsapp")
+        .eq("id", profile.business_id)
+        .maybeSingle()
+    : { data: null };
+
   const { error } = await supabase
     .from("businesses")
     .update({
@@ -79,7 +99,9 @@ export async function updateBusinessInfo(
       address: typeof address === "string" ? address.trim() || null : null,
       commune: typeof commune === "string" ? commune.trim() || null : null,
       city: typeof city === "string" ? city.trim() || null : null,
-      owner_whatsapp: whatsapp || null,
+      owner_whatsapp: restricted
+        ? (currentBusiness?.owner_whatsapp ?? null)
+        : whatsapp || null,
     })
     .eq("id", profile.business_id);
 

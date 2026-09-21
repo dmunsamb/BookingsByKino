@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { readImpersonation } from "@/lib/impersonation";
 import { HeaderMenu } from "./header-menu";
 import { KinoBookingLockup } from "./kino-booking-logo";
 
@@ -26,6 +27,11 @@ export async function SiteHeader() {
 
   let pendingCount = 0;
   let displayName: string | null = null;
+  // Par défaut /dashboard (gérant/personnel) — platform_admin/sales n'ont
+  // de business_id "actif" que pendant une session "voir en tant que" (voir
+  // lib/impersonation.ts) : sans ça, /dashboard leur affiche juste "Accès
+  // réservé" tant qu'ils n'ont pas ouvert un salon depuis /admin.
+  let homeHref = "/dashboard";
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -34,6 +40,11 @@ export async function SiteHeader() {
       .maybeSingle();
 
     displayName = profile?.full_name ?? user.email ?? null;
+
+    if (profile?.role === "platform_admin" || profile?.role === "sales") {
+      const impersonation = await readImpersonation(user.id);
+      homeHref = impersonation ? "/dashboard" : "/admin";
+    }
 
     if (profile?.role === "platform_admin") {
       // Compte aussi "awaiting_payment" (approuvé sous conditions, en
@@ -67,7 +78,7 @@ export async function SiteHeader() {
           )}
           {user ? (
             <Link
-              href="/dashboard"
+              href={homeHref}
               className="max-w-[10rem] truncate rounded-full px-3 py-1.5 text-sm font-bold text-paper transition hover:bg-paper/10"
               title={displayName ?? undefined}
             >

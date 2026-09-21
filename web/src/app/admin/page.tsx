@@ -16,6 +16,7 @@ import { PendingSignupsSection } from "./pending-signups-section";
 import { AwaitingPaymentSection } from "./awaiting-payment-section";
 import { fetchPriceByDuration, resolveOwnerNames } from "./signup-shared";
 import { TestBadge } from "./test-badge";
+import { SalesAssignmentSelect, type SalesRep } from "./sales-assignment-select";
 import Link from "next/link";
 
 const statusLabels: Record<string, string> = {
@@ -33,10 +34,25 @@ const statusBadgeClasses: Record<SubscriptionStatus, string> = {
   inactif: "bg-danger/10 text-danger",
 };
 
+// Un salon "voir en tant que" a besoin d'un tableau de bord fonctionnel —
+// pas encore le cas pour pending_approval/rejected (voir aussi
+// impersonate/[businessId]/page.tsx, qui revérifie côté serveur).
+function canImpersonate(signupStatus: string): boolean {
+  return signupStatus === "approved" || signupStatus === "awaiting_payment";
+}
+
+function formatMemberSince(createdAt: string): string {
+  return new Date(createdAt).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 export default async function AdminPage() {
   const profile = await getCurrentProfile();
 
-  if (profile?.role !== "platform_admin") {
+  if (!profile || (profile.role !== "platform_admin" && profile.role !== "sales")) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16 text-center text-sm text-ink-400">
         Accès réservé à l&apos;équipe KinoBooking.
@@ -45,6 +61,10 @@ export default async function AdminPage() {
   }
 
   const supabase = await createClient();
+
+  if (profile.role === "sales") {
+    return <SalesOverview salesProfileId={profile.id} />;
+  }
 
   const { data: businesses } = await supabase
     .from("businesses")
@@ -76,6 +96,20 @@ export default async function AdminPage() {
   const ownerNameByBusiness = await resolveOwnerNames(
     supabase,
     (businesses ?? []).map((b) => b.id)
+  );
+
+  const { data: salesReps } = await supabase
+    .from("profiles")
+    .select("id, full_name")
+    .eq("role", "sales")
+    .order("full_name");
+
+  const { data: salesAssignments } = await supabase
+    .from("business_sales_reps")
+    .select("business_id, profile_id");
+
+  const salesRepByBusiness = new Map(
+    (salesAssignments ?? []).map((a) => [a.business_id, a.profile_id])
   );
 
   const approved = (businesses ?? []).filter(
@@ -242,7 +276,10 @@ export default async function AdminPage() {
               <tr>
                 <th className="p-3">Établissement</th>
                 <th className="p-3">Gérant</th>
+                <th className="p-3">Membre depuis</th>
                 <th className="p-3">Statut</th>
+                <th className="p-3">Commercial</th>
+                <th className="p-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-ink-900/8 dark:divide-paper/8">
@@ -250,7 +287,7 @@ export default async function AdminPage() {
                 rejected.length === 0 &&
                 awaitingPayment.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="p-4 text-center text-ink-400">
+                    <td colSpan={6} className="p-4 text-center text-ink-400">
                       Aucun autre établissement.
                     </td>
                   </tr>
@@ -264,7 +301,25 @@ export default async function AdminPage() {
                     {ownerNameByBusiness.get(b.id) ?? "—"}
                   </td>
                   <td className="p-3 text-ink-400">
+                    {formatMemberSince(b.created_at)}
+                  </td>
+                  <td className="p-3 text-ink-400">
                     {statusLabels[b.signup_status]}
+                  </td>
+                  <td className="p-3">
+                    <SalesAssignmentSelect
+                      businessId={b.id}
+                      salesReps={(salesReps ?? []) as SalesRep[]}
+                      assignedSalesRepId={salesRepByBusiness.get(b.id) ?? null}
+                    />
+                  </td>
+                  <td className="p-3">
+                    <Link
+                      href={`/admin/impersonate/${b.id}`}
+                      className="text-xs font-bold text-kino-600 hover:underline dark:text-kino-300"
+                    >
+                      Voir en tant que →
+                    </Link>
                   </td>
                 </tr>
               ))}
@@ -276,12 +331,30 @@ export default async function AdminPage() {
                   <td className="p-3 text-ink-400">
                     {ownerNameByBusiness.get(b.id) ?? "—"}
                   </td>
+                  <td className="p-3 text-ink-400">
+                    {formatMemberSince(b.created_at)}
+                  </td>
                   <td className="p-3">
                     <span
                       className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusBadgeClasses[b.subscriptionStatus]}`}
                     >
                       {subscriptionStatusLabels[b.subscriptionStatus]}
                     </span>
+                  </td>
+                  <td className="p-3">
+                    <SalesAssignmentSelect
+                      businessId={b.id}
+                      salesReps={(salesReps ?? []) as SalesRep[]}
+                      assignedSalesRepId={salesRepByBusiness.get(b.id) ?? null}
+                    />
+                  </td>
+                  <td className="p-3">
+                    <Link
+                      href={`/admin/impersonate/${b.id}`}
+                      className="text-xs font-bold text-kino-600 hover:underline dark:text-kino-300"
+                    >
+                      Voir en tant que →
+                    </Link>
                   </td>
                 </tr>
               ))}
@@ -294,14 +367,133 @@ export default async function AdminPage() {
                     {ownerNameByBusiness.get(b.id) ?? "—"}
                   </td>
                   <td className="p-3 text-ink-400">
+                    {formatMemberSince(b.created_at)}
+                  </td>
+                  <td className="p-3 text-ink-400">
                     {statusLabels[b.signup_status]}
                   </td>
+                  <td className="p-3">
+                    <SalesAssignmentSelect
+                      businessId={b.id}
+                      salesReps={(salesReps ?? []) as SalesRep[]}
+                      assignedSalesRepId={salesRepByBusiness.get(b.id) ?? null}
+                    />
+                  </td>
+                  <td className="p-3"></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </section>
+    </div>
+  );
+}
+
+/**
+ * Vue commercial : voit TOUS les salons (lecture seule, sans les réglages
+ * de plateforme réservés au super admin), mais ne peut entrer en mode
+ * "voir en tant que" que sur les salons qui lui sont assignés — décision
+ * produit explicite (voir discussion), jamais l'inverse.
+ */
+async function SalesOverview({ salesProfileId }: { salesProfileId: string }) {
+  const supabase = await createClient();
+
+  const { data: businesses } = await supabase
+    .from("businesses")
+    .select("id, name, signup_status, subscription_paid_until, is_test, created_at")
+    .neq("signup_status", "pending_approval")
+    .order("created_at", { ascending: false });
+
+  const ownerNameByBusiness = await resolveOwnerNames(
+    supabase,
+    (businesses ?? []).map((b) => b.id)
+  );
+
+  const { data: myAssignments } = await supabase
+    .from("business_sales_reps")
+    .select("business_id")
+    .eq("profile_id", salesProfileId);
+  const myBusinessIds = new Set((myAssignments ?? []).map((a) => a.business_id));
+
+  return (
+    <div className="mx-auto w-full max-w-3xl px-4 py-10">
+      <h1 className="mb-6 font-serif text-2xl text-ink-900 dark:text-paper">
+        Tous les établissements
+      </h1>
+      <p className="mb-6 text-sm text-ink-400">
+        Vous voyez tous les salons de la plateforme. Vous ne pouvez
+        administrer (« voir en tant que ») que ceux qui vous sont assignés.
+      </p>
+      <div className="overflow-x-auto rounded-2xl border border-ink-900/10 dark:border-paper/10">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-kino-50/60 text-xs font-bold uppercase tracking-widest text-ink-400 dark:bg-ink-900">
+            <tr>
+              <th className="p-3">Établissement</th>
+              <th className="p-3">Gérant</th>
+              <th className="p-3">Membre depuis</th>
+              <th className="p-3">Statut</th>
+              <th className="p-3"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-ink-900/8 dark:divide-paper/8">
+            {(businesses ?? []).length === 0 && (
+              <tr>
+                <td colSpan={5} className="p-4 text-center text-ink-400">
+                  Aucun établissement.
+                </td>
+              </tr>
+            )}
+            {(businesses ?? []).map((b) => {
+              const subscriptionStatus =
+                b.signup_status === "approved"
+                  ? getSubscriptionStatus(b.subscription_paid_until)
+                  : null;
+              const mine = myBusinessIds.has(b.id);
+              return (
+                <tr key={b.id}>
+                  <td className="p-3 font-medium text-ink-900 dark:text-paper">
+                    {b.name} {b.is_test && <TestBadge />}
+                  </td>
+                  <td className="p-3 text-ink-400">
+                    {ownerNameByBusiness.get(b.id) ?? "—"}
+                  </td>
+                  <td className="p-3 text-ink-400">
+                    {formatMemberSince(b.created_at)}
+                  </td>
+                  <td className="p-3">
+                    {subscriptionStatus ? (
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusBadgeClasses[subscriptionStatus]}`}
+                      >
+                        {subscriptionStatusLabels[subscriptionStatus]}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-ink-400">
+                        {statusLabels[b.signup_status]}
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-3">
+                    {mine && canImpersonate(b.signup_status) ? (
+                      <Link
+                        href={`/admin/impersonate/${b.id}`}
+                        className="text-xs font-bold text-kino-600 hover:underline dark:text-kino-300"
+                      >
+                        Voir en tant que →
+                      </Link>
+                    ) : (
+                      <span className="text-xs text-ink-400">
+                        {mine ? "Pas encore accessible" : "Non assigné"}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

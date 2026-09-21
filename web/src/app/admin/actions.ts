@@ -193,3 +193,31 @@ export async function updatePlatformPaymentSettings(formData: FormData) {
 
   revalidatePath("/admin");
 }
+
+/**
+ * Assignation salon <-> commercial (décision produit : uniquement le super
+ * admin, jamais à l'inscription ni par le commercial lui-même — un seul
+ * commercial assigné par salon suffit pour l'instant). "" désassigne.
+ */
+export async function assignSalesRep(formData: FormData) {
+  const admin = await requirePlatformAdmin();
+  if (!admin) return;
+
+  const businessId = formData.get("business_id");
+  const salesProfileId = formData.get("sales_profile_id");
+  if (typeof businessId !== "string") return;
+
+  const supabase = await createClient();
+  await supabase
+    .from("business_sales_reps")
+    .delete()
+    .eq("business_id", businessId);
+
+  if (typeof salesProfileId === "string" && salesProfileId) {
+    await supabase
+      .from("business_sales_reps")
+      .insert({ business_id: businessId, profile_id: salesProfileId });
+  }
+
+  revalidatePath("/admin");
+}
