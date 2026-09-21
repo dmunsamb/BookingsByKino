@@ -47,6 +47,17 @@ const statusLabels: Record<string, string> = {
   geannuleerd: "Annulée",
 };
 
+// Provenance d'une entrée d'agenda (agenda_entries.source) — d'où vient la
+// réservation : le client lui-même, une saisie manuelle du gérant/staff,
+// ou la file d'attente sans rendez-vous. "blokkering" n'est pas une vraie
+// réservation (créneau bloqué) et n'entre pas dans la répartition.
+const SOURCE_LABELS: Record<string, string> = {
+  klant_app: "Réservé en ligne",
+  manueel: "Ajout manuel",
+  walk_in: "File d'attente",
+  blokkering: "Blocage de créneau",
+};
+
 type WeekEntry = {
   id: string;
   service_id: string | null;
@@ -179,7 +190,7 @@ export default async function GerantRapportsPage({
   let entriesQuery = supabase
     .from("agenda_entries_for_dashboard")
     .select(
-      "id, service_id, client_name, client_phone_display, start_time, status, reference_number, staff_name"
+      "id, service_id, client_name, client_phone_display, start_time, status, source, reference_number, staff_name"
     )
     .eq("business_id", profile.business_id)
     .gte("start_time", start)
@@ -303,6 +314,19 @@ export default async function GerantRapportsPage({
       const service = e.service_id ? serviceById.get(e.service_id) : undefined;
       return sum + (service?.price_usd ?? 0);
     }, 0);
+
+  const sourceCounts = new Map<string, number>();
+  for (const e of allEntries) {
+    if (e.source === "blokkering") continue;
+    sourceCounts.set(e.source, (sourceCounts.get(e.source) ?? 0) + 1);
+  }
+  const sourceBreakdown = Array.from(sourceCounts.entries())
+    .map(([source, count]) => ({
+      source,
+      count,
+      label: SOURCE_LABELS[source] ?? source,
+    }))
+    .sort((a, b) => b.count - a.count);
 
   const exportParams = new URLSearchParams({ type, [type]: value });
   if (staffFilter) {
@@ -531,6 +555,36 @@ export default async function GerantRapportsPage({
         </div>
       </div>
 
+      {sourceBreakdown.length > 0 && (
+        <div className="mb-6 rounded-2xl border border-ink-900/10 bg-white p-5 dark:border-paper/10 dark:bg-ink-800">
+          <p className="mb-3 text-sm font-bold text-ink-900 dark:text-paper">
+            Provenance des réservations — {periodLabel(type, value)}
+          </p>
+          <div className="flex flex-col gap-3">
+            {sourceBreakdown.map((s) => {
+              const maxCount = sourceBreakdown[0]?.count || 1;
+              const widthPct = Math.round((s.count / maxCount) * 100);
+              return (
+                <div key={s.source} className="flex flex-col gap-1.5">
+                  <div className="flex items-baseline justify-between text-sm">
+                    <span className="font-bold text-ink-900 dark:text-paper">
+                      {s.label}
+                    </span>
+                    <span className="text-ink-400">{s.count}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded bg-ink-900/8 dark:bg-paper/10">
+                    <div
+                      className="h-full bg-kino-400"
+                      style={{ width: `${widthPct}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="overflow-x-auto rounded-2xl border border-ink-900/10 dark:border-paper/10">
         <table className="w-full text-left text-sm">
           <thead className="bg-kino-50/60 text-xs font-bold uppercase tracking-widest text-ink-400 dark:bg-ink-900">
@@ -541,13 +595,14 @@ export default async function GerantRapportsPage({
               <th className="p-3">Membre</th>
               <th className="p-3">Montant</th>
               <th className="p-3">Statut</th>
+              <th className="p-3">Provenance</th>
               <th className="p-3">Réf.</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-ink-900/8 dark:divide-paper/8">
             {allEntries.length === 0 && (
               <tr>
-                <td colSpan={7} className="p-4 text-center text-ink-400">
+                <td colSpan={8} className="p-4 text-center text-ink-400">
                   Aucune réservation pour cette période.
                 </td>
               </tr>
@@ -584,6 +639,9 @@ export default async function GerantRapportsPage({
                   </td>
                   <td className="p-3 text-ink-400">
                     {statusLabels[e.status] ?? e.status}
+                  </td>
+                  <td className="p-3 text-ink-400">
+                    {SOURCE_LABELS[e.source] ?? e.source}
                   </td>
                   <td className="p-3 text-ink-400">
                     {formatBookingReference(e.reference_number)}

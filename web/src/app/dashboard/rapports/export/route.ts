@@ -23,6 +23,14 @@ const statusLabels: Record<string, string> = {
   geannuleerd: "Annulée",
 };
 
+// Voir dashboard/rapports/page.tsx — même mapping pour la provenance.
+const sourceLabels: Record<string, string> = {
+  klant_app: "Réservé en ligne",
+  manueel: "Ajout manuel",
+  walk_in: "File d'attente",
+  blokkering: "Blocage de créneau",
+};
+
 /** Échappe une valeur pour une cellule CSV (RFC 4180 : guillemets doublés). */
 function csvCell(value: string | number): string {
   const str = String(value);
@@ -73,7 +81,7 @@ export async function GET(request: NextRequest) {
   let entriesQuery = supabase
     .from("agenda_entries_for_dashboard")
     .select(
-      "service_id, client_name, client_phone_display, start_time, status, reference_number, staff_name"
+      "service_id, client_name, client_phone_display, start_time, status, source, reference_number, staff_name"
     )
     .eq("business_id", profile.business_id)
     .gte("start_time", start)
@@ -105,6 +113,7 @@ export async function GET(request: NextRequest) {
     "Membre",
     "Montant (USD)",
     "Statut",
+    "Provenance",
     "Référence",
   ]
     .map(csvCell)
@@ -123,6 +132,7 @@ export async function GET(request: NextRequest) {
       csvCell(e.staff_name ?? ""),
       csvCell(service ? service.price_usd.toFixed(2) : ""),
       csvCell(statusLabels[e.status] ?? e.status),
+      csvCell(sourceLabels[e.source] ?? e.source),
       csvCell(formatBookingReference(e.reference_number)),
     ].join(",");
   });
