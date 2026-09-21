@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { CreateSalesRepForm } from "./create-sales-rep-form";
+import { ResetPasswordButton } from "./reset-password-button";
 import { deleteSalesRep } from "./actions";
 
 function formatMemberSince(createdAt: string): string {
@@ -68,12 +69,13 @@ export async function SalesTeamSection() {
               <th className="p-3">Membre depuis</th>
               <th className="p-3">Salons assignés</th>
               <th className="p-3"></th>
+              <th className="p-3"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-ink-900/8 dark:divide-paper/8">
             {(salesReps ?? []).length === 0 && (
               <tr>
-                <td colSpan={5} className="p-4 text-center text-ink-400">
+                <td colSpan={6} className="p-4 text-center text-ink-400">
                   Aucun commercial pour l&apos;instant.
                 </td>
               </tr>
@@ -91,6 +93,9 @@ export async function SalesTeamSection() {
                 </td>
                 <td className="p-3 text-ink-400">
                   {assignedCountByProfile.get(s.id) ?? 0}
+                </td>
+                <td className="p-3">
+                  <ResetPasswordButton userId={s.id} />
                 </td>
                 <td className="p-3">
                   <form action={deleteSalesRep}>

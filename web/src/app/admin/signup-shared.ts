@@ -7,17 +7,20 @@ type Supabase = Awaited<ReturnType<typeof createClient>>;
 const DURATION_MONTHS = [1, 3, 12] as const;
 export type DurationMonths = (typeof DURATION_MONTHS)[number];
 
+export type OwnerProfile = { id: string; full_name: string | null };
+
 /**
- * Nom du gérant d'un établissement, via business_owners (pas
+ * Gérant d'un établissement (id + nom), via business_owners (pas
  * profiles.business_id directement) : un gérant de plusieurs salons n'a
  * qu'un seul business_id "actif" à la fois — ses autres établissements ne
- * s'y retrouveraient pas sinon (voir migration 0021). Partagé entre
- * PendingSignupsSection et AwaitingPaymentSection.
+ * s'y retrouveraient pas sinon (voir migration 0021). L'id sert par
+ * exemple à réinitialiser son mot de passe depuis /admin (voir
+ * reset-password-button.tsx).
  */
-export async function resolveOwnerNames(
+export async function resolveOwnerProfiles(
   supabase: Supabase,
   businessIds: string[]
-): Promise<Map<string, string | null>> {
+): Promise<Map<string, OwnerProfile>> {
   const { data: ownerLinks } = businessIds.length
     ? await supabase
         .from("business_owners")
@@ -35,13 +38,29 @@ export async function resolveOwnerNames(
         .in("id", ownerProfileIds)
     : { data: [] };
 
-  const nameByProfileId = new Map(
-    (ownerProfiles ?? []).map((p) => [p.id, p.full_name])
+  const profileById = new Map(
+    (ownerProfiles ?? []).map((p) => [p.id, p as OwnerProfile])
   );
   return new Map(
-    (ownerLinks ?? []).map((l) => [
-      l.business_id,
-      nameByProfileId.get(l.profile_id) ?? null,
+    (ownerLinks ?? [])
+      .map((l): [string, OwnerProfile] | null => {
+        const profile = profileById.get(l.profile_id);
+        return profile ? [l.business_id, profile] : null;
+      })
+      .filter((entry): entry is [string, OwnerProfile] => entry !== null)
+  );
+}
+
+/** Variante ne renvoyant que le nom — partagée entre PendingSignupsSection et AwaitingPaymentSection. */
+export async function resolveOwnerNames(
+  supabase: Supabase,
+  businessIds: string[]
+): Promise<Map<string, string | null>> {
+  const ownerProfiles = await resolveOwnerProfiles(supabase, businessIds);
+  return new Map(
+    Array.from(ownerProfiles.entries()).map(([businessId, p]) => [
+      businessId,
+      p.full_name,
     ])
   );
 }

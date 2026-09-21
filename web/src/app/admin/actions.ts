@@ -323,3 +323,40 @@ export async function deleteSalesRep(formData: FormData) {
 
   revalidatePath("/admin");
 }
+
+export type ResetPasswordState = {
+  error?: string;
+  newPassword?: string;
+};
+
+/**
+ * Réinitialise le mot de passe d'un compte (gérant OU commercial) —
+ * décision produit : seul le super admin peut le faire, jamais le
+ * gérant/personnel/commercial lui-même en libre-service (pas de flux
+ * "mot de passe oublié" par email sur ce projet, voir discussion). Le
+ * nouveau mot de passe est affiché une seule fois : à transmettre par
+ * WhatsApp, exactement comme pour la création d'un commercial.
+ */
+export async function resetUserPassword(
+  _prevState: ResetPasswordState,
+  formData: FormData
+): Promise<ResetPasswordState> {
+  const admin = await requirePlatformAdmin();
+  if (!admin) return { error: "Accès réservé à l'équipe KinoBooking." };
+
+  const id = formData.get("id");
+  if (typeof id !== "string") return { error: "Compte introuvable." };
+
+  const adminClient = createAdminClient();
+  const password = generateTempPassword();
+
+  const { error } = await adminClient.auth.admin.updateUserById(id, {
+    password,
+  });
+
+  if (error) {
+    return { error: "Une erreur est survenue. Merci de réessayer." };
+  }
+
+  return { newPassword: password };
+}

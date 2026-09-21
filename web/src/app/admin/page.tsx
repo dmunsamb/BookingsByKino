@@ -14,10 +14,11 @@ import {
 } from "./platform-payment-settings-form";
 import { PendingSignupsSection } from "./pending-signups-section";
 import { AwaitingPaymentSection } from "./awaiting-payment-section";
-import { fetchPriceByDuration, resolveOwnerNames } from "./signup-shared";
+import { fetchPriceByDuration, resolveOwnerNames, resolveOwnerProfiles } from "./signup-shared";
 import { TestBadge } from "./test-badge";
 import { SalesAssignmentSelect, type SalesRep } from "./sales-assignment-select";
 import { SalesTeamSection } from "./sales-team-section";
+import { ResetPasswordButton } from "./reset-password-button";
 import Link from "next/link";
 
 const statusLabels: Record<string, string> = {
@@ -94,9 +95,15 @@ export default async function AdminPage() {
     contactWhatsapp: paymentSettingsRow?.contact_whatsapp ?? "",
   };
 
-  const ownerNameByBusiness = await resolveOwnerNames(
+  const ownerProfileByBusiness = await resolveOwnerProfiles(
     supabase,
     (businesses ?? []).map((b) => b.id)
+  );
+  const ownerNameByBusiness = new Map(
+    Array.from(ownerProfileByBusiness.entries()).map(([id, p]) => [
+      id,
+      p.full_name,
+    ])
   );
 
   const { data: salesReps } = await supabase
@@ -283,6 +290,7 @@ export default async function AdminPage() {
                 <th className="p-3">Statut</th>
                 <th className="p-3">Commercial</th>
                 <th className="p-3"></th>
+                <th className="p-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-ink-900/8 dark:divide-paper/8">
@@ -290,7 +298,7 @@ export default async function AdminPage() {
                 rejected.length === 0 &&
                 awaitingPayment.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="p-4 text-center text-ink-400">
+                    <td colSpan={7} className="p-4 text-center text-ink-400">
                       Aucun autre établissement.
                     </td>
                   </tr>
@@ -315,6 +323,13 @@ export default async function AdminPage() {
                       salesReps={(salesReps ?? []) as SalesRep[]}
                       assignedSalesRepId={salesRepByBusiness.get(b.id) ?? null}
                     />
+                  </td>
+                  <td className="p-3">
+                    {ownerProfileByBusiness.get(b.id) && (
+                      <ResetPasswordButton
+                        userId={ownerProfileByBusiness.get(b.id)!.id}
+                      />
+                    )}
                   </td>
                   <td className="p-3">
                     <Link
@@ -352,6 +367,13 @@ export default async function AdminPage() {
                     />
                   </td>
                   <td className="p-3">
+                    {ownerProfileByBusiness.get(b.id) && (
+                      <ResetPasswordButton
+                        userId={ownerProfileByBusiness.get(b.id)!.id}
+                      />
+                    )}
+                  </td>
+                  <td className="p-3">
                     <Link
                       href={`/admin/impersonate/${b.id}`}
                       className="text-xs font-bold text-kino-600 hover:underline dark:text-kino-300"
@@ -381,6 +403,13 @@ export default async function AdminPage() {
                       salesReps={(salesReps ?? []) as SalesRep[]}
                       assignedSalesRepId={salesRepByBusiness.get(b.id) ?? null}
                     />
+                  </td>
+                  <td className="p-3">
+                    {ownerProfileByBusiness.get(b.id) && (
+                      <ResetPasswordButton
+                        userId={ownerProfileByBusiness.get(b.id)!.id}
+                      />
+                    )}
                   </td>
                   <td className="p-3"></td>
                 </tr>
