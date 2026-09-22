@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { ReactNode } from "react";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -163,11 +164,11 @@ export default async function BusinessPage({
               <div>
                 <div className="mb-2 flex gap-3">
                   {s.photo_url && (
-                    // eslint-disable-next-line @next/next/no-img-element -- URL de stockage externe
-                    <img
+                    <Image
                       src={s.photo_url}
                       alt=""
-                      loading="lazy"
+                      width={56}
+                      height={56}
                       className="h-14 w-14 flex-none rounded-lg object-cover"
                     />
                   )}

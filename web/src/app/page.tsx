@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { KinoBookingLockup } from "@/components/kino-booking-logo";
 
@@ -150,13 +151,15 @@ export default async function Home({
               className="overflow-hidden rounded-2xl border border-ink-900/10 bg-white shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
             >
               {coverPhoto && (
-                // eslint-disable-next-line @next/next/no-img-element -- URL de stockage externe
-                <img
-                  src={coverPhoto}
-                  alt=""
-                  loading="lazy"
-                  className="h-32 w-full object-cover"
-                />
+                <div className="relative h-32 w-full">
+                  <Image
+                    src={coverPhoto}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover"
+                  />
+                </div>
               )}
               <div className="p-4">
                 {b.categories && b.categories.length > 0 && (

@@ -1,7 +1,10 @@
+import Image from "next/image";
+
 /**
  * Galerie défilable (swipe gauche/droite) — pur CSS scroll-snap, sans
  * JavaScript : reste léger sur une connexion lente et fonctionne nativement
- * au doigt sur mobile.
+ * au doigt sur mobile. next/image (audit performance) : redimensionnement
+ * et conversion WebP/AVIF à la volée, important sur une connexion mobile.
  */
 export function PhotoGallery({ photos }: { photos: { id: string; url: string }[] }) {
   if (photos.length === 0) return null;
@@ -9,15 +12,20 @@ export function PhotoGallery({ photos }: { photos: { id: string; url: string }[]
   return (
     <div className="mb-6 -mx-4 sm:mx-0">
       <div className="flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-1 sm:rounded-2xl sm:px-0">
-        {photos.map((photo) => (
-          // eslint-disable-next-line @next/next/no-img-element -- URL de stockage externe
-          <img
+        {photos.map((photo, index) => (
+          <div
             key={photo.id}
-            src={photo.url}
-            alt=""
-            loading="lazy"
-            className="h-56 w-[85%] flex-none snap-center rounded-2xl object-cover sm:h-72 sm:w-full"
-          />
+            className="relative h-56 w-[85%] flex-none snap-center overflow-hidden rounded-2xl sm:h-72 sm:w-full"
+          >
+            <Image
+              src={photo.url}
+              alt=""
+              fill
+              sizes="(min-width: 640px) 672px, 85vw"
+              className="object-cover"
+              priority={index === 0}
+            />
+          </div>
         ))}
       </div>
       {photos.length > 1 && (

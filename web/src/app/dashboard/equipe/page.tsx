@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
@@ -84,11 +85,11 @@ export default async function EquipePage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
                 {s.photo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- URL de stockage externe
-                  <img
+                  <Image
                     src={s.photo_url}
                     alt={s.name}
-                    loading="lazy"
+                    width={40}
+                    height={40}
                     className="h-10 w-10 flex-none rounded-full object-cover"
                   />
                 ) : (

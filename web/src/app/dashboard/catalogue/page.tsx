@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
@@ -69,11 +70,11 @@ export default async function CataloguePage() {
             <div>
               <div className="mb-3 flex gap-3">
                 {service.photo_url && (
-                  // eslint-disable-next-line @next/next/no-img-element -- URL de stockage externe
-                  <img
+                  <Image
                     src={service.photo_url}
                     alt={service.name}
-                    loading="lazy"
+                    width={64}
+                    height={64}
                     className="h-16 w-16 flex-none rounded-xl object-cover"
                   />
                 )}

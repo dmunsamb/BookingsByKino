@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 export type SignupDetails = {
@@ -62,10 +63,11 @@ export function ViewSignupDialog({ details }: { details: SignupDetails }) {
             onClick={(e) => e.stopPropagation()}
           >
             {details.imageUrl && (
-              // eslint-disable-next-line @next/next/no-img-element -- URL de stockage externe
-              <img
+              <Image
                 src={details.imageUrl}
                 alt=""
+                width={96}
+                height={96}
                 className="mb-3 h-24 w-24 rounded-xl object-cover"
               />
             )}

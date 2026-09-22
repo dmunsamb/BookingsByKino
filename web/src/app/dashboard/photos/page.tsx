@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
@@ -70,12 +71,12 @@ export default async function PhotosPage() {
             className="overflow-hidden rounded-2xl border border-ink-900/10 bg-white dark:border-paper/10 dark:bg-ink-800"
           >
             <div className="relative aspect-square">
-              {/* eslint-disable-next-line @next/next/no-img-element -- URLs de stockage externes, pas d'optimisation next/image nécessaire ici */}
-              <img
+              <Image
                 src={photo.url}
                 alt="Photo du salon"
-                loading="lazy"
-                className="h-full w-full object-cover"
+                fill
+                sizes="(min-width: 640px) 33vw, 50vw"
+                className="object-cover"
               />
               {index === 0 && (
                 <span className="absolute left-2 top-2 rounded bg-ink-900/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-paper">

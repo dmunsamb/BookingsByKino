@@ -3,6 +3,25 @@ import { createAdminClient } from "./admin";
 import { MEDIA_BUCKET, MAX_PHOTO_SIZE_BYTES } from "@/lib/media";
 
 /**
+ * Types réellement acceptés, revérifiés ici — l'attribut `accept` du
+ * `<input type="file">` (voir lib/media.ts, ACCEPTED_PHOTO_TYPES) n'est
+ * qu'une suggestion pour le sélecteur de fichiers du navigateur, jamais
+ * une garantie : une requête forgée peut envoyer n'importe quel fichier
+ * sous n'importe quel Content-Type déclaré. Sans ce filtre, un SVG (qui
+ * peut embarquer du JavaScript) ou un fichier HTML uploadé avec un
+ * Content-Type falsifié se retrouverait servi tel quel depuis l'URL
+ * publique du bucket — un visiteur qui l'ouvrirait directement dans un
+ * nouvel onglet l'exécuterait dans le contexte du domaine de stockage
+ * (XSS stocké). L'extension du fichier stocké est dérivée de ce type
+ * validé, jamais du nom de fichier fourni par le client.
+ */
+const ALLOWED_PHOTO_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+/**
  * Upload d'une photo (galerie salon, prestation, membre d'équipe) — passe
  * toujours par le client admin (service-role), jamais directement depuis
  * le navigateur, même principe que le logo à l'inscription (voir
@@ -20,7 +39,9 @@ export async function uploadPhoto(
   if (!(file instanceof File) || file.size === 0) return null;
   if (file.size > MAX_PHOTO_SIZE_BYTES) return null;
 
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const ext = ALLOWED_PHOTO_TYPES[file.type];
+  if (!ext) return null;
+
   const path = `${pathPrefix}/${crypto.randomUUID()}.${ext}`;
 
   const admin = createAdminClient();
