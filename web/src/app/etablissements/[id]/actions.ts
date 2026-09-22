@@ -5,7 +5,6 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { localSlotToIso } from "@/lib/availability";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
-import { parseBookingReference } from "@/lib/booking-reference";
 
 /**
  * Soumission d'une demande de réservation "avec RDV" par le client
@@ -124,81 +123,6 @@ export async function createBookingRequest(
 // Le ticket "sans rendez-vous" a son propre module dédié, avec scan QR
 // obligatoire sur place : voir etablissements/[id]/file-attente/actions.ts.
 
-export type ReviewFormState = { error?: string; success?: boolean };
-
-const REVIEW_RATE_LIMIT_MAX = 5;
-const REVIEW_RATE_LIMIT_WINDOW_SECONDS = 60;
-
-/**
- * Avis client (note + commentaire), vérifié via le numéro de suivi ET le
- * numéro de téléphone de la réservation (voir submit_business_review,
- * migration 0037) — sans compte client, c'est la seule preuve qu'on a
- * affaire à quelqu'un réellement servi. Rate-limité comme les autres
- * formulaires publics : un numéro de suivi seul étant court et
- * séquentiel, il ne faut pas laisser deviner des combinaisons en boucle.
- */
-export async function submitReview(
-  _prevState: ReviewFormState,
-  formData: FormData
-): Promise<ReviewFormState> {
-  const ip = getClientIp(await headers());
-  const allowed = await checkRateLimit(
-    `review:${ip}`,
-    REVIEW_RATE_LIMIT_MAX,
-    REVIEW_RATE_LIMIT_WINDOW_SECONDS
-  );
-  if (!allowed) {
-    return {
-      error: "Trop de tentatives. Merci de réessayer dans une minute.",
-    };
-  }
-
-  const referenceRaw = formData.get("reference_number");
-  const clientPhone = formData.get("client_phone");
-  const ratingRaw = formData.get("rating");
-  const commentRaw = formData.get("comment");
-
-  const referenceNumber =
-    typeof referenceRaw === "string" ? parseBookingReference(referenceRaw) : null;
-  const rating = Number(ratingRaw);
-
-  if (
-    referenceNumber == null ||
-    typeof clientPhone !== "string" ||
-    !clientPhone.trim() ||
-    !Number.isInteger(rating) ||
-    rating < 1 ||
-    rating > 5
-  ) {
-    return {
-      error:
-        "Veuillez indiquer un numéro de suivi valide, le numéro utilisé pour la réservation, et une note.",
-    };
-  }
-
-  const comment = typeof commentRaw === "string" ? commentRaw.trim() : "";
-  if (comment.length > 500) {
-    return { error: "Le commentaire ne peut pas dépasser 500 caractères." };
-  }
-
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .rpc("submit_business_review", {
-      p_reference_number: referenceNumber,
-      p_client_phone: clientPhone.trim(),
-      p_rating: rating,
-      p_comment: comment || null,
-    })
-    .single();
-
-  if (error || !data) {
-    return { error: "Une erreur est survenue. Merci de réessayer." };
-  }
-
-  const result = data as { ok: boolean; message: string };
-  if (!result.ok) {
-    return { error: result.message };
-  }
-
-  return { success: true };
-}
+// Les avis clients ne se publient plus depuis un formulaire public ici :
+// voir /avis/[token]/actions.ts (lien à usage unique envoyé par le gérant
+// après le service).

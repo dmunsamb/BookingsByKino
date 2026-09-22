@@ -17,13 +17,32 @@ function formatRange(h: BusinessHour): string {
   return `${h.start_time.slice(0, 5)} - ${h.end_time.slice(0, 5)}`;
 }
 
+function todayWeekdayKinshasa(): number {
+  return new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Africa/Kinshasa" })
+  ).getDay();
+}
+
+/**
+ * Résumé d'une ligne ("Aujourd'hui : 9h00 - 18h00" / "Fermé aujourd'hui"),
+ * affiché juste sous l'adresse en tête de fiche — renvoie `null` si aucun
+ * horaire n'est configuré, pour ne rien afficher plutôt qu'une ligne vide.
+ */
+export function todaysHoursLabel(hours: BusinessHour[]): string | null {
+  if (hours.length === 0) return null;
+  const ranges = hours
+    .filter((h) => h.weekday === todayWeekdayKinshasa())
+    .map(formatRange);
+  return ranges.length > 0
+    ? `Aujourd'hui : ${ranges.join(", ")}`
+    : "Fermé aujourd'hui";
+}
+
 /** Heures d'ouverture du salon, sur la fiche établissement publique. */
 export function OpeningHours({ hours }: { hours: BusinessHour[] }) {
   if (hours.length === 0) return null;
 
-  const todayWeekday = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Africa/Kinshasa" })
-  ).getDay();
+  const todayWeekday = todayWeekdayKinshasa();
 
   return (
     <div className="mb-6 rounded-2xl border border-ink-900/10 bg-white p-4 dark:border-paper/10 dark:bg-ink-800">

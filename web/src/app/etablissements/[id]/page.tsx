@@ -12,18 +12,17 @@ import {
 } from "@/lib/availability";
 import { BookingForm } from "./booking-form";
 import { PhotoGallery } from "./photo-gallery";
-import { OpeningHours } from "./opening-hours";
-import { ReviewsSection } from "./reviews-section";
+import { OpeningHours, todaysHoursLabel } from "./opening-hours";
+import { ReviewsSection, Stars, averageRating } from "./reviews-section";
 import { formatBookingReference } from "@/lib/booking-reference";
 import { getSubscriptionStatus } from "@/lib/subscription";
 import { formatCdf } from "@/lib/currency";
 
-type Tab = "apercu" | "services" | "avis";
-const TABS: { key: Tab; label: string }[] = [
-  { key: "apercu", label: "Aperçu" },
-  { key: "services", label: "Services" },
-  { key: "avis", label: "Avis" },
-];
+const NAV_SECTIONS = [
+  { anchor: "services", label: "Services" },
+  { anchor: "horaires", label: "Horaires" },
+  { anchor: "avis", label: "Avis" },
+] as const;
 
 export default async function BusinessPage({
   params,
@@ -35,7 +34,6 @@ export default async function BusinessPage({
     service?: string;
     confirmed?: string;
     ref?: string;
-    tab?: string;
   }>;
 }) {
   const { id } = await params;
@@ -44,7 +42,6 @@ export default async function BusinessPage({
     service: serviceIdParam,
     confirmed,
     ref,
-    tab: tabParam,
   } = await searchParams;
   const minDate = minBookableDateIso();
   // Une date explicitement choisie par la cliente (navigation dans le
@@ -117,17 +114,6 @@ export default async function BusinessPage({
     ? services?.find((s) => s.id === serviceIdParam)
     : undefined;
 
-  // Onglets façon Setmore (Aperçu / Services / Avis) — même page, juste
-  // l'URL qui change (?tab=...) : un lien partageable/rechargeable plutôt
-  // qu'un état client qui se perdrait au rafraîchissement. Choisir un
-  // service force l'onglet "Services", quel que soit ?tab= reçu, puisque
-  // c'est là que vit le formulaire de réservation.
-  const activeTab: Tab = selectedService
-    ? "services"
-    : tabParam === "avis" || tabParam === "services"
-      ? tabParam
-      : "apercu";
-
   let bookingSection: ReactNode = null;
 
   if (isInactive) {
@@ -158,7 +144,7 @@ export default async function BusinessPage({
           {services?.map((s) => (
             <Link
               key={s.id}
-              href={`/etablissements/${id}?service=${s.id}`}
+              href={`/etablissements/${id}?service=${s.id}#services`}
               className="flex flex-col justify-between rounded-xl border border-ink-900/10 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
             >
               <div>
@@ -264,13 +250,14 @@ export default async function BusinessPage({
     );
   }
 
+  const reviewCount = reviews?.length ?? 0;
+  const hoursToday = !isInactive ? todaysHoursLabel(businessHours ?? []) : null;
+
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10">
       <Link
         href={
-          selectedService
-            ? `/etablissements/${id}?tab=services`
-            : "/"
+          selectedService ? `/etablissements/${id}#services` : "/"
         }
         className="mb-4 inline-block text-xs font-bold text-ink-400 hover:underline"
       >
@@ -279,20 +266,42 @@ export default async function BusinessPage({
 
       <PhotoGallery photos={photos ?? []} />
 
-      <h1 className="font-serif text-2xl text-ink-900 dark:text-paper">
-        {business.name}
-      </h1>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <h1 className="font-serif text-2xl text-ink-900 dark:text-paper">
+          {business.name}
+        </h1>
+        {!isInactive && reviewCount > 0 && (
+          <a
+            href="#avis"
+            className="flex items-center gap-1.5 text-xs hover:underline"
+          >
+            <Stars rating={Math.round(averageRating(reviews ?? []))} size={14} />
+            <span className="font-bold text-ink-900 dark:text-paper">
+              {averageRating(reviews ?? []).toFixed(1)}
+            </span>
+            <span className="text-ink-400">({reviewCount} avis)</span>
+          </a>
+        )}
+      </div>
       {!isInactive && (business.address || business.commune || business.city) && (
-        <p className="mb-4 text-sm text-ink-400">
+        <p className="mt-1 text-sm text-ink-400">
           {[business.address, business.commune, business.city]
             .filter(Boolean)
             .join(", ")}
         </p>
       )}
+      {hoursToday && (
+        <a
+          href="#horaires"
+          className="mt-1 inline-block text-xs font-bold text-kino-600 hover:underline dark:text-kino-300"
+        >
+          {hoursToday}
+        </a>
+      )}
       {isInactive && <div className="mb-4" />}
 
       {confirmed && (
-        <div className="mb-6 rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-ink-900 dark:text-paper">
+        <div className="mb-6 mt-4 rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-ink-900 dark:text-paper">
           <p className="font-bold">
             Demande envoyée avec succès ! L&apos;établissement va valider la
             disponibilité.
@@ -317,52 +326,47 @@ export default async function BusinessPage({
 
       {!isInactive && (
         <>
-          {/* Onglets sur la même page (?tab=...), inspirés d'une page de
-              réservation Setmore : une navigation qui ressemble à des
-              pages séparées, mais reste un seul chargement — voir plus
-              haut, activeTab. */}
-          <div className="mb-6 flex gap-2 border-b border-ink-900/10 pb-3 dark:border-paper/10">
-            {TABS.map((t) => (
-              <Link
-                key={t.key}
-                href={`/etablissements/${id}?tab=${t.key}`}
-                className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
-                  activeTab === t.key
-                    ? "bg-kino-400 text-ink-900"
-                    : "text-ink-400 hover:bg-ink-900/5 dark:hover:bg-paper/10"
-                }`}
+          {/* Menu d'ancres façon Setmore : liens internes (#section) vers
+              plus bas sur CETTE MÊME page, plutôt que des onglets qui
+              changeraient de vue — tout reste visible d'un seul chargement,
+              un seul défilement. */}
+          <div className="mb-6 mt-6 flex gap-2 border-b border-ink-900/10 pb-3 dark:border-paper/10">
+            {NAV_SECTIONS.map((s) => (
+              <a
+                key={s.anchor}
+                href={`#${s.anchor}`}
+                className="rounded-xl px-3 py-1.5 text-xs font-bold text-ink-400 transition hover:bg-ink-900/5 dark:hover:bg-paper/10"
               >
-                {t.label}
-              </Link>
+                {s.label}
+              </a>
             ))}
           </div>
 
-          {activeTab === "apercu" && (
-            <>
-              {business.description && (
-                <p className="mb-6 text-sm leading-relaxed text-ink-900 dark:text-paper">
-                  {business.description}
-                </p>
-              )}
-              <OpeningHours hours={businessHours ?? []} />
-            </>
+          {business.description && (
+            <p className="mb-6 text-sm leading-relaxed text-ink-900 dark:text-paper">
+              {business.description}
+            </p>
           )}
 
-          {activeTab === "avis" && <ReviewsSection reviews={reviews ?? []} />}
+          <section id="services" className="scroll-mt-4">
+            {!selectedService && (
+              <Link
+                href={`/etablissements/${id}/file-attente`}
+                className="mb-6 block rounded-xl border border-kino-200 bg-kino-50 p-4 text-sm font-bold text-ink-900 transition hover:shadow-md dark:border-kino-800 dark:bg-ink-800 dark:text-paper"
+              >
+                File d&apos;attente sans rendez-vous →
+              </Link>
+            )}
+            {bookingSection}
+          </section>
 
-          {activeTab === "services" && (
-            <>
-              {!selectedService && (
-                <Link
-                  href={`/etablissements/${id}/file-attente`}
-                  className="mb-6 block rounded-xl border border-kino-200 bg-kino-50 p-4 text-sm font-bold text-ink-900 transition hover:shadow-md dark:border-kino-800 dark:bg-ink-800 dark:text-paper"
-                >
-                  File d&apos;attente sans rendez-vous →
-                </Link>
-              )}
-              {bookingSection}
-            </>
-          )}
+          <section id="horaires" className="scroll-mt-4">
+            <OpeningHours hours={businessHours ?? []} />
+          </section>
+
+          <section id="avis" className="scroll-mt-4">
+            <ReviewsSection reviews={reviews ?? []} />
+          </section>
         </>
       )}
 
