@@ -141,6 +141,37 @@ export function currentSlotStart(
   };
 }
 
+export type BusinessHour = {
+  weekday: number;
+  start_time: string;
+  end_time: string;
+};
+
+/**
+ * Le salon est-il ouvert maintenant selon ses heures d'ouverture
+ * déclarées (business_hours, "Mon établissement") ? Utilisé pour ne
+ * proposer la file d'attente sans rendez-vous aux visiteurs que pendant
+ * ces heures (US demandée). Sans heures déclarées du tout, on ne
+ * restreint rien plutôt que de masquer la file à tort pour un salon qui
+ * n'a pas encore rempli cette section — distinct de currentSlotStart
+ * ci-dessus, qui porte sur les créneaux de réservation (availability_rules),
+ * un découpage plus fin que les heures d'ouverture générales.
+ */
+export function isBusinessOpenNow(hours: BusinessHour[]): boolean {
+  if (hours.length === 0) return true;
+
+  const now = kinshasaNow();
+  const weekday = now.getDay();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+  return hours.some(
+    (h) =>
+      h.weekday === weekday &&
+      nowMinutes >= timeToMinutes(h.start_time) &&
+      nowMinutes < timeToMinutes(h.end_time)
+  );
+}
+
 /**
  * Débuts de créneaux (en minutes depuis minuit), alignés sur la grille
  * d'une règle de disponibilité, à l'intérieur de la plage

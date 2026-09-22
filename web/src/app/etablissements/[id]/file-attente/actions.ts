@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { isBusinessOpenNow } from "@/lib/availability";
 
 /**
  * Rejoindre la file d'attente sans rendez-vous (US-C4 étendu). Le geste
@@ -84,6 +85,20 @@ export async function joinWalkinQueue(
   if (!business.walkin_queue_open) {
     return {
       error: "La file d'attente sans rendez-vous est fermée pour le moment.",
+    };
+  }
+
+  // Défense en profondeur : la page ne propose déjà le formulaire que
+  // pendant les heures d'ouverture déclarées (voir page.tsx), mais un
+  // envoi direct de la requête ne doit pas pouvoir contourner cette règle.
+  const { data: businessHours } = await supabase
+    .from("business_hours")
+    .select("weekday, start_time, end_time")
+    .eq("business_id", businessId);
+  if (!isBusinessOpenNow(businessHours ?? [])) {
+    return {
+      error:
+        "La file d'attente sans rendez-vous n'est accessible que pendant les heures d'ouverture du salon.",
     };
   }
 
