@@ -13,6 +13,8 @@ import { formatCdf } from "@/lib/currency";
 import { logout, updateBookingStatus } from "./actions";
 import { ValidateWithWhatsAppButton } from "./validate-with-whatsapp-button";
 import { ConfirmPaymentWithWhatsAppButton } from "./confirm-payment-with-whatsapp-button";
+import { ThankYouWhatsAppButton } from "./thank-you-whatsapp-button";
+import { getSiteOrigin } from "@/lib/site-url";
 import {
   buildWhatsAppLink,
   formatMobileMoneyAccounts,
@@ -49,6 +51,7 @@ type BookingRow = {
   reference_number: number;
   staff_name: string | null;
   client_note?: string | null;
+  review_token?: string;
 };
 
 type QueueRow = BookingRow & {
@@ -93,6 +96,21 @@ function buildQueueNotifyMessage(aheadCount: number, businessName: string): stri
   const word = aheadCount === 1 ? "personne" : "personnes";
   const numberWord = AHEAD_COUNT_WORDS[aheadCount] ?? String(aheadCount);
   return `Bonjour, il y a encore ${numberWord} ${word} devant vous chez ${businessName}.`;
+}
+
+/**
+ * Message de remerciement envoyé au clic sur "Service rendu", avec le lien
+ * d'avis à usage unique (voir /avis/[token]) — remplace l'ancien formulaire
+ * public "Laisser un avis" : seul ce lien, transmis directement par le
+ * gérant après le service, permet de noter l'établissement.
+ */
+function buildThankYouMessage(
+  clientName: string | null,
+  serviceName: string,
+  businessName: string,
+  reviewUrl: string
+): string {
+  return `Bonjour ${clientName ?? ""}, merci de nous avoir fait confiance pour votre "${serviceName}" chez ${businessName} ! Si vous avez été satisfait(e), n'hésitez pas à nous laisser une note ici : ${reviewUrl}`;
 }
 
 /**
@@ -208,6 +226,8 @@ export default async function DashboardPage() {
       </div>
     );
   }
+
+  const origin = await getSiteOrigin();
 
   let ownedBusinesses: OwnedBusiness[] = [];
   if (profile.role === "owner") {
@@ -391,7 +411,7 @@ export default async function DashboardPage() {
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, staff_name, client_note"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, staff_name, client_note, review_token"
         )
         .eq("business_id", profile.business_id)
         .eq("source", "walk_in")
@@ -414,7 +434,7 @@ export default async function DashboardPage() {
       supabase
         .from("agenda_entries_for_dashboard")
         .select(
-          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, staff_name"
+          "id, service_id, client_name, client_phone_display, start_time, end_time, reference_number, staff_name, review_token"
         )
         .eq("business_id", profile.business_id)
         .eq("status", "confirmed")
@@ -528,7 +548,9 @@ export default async function DashboardPage() {
             Bonjour, {profile.full_name ?? "utilisateur"}
           </h1>
           <p className="text-sm text-ink-400">
-            {roleLabels[profile.role] ?? profile.role}
+            {profile.role === "staff" && profile.is_manager
+              ? "Personnel (Gérant)"
+              : roleLabels[profile.role] ?? profile.role}
           </p>
         </div>
         <form action={logout}>
@@ -777,7 +799,26 @@ export default async function DashboardPage() {
                   Personne en cours de prise en charge.
                 </p>
               )}
-              {queueInProgress.map((entry) => (
+              {queueInProgress.map((entry) => {
+                const service = entry.service_id
+                  ? serviceInfo.get(entry.service_id)
+                  : undefined;
+                const thankYouLink =
+                  canManageBusiness(profile) &&
+                  entry.client_phone_display &&
+                  entry.review_token &&
+                  service
+                    ? buildWhatsAppLink(
+                        entry.client_phone_display,
+                        buildThankYouMessage(
+                          entry.client_name,
+                          service.name,
+                          businessName,
+                          `${origin}/avis/${entry.review_token}`
+                        )
+                      )
+                    : null;
+                return (
                 <BookingCard
                   key={entry.id}
                   entry={entry}
@@ -788,16 +829,10 @@ export default async function DashboardPage() {
                         phone={entry.client_phone_display}
                         enabled={canManageBusiness(profile)}
                       />
-                      <form action={updateBookingStatus}>
-                        <input type="hidden" name="id" value={entry.id} />
-                        <input type="hidden" name="status" value="termine" />
-                        <button
-                          type="submit"
-                          className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500"
-                        >
-                          Service rendu
-                        </button>
-                      </form>
+                      <ThankYouWhatsAppButton
+                        bookingId={entry.id}
+                        whatsAppLink={thankYouLink}
+                      />
                       <form action={updateBookingStatus}>
                         <input type="hidden" name="id" value={entry.id} />
                         <input type="hidden" name="status" value="no_show" />
@@ -811,7 +846,8 @@ export default async function DashboardPage() {
                     </>
                   }
                 />
-              ))}
+                );
+              })}
             </div>
           </section>
 
@@ -825,7 +861,26 @@ export default async function DashboardPage() {
                   Aucun rendez-vous en attente de clôture.
                 </p>
               )}
-              {toClose.map((entry) => (
+              {toClose.map((entry) => {
+                const service = entry.service_id
+                  ? serviceInfo.get(entry.service_id)
+                  : undefined;
+                const thankYouLink =
+                  canManageBusiness(profile) &&
+                  entry.client_phone_display &&
+                  entry.review_token &&
+                  service
+                    ? buildWhatsAppLink(
+                        entry.client_phone_display,
+                        buildThankYouMessage(
+                          entry.client_name,
+                          service.name,
+                          businessName,
+                          `${origin}/avis/${entry.review_token}`
+                        )
+                      )
+                    : null;
+                return (
                 <BookingCard
                   key={entry.id}
                   entry={entry}
@@ -836,16 +891,10 @@ export default async function DashboardPage() {
                         phone={entry.client_phone_display}
                         enabled={canManageBusiness(profile)}
                       />
-                      <form action={updateBookingStatus}>
-                        <input type="hidden" name="id" value={entry.id} />
-                        <input type="hidden" name="status" value="termine" />
-                        <button
-                          type="submit"
-                          className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500"
-                        >
-                          Service rendu
-                        </button>
-                      </form>
+                      <ThankYouWhatsAppButton
+                        bookingId={entry.id}
+                        whatsAppLink={thankYouLink}
+                      />
                       <form action={updateBookingStatus}>
                         <input type="hidden" name="id" value={entry.id} />
                         <input type="hidden" name="status" value="no_show" />
@@ -859,7 +908,8 @@ export default async function DashboardPage() {
                     </>
                   }
                 />
-              ))}
+                );
+              })}
             </div>
           </section>
 

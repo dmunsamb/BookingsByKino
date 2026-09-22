@@ -1,8 +1,8 @@
-import { headers } from "next/headers";
 import QRCode from "qrcode";
 import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { buildQueueJoinUrl } from "@/lib/qr";
+import { getSiteOrigin } from "@/lib/site-url";
 import { DashboardNav } from "../../dashboard-nav";
 import { CapacityForm } from "./capacity-form";
 
@@ -32,10 +32,7 @@ export default async function FileAttenteConfigurationPage() {
     .eq("id", profile.business_id)
     .maybeSingle();
 
-  const headersList = await headers();
-  const host = headersList.get("host") ?? "kinobooking.netlify.app";
-  const proto = headersList.get("x-forwarded-proto") ?? "https";
-  const origin = `${proto}://${host}`;
+  const origin = await getSiteOrigin();
   const joinUrl = buildQueueJoinUrl(origin, profile.business_id);
   const qrDataUrl = await QRCode.toDataURL(joinUrl, { margin: 1, width: 320 });
 
