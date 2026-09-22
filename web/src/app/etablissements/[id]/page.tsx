@@ -11,6 +11,8 @@ import {
 } from "@/lib/availability";
 import { BookingForm } from "./booking-form";
 import { PhotoGallery } from "./photo-gallery";
+import { OpeningHours } from "./opening-hours";
+import { ReviewsSection } from "./reviews-section";
 import { formatBookingReference } from "@/lib/booking-reference";
 import { getSubscriptionStatus } from "@/lib/subscription";
 import { formatCdf } from "@/lib/currency";
@@ -44,7 +46,7 @@ export default async function BusinessPage({
   const { data: business } = await supabase
     .from("businesses")
     .select(
-      "id, name, main_category, city, commune, address, subscription_paid_until"
+      "id, name, main_category, city, commune, address, description, subscription_paid_until"
     )
     .eq("id", id)
     .maybeSingle();
@@ -81,6 +83,21 @@ export default async function BusinessPage({
         .select("id, url")
         .eq("business_id", id)
         .order("position");
+
+  const { data: businessHours } = isInactive
+    ? { data: [] }
+    : await supabase
+        .from("business_hours")
+        .select("weekday, start_time, end_time")
+        .eq("business_id", id);
+
+  const { data: reviews } = isInactive
+    ? { data: [] }
+    : await supabase
+        .from("business_reviews")
+        .select("id, client_name, rating, comment, created_at")
+        .eq("business_id", id)
+        .order("created_at", { ascending: false });
 
   const selectedService = serviceIdParam
     ? services?.find((s) => s.id === serviceIdParam)
@@ -244,6 +261,20 @@ export default async function BusinessPage({
         </p>
       )}
       {isInactive && <div className="mb-4" />}
+
+      {!isInactive && !selectedService && business.description && (
+        <p className="mb-6 text-sm leading-relaxed text-ink-900 dark:text-paper">
+          {business.description}
+        </p>
+      )}
+
+      {!isInactive && !selectedService && (
+        <OpeningHours hours={businessHours ?? []} />
+      )}
+
+      {!isInactive && !selectedService && (
+        <ReviewsSection reviews={reviews ?? []} />
+      )}
 
       {confirmed && (
         <div className="mb-6 rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-ink-900 dark:text-paper">

@@ -219,6 +219,19 @@ export default async function ConfigurationPage() {
           </Link>
         )}
         {canManageBusiness(profile) && (
+          <Link
+            href="/dashboard/avis"
+            className="rounded-2xl border border-ink-900/10 bg-white p-6 text-sm shadow-sm transition hover:shadow-md dark:border-paper/10 dark:bg-ink-800"
+          >
+            <span className="font-bold text-ink-900 dark:text-paper">
+              Avis clients
+            </span>
+            <p className="mt-1 text-ink-400">
+              Consulter les avis reçus, retirer un avis abusif.
+            </p>
+          </Link>
+        )}
+        {canManageBusiness(profile) && (
           <MobileMoneyForm accounts={mobileMoneyAccounts} />
         )}
         <Link

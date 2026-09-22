@@ -23,6 +23,7 @@ export type BusinessInfoFormState = {
     commune: string;
     city: string;
     whatsapp: string;
+    description: string;
   };
 };
 
@@ -54,6 +55,9 @@ export async function updateBusinessInfo(
   const city = formData.get("city");
   const whatsappRaw = formData.get("whatsapp");
   const whatsapp = typeof whatsappRaw === "string" ? whatsappRaw.trim() : "";
+  const descriptionRaw = formData.get("description");
+  const description =
+    typeof descriptionRaw === "string" ? descriptionRaw.trim() : "";
 
   const values = {
     name: typeof name === "string" ? name : "",
@@ -62,6 +66,7 @@ export async function updateBusinessInfo(
     commune: typeof commune === "string" ? commune : "",
     city: typeof city === "string" ? city : "",
     whatsapp,
+    description,
   };
 
   if (
@@ -71,6 +76,13 @@ export async function updateBusinessInfo(
     !categories.every(isValidCategory)
   ) {
     return { error: "Veuillez remplir tous les champs obligatoires.", values };
+  }
+
+  if (description.length > 500) {
+    return {
+      error: "La description ne peut pas dépasser 500 caractères.",
+      values,
+    };
   }
 
   const supabase = await createClient();
@@ -102,6 +114,7 @@ export async function updateBusinessInfo(
       owner_whatsapp: restricted
         ? (currentBusiness?.owner_whatsapp ?? null)
         : whatsapp || null,
+      description: description || null,
     })
     .eq("id", profile.business_id);
 

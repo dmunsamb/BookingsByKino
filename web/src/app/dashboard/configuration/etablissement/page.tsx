@@ -48,7 +48,9 @@ export default async function EtablissementConfigPage() {
   const [{ data: business }, { data: hours }] = await Promise.all([
     supabase
       .from("businesses")
-      .select("name, categories, address, commune, city, owner_whatsapp")
+      .select(
+        "name, categories, address, commune, city, owner_whatsapp, description"
+      )
       .eq("id", profile.business_id)
       .maybeSingle(),
     supabase
@@ -79,6 +81,7 @@ export default async function EtablissementConfigPage() {
         commune={business?.commune ?? ""}
         city={business?.city ?? ""}
         whatsapp={business?.owner_whatsapp ?? ""}
+        description={business?.description ?? ""}
       />
 
       <hr className="my-8 border-ink-900/10 dark:border-paper/10" />

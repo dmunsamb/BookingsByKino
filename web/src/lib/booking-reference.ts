@@ -7,3 +7,11 @@
 export function formatBookingReference(referenceNumber: number): string {
   return `KB-${referenceNumber.toString().padStart(6, "0")}`;
 }
+
+/** Accepte "KB-000123", "000123" ou "123" — ne garde que les chiffres. */
+export function parseBookingReference(input: string): number | null {
+  const digits = input.replace(/\D/g, "");
+  if (!digits) return null;
+  const n = Number(digits);
+  return Number.isFinite(n) ? n : null;
+}

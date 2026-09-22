@@ -60,10 +60,13 @@ export async function signup(
   const address = formData.get("address");
   const commune = formData.get("commune");
   const city = formData.get("city");
+  const descriptionRaw = formData.get("description");
   const logo = formData.get("logo");
 
   const email = typeof emailRaw === "string" ? emailRaw.trim() : "";
   const whatsapp = typeof whatsappRaw === "string" ? whatsappRaw.trim() : "";
+  const description =
+    typeof descriptionRaw === "string" ? descriptionRaw.trim() : "";
 
   if (
     typeof ownerName !== "string" ||
@@ -76,6 +79,10 @@ export async function signup(
     !categories.every(isValidCategory)
   ) {
     return { error: "Veuillez remplir tous les champs obligatoires." };
+  }
+
+  if (description.length > 500) {
+    return { error: "La description ne peut pas dépasser 500 caractères." };
   }
 
   if (password.length < 8) {
@@ -132,6 +139,7 @@ export async function signup(
       signup_status: "pending_approval",
       owner_email: email,
       owner_whatsapp: whatsapp || null,
+      description: description || null,
     })
     .select("id")
     .single();

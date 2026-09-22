@@ -6,6 +6,7 @@ import { CategoryCheckboxes } from "@/components/category-checkboxes";
 import { CityCommuneFields } from "@/components/city-commune-fields";
 
 const initialState: BusinessInfoFormState = {};
+const DESCRIPTION_MAX_LENGTH = 500;
 
 export function BusinessInfoForm({
   name,
@@ -14,6 +15,7 @@ export function BusinessInfoForm({
   commune,
   city,
   whatsapp,
+  description,
 }: {
   name: string;
   categories: string[];
@@ -21,6 +23,7 @@ export function BusinessInfoForm({
   commune: string;
   city: string;
   whatsapp: string;
+  description: string;
 }) {
   const [state, formAction, pending] = useActionState(
     updateBusinessInfo,
@@ -51,7 +54,11 @@ export function BusinessInfoForm({
     commune,
     city,
     whatsapp,
+    description,
   };
+  const [descriptionValue, setDescriptionValue] = useState(
+    effective.description
+  );
 
   return (
     <form
@@ -106,6 +113,30 @@ export function BusinessInfoForm({
         <p className="mt-1 text-xs text-ink-400">
           Utilisé par KinoBooking pour vous contacter (rappels
           d&apos;abonnement, support).
+        </p>
+      </div>
+
+      <div>
+        <div className="mb-1 flex items-baseline justify-between">
+          <label className="block text-xs font-bold uppercase tracking-widest text-ink-400">
+            Description
+          </label>
+          <span className="text-xs text-ink-400">
+            {descriptionValue.length}/{DESCRIPTION_MAX_LENGTH}
+          </span>
+        </div>
+        <textarea
+          name="description"
+          rows={3}
+          maxLength={DESCRIPTION_MAX_LENGTH}
+          value={descriptionValue}
+          onChange={(e) => setDescriptionValue(e.target.value)}
+          placeholder="ex: Salon spécialisé dans les tresses et le coiffage naturel, ambiance chaleureuse, cadre climatisé."
+          className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
+        />
+        <p className="mt-1 text-xs text-ink-400">
+          Ce que vous proposez, votre spécialité — visible sur votre fiche
+          établissement.
         </p>
       </div>
 

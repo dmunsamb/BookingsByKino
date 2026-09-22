@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { signup, type SignupState } from "./actions";
 import { CategoryCheckboxes } from "@/components/category-checkboxes";
 import { CityCommuneFields } from "@/components/city-commune-fields";
 
 const initialState: SignupState = {};
+const DESCRIPTION_MAX_LENGTH = 500;
 
 export default function SignupPage() {
   const [state, formAction, pending] = useActionState(signup, initialState);
+  const [description, setDescription] = useState("");
 
   return (
     <div className="flex flex-1 items-center justify-center bg-paper px-4 py-12 dark:bg-ink-900">
@@ -110,6 +112,30 @@ export default function SignupPage() {
           </div>
 
           <CityCommuneFields />
+
+          <div>
+            <div className="mb-1 flex items-baseline justify-between">
+              <label className="block text-xs font-bold uppercase tracking-widest text-ink-400">
+                Décrivez votre établissement (optionnel)
+              </label>
+              <span className="text-xs text-ink-400">
+                {description.length}/{DESCRIPTION_MAX_LENGTH}
+              </span>
+            </div>
+            <textarea
+              name="description"
+              rows={3}
+              maxLength={DESCRIPTION_MAX_LENGTH}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="ex: Salon spécialisé dans les tresses et le coiffage naturel, ambiance chaleureuse, cadre climatisé."
+              className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
+            />
+            <p className="mt-1 text-xs text-ink-400">
+              Ce que vous proposez, votre spécialité — visible sur votre
+              fiche établissement.
+            </p>
+          </div>
 
           <div>
             <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
