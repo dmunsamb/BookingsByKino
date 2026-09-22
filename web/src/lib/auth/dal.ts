@@ -18,6 +18,7 @@ export type Profile = {
   business_id: string | null;
   full_name: string | null;
   role: "owner" | "staff" | "platform_admin" | "sales";
+  is_manager: boolean;
 };
 
 /** Redirige vers /login si personne n'est connecté ; sinon renvoie l'utilisateur Supabase Auth. */
@@ -46,7 +47,7 @@ const fetchRealProfile = cache(async (): Promise<Profile | null> => {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, business_id, full_name, role")
+    .select("id, business_id, full_name, role, is_manager")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -105,6 +106,10 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
     business_id: impersonation.businessId,
     full_name: real.full_name,
     role: impersonation.actingRole,
+    // Jamais "gérant promu" en mode "voir en tant que personnel" : ce
+    // mode sert à tester la vue restreinte, pas à hériter d'un droit
+    // accordé au vrai personnel de CET établissement.
+    is_manager: false,
   };
 });
 
@@ -166,10 +171,27 @@ export const isImpersonationRestricted = cache(async (): Promise<boolean> => {
  * établissement (même règle déjà appliquée côté RLS par is_owner_of,
  * voir migration 0002) — un même compte peut donc être à la fois
  * gérant d'un établissement précis ET super-administrateur KinoBooking.
- * À utiliser partout où l'UI ne réservait jusqu'ici une action qu'au
- * rôle "owner" strict.
+ * Un membre du personnel promu "gérant" (is_manager, voir migration 0041
+ * et dashboard/equipe) obtient exactement les mêmes droits, SAUF gérer
+ * l'équipe elle-même (voir canManageTeam ci-dessous) — décision produit
+ * explicite. À utiliser partout où l'UI ne réservait jusqu'ici une action
+ * qu'au rôle "owner" strict.
  */
 export function canManageBusiness(profile: Profile): boolean {
+  return (
+    profile.role === "owner" ||
+    profile.role === "platform_admin" ||
+    (profile.role === "staff" && profile.is_manager)
+  );
+}
+
+/**
+ * Gestion de l'équipe (ajouter/supprimer un membre, donner/retirer un
+ * accès) : jamais délégable à un membre du personnel même promu "gérant"
+ * — voir is_team_manager_of côté base (migration 0041), qui applique la
+ * même restriction en RLS.
+ */
+export function canManageTeam(profile: Profile): boolean {
   return profile.role === "owner" || profile.role === "platform_admin";
 }
 

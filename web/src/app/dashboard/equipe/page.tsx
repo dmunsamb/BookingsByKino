@@ -1,11 +1,18 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
+import { getCurrentProfile, canManageBusiness, canManageTeam } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { StaffForm } from "./staff-form";
 import { StaffServicesForm } from "./staff-services-form";
-import { deleteStaffMember, toggleStaffActive, updateStaffPhoto } from "./actions";
+import { StaffAccessForm } from "./staff-access-form";
+import {
+  deleteStaffMember,
+  revokeStaffAccess,
+  toggleStaffActive,
+  updateStaffAccessRole,
+  updateStaffPhoto,
+} from "./actions";
 
 export default async function EquipePage() {
   const profile = await getCurrentProfile();
@@ -31,20 +38,31 @@ export default async function EquipePage() {
   }
 
   const supabase = await createClient();
-  const [{ data: staff }, { data: services }] = await Promise.all([
-    supabase
-      .from("staff_members")
-      .select(
-        "id, name, active, photo_url, staff_member_services(service_id)"
-      )
-      .eq("business_id", profile.business_id)
-      .order("created_at"),
-    supabase
-      .from("services")
-      .select("id, name")
-      .eq("business_id", profile.business_id)
-      .order("created_at"),
-  ]);
+  const [{ data: staff }, { data: services }, { data: staffProfiles }] =
+    await Promise.all([
+      supabase
+        .from("staff_members")
+        .select(
+          "id, name, active, photo_url, profile_id, staff_member_services(service_id)"
+        )
+        .eq("business_id", profile.business_id)
+        .order("created_at"),
+      supabase
+        .from("services")
+        .select("id, name")
+        .eq("business_id", profile.business_id)
+        .order("created_at"),
+      supabase
+        .from("profiles")
+        .select("id, is_manager")
+        .eq("business_id", profile.business_id)
+        .eq("role", "staff"),
+    ]);
+
+  const isManagerByProfileId = new Map(
+    (staffProfiles ?? []).map((p) => [p.id, p.is_manager])
+  );
+  const canManageStaffAccounts = canManageTeam(profile);
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10">
@@ -69,7 +87,7 @@ export default async function EquipePage() {
         </p>
       </div>
 
-      <StaffForm />
+      {canManageStaffAccounts && <StaffForm />}
 
       <div className="space-y-2">
         {(!staff || staff.length === 0) && (
@@ -137,10 +155,12 @@ export default async function EquipePage() {
                     {s.active ? "Marquer inactif" : "Réactiver"}
                   </button>
                 </form>
-                <form action={deleteStaffMember}>
-                  <input type="hidden" name="id" value={s.id} />
-                  <ConfirmDeleteButton />
-                </form>
+                {canManageStaffAccounts && (
+                  <form action={deleteStaffMember}>
+                    <input type="hidden" name="id" value={s.id} />
+                    <ConfirmDeleteButton />
+                  </form>
+                )}
               </div>
             </div>
             <StaffServicesForm
@@ -150,6 +170,44 @@ export default async function EquipePage() {
                 (s.staff_member_services ?? []) as { service_id: string }[]
               ).map((x) => x.service_id)}
             />
+            {s.profile_id ? (
+              <div className="flex flex-wrap items-center gap-3 border-t border-ink-900/8 pt-3 text-xs dark:border-paper/8">
+                <span className="rounded-full bg-success/10 px-2.5 py-1 font-bold text-success">
+                  Accès actif —{" "}
+                  {isManagerByProfileId.get(s.profile_id) ? "Gérant" : "Coiffeur / Coiffeuse"}
+                </span>
+                {canManageStaffAccounts && (
+                  <>
+                    <form action={updateStaffAccessRole}>
+                      <input type="hidden" name="staff_id" value={s.id} />
+                      <input
+                        type="hidden"
+                        name="is_manager"
+                        value={(!isManagerByProfileId.get(s.profile_id)).toString()}
+                      />
+                      <button
+                        type="submit"
+                        className="font-bold text-ink-400 hover:underline"
+                      >
+                        {isManagerByProfileId.get(s.profile_id)
+                          ? "Repasser coiffeur"
+                          : "Passer gérant"}
+                      </button>
+                    </form>
+                    <form action={revokeStaffAccess}>
+                      <input type="hidden" name="staff_id" value={s.id} />
+                      <ConfirmDeleteButton label="Retirer l'accès" />
+                    </form>
+                  </>
+                )}
+              </div>
+            ) : (
+              canManageStaffAccounts && (
+                <div className="border-t border-ink-900/8 pt-3 dark:border-paper/8">
+                  <StaffAccessForm staffId={s.id} />
+                </div>
+              )
+            )}
           </div>
         ))}
       </div>

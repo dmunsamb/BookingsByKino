@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { toE164CongoPhone } from "@/lib/phone";
 
 export type LoginState = {
   error?: string;
@@ -31,26 +32,43 @@ export async function login(
     return { error: "Trop de tentatives. Merci de réessayer dans une minute." };
   }
 
-  const email = formData.get("email");
+  const identifier = formData.get("identifier");
   const password = formData.get("password");
 
   if (
-    typeof email !== "string" ||
+    typeof identifier !== "string" ||
     typeof password !== "string" ||
-    !email ||
+    !identifier.trim() ||
     !password
   ) {
-    return { error: "Email et mot de passe requis." };
+    return { error: "Identifiant et mot de passe requis." };
   }
 
+  // Un gérant se connecte par email, un membre de l'équipe par téléphone
+  // (voir dashboard/equipe : octroi d'accès sans email) — un seul champ
+  // "Email ou téléphone" détecte le format plutôt que deux formulaires.
+  const trimmed = identifier.trim();
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
 
-  if (error) {
-    return { error: "Email ou mot de passe incorrect." };
+  let signInError: { message: string } | null;
+  if (trimmed.includes("@")) {
+    ({ error: signInError } = await supabase.auth.signInWithPassword({
+      email: trimmed,
+      password,
+    }));
+  } else {
+    const phone = toE164CongoPhone(trimmed);
+    if (!phone) {
+      return { error: "Identifiant ou mot de passe incorrect." };
+    }
+    ({ error: signInError } = await supabase.auth.signInWithPassword({
+      phone,
+      password,
+    }));
+  }
+
+  if (signInError) {
+    return { error: "Identifiant ou mot de passe incorrect." };
   }
 
   redirect("/dashboard");

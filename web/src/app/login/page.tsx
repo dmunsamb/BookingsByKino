@@ -22,23 +22,24 @@ export default function LoginPage() {
           Espace Salon
         </h1>
         <p className="mb-6 text-sm text-ink-400">
-          Connectez-vous avec le compte fourni par KinoBooking.
+          Connectez-vous avec le compte fourni par KinoBooking — email pour
+          un gérant, numéro de téléphone pour un membre de l&apos;équipe.
         </p>
 
         <form action={formAction} className="space-y-4">
           <div>
             <label
-              htmlFor="email"
+              htmlFor="identifier"
               className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400"
             >
-              Email
+              Email ou téléphone
             </label>
             <input
-              id="email"
-              name="email"
-              type="email"
+              id="identifier"
+              name="identifier"
+              type="text"
               required
-              autoComplete="email"
+              autoComplete="username"
               className="w-full rounded-xl border border-ink-900/16 bg-white p-3 text-sm text-ink-900 focus:border-2 focus:border-kino-400 focus:outline-none dark:border-paper/16 dark:bg-ink-900 dark:text-paper"
             />
           </div>
