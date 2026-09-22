@@ -23,15 +23,14 @@ function formatMemberSince(createdAt: string): string {
 export async function SalesTeamSection() {
   const supabase = await createClient();
 
-  const { data: salesReps } = await supabase
-    .from("profiles")
-    .select("id, full_name, created_at")
-    .eq("role", "sales")
-    .order("created_at", { ascending: false });
-
-  const { data: assignments } = await supabase
-    .from("business_sales_reps")
-    .select("profile_id");
+  const [{ data: salesReps }, { data: assignments }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, full_name, created_at")
+      .eq("role", "sales")
+      .order("created_at", { ascending: false }),
+    supabase.from("business_sales_reps").select("profile_id"),
+  ]);
 
   const assignedCountByProfile = new Map<string, number>();
   for (const a of assignments ?? []) {

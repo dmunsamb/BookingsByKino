@@ -68,23 +68,38 @@ export default async function AdminPage() {
     return <SalesOverview salesProfileId={profile.id} />;
   }
 
-  const { data: businesses } = await supabase
-    .from("businesses")
-    .select(
-      "id, name, main_category, address, city, signup_status, subscription_paid_until, owner_whatsapp, is_test, created_at"
-    )
-    .neq("signup_status", "pending_approval")
-    .order("created_at", { ascending: false });
-
-  const priceByDuration = await fetchPriceByDuration(supabase);
-
-  const { data: paymentSettingsRow } = await supabase
-    .from("platform_payment_settings")
-    .select(
-      "mpesa_number, mpesa_holder_name, orange_money_number, orange_money_holder_name, contact_name, contact_whatsapp"
-    )
-    .eq("id", true)
-    .maybeSingle();
+  // Les cinq requêtes ci-dessous sont indépendantes les unes des autres —
+  // lancées en parallèle plutôt qu'en séquence pour éviter d'accumuler
+  // inutilement leurs allers-retours réseau au chargement de la page.
+  const [
+    { data: businesses },
+    priceByDuration,
+    { data: paymentSettingsRow },
+    { data: salesReps },
+    { data: salesAssignments },
+  ] = await Promise.all([
+    supabase
+      .from("businesses")
+      .select(
+        "id, name, main_category, address, city, signup_status, subscription_paid_until, owner_whatsapp, is_test, created_at"
+      )
+      .neq("signup_status", "pending_approval")
+      .order("created_at", { ascending: false }),
+    fetchPriceByDuration(supabase),
+    supabase
+      .from("platform_payment_settings")
+      .select(
+        "mpesa_number, mpesa_holder_name, orange_money_number, orange_money_holder_name, contact_name, contact_whatsapp"
+      )
+      .eq("id", true)
+      .maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("id, full_name")
+      .eq("role", "sales")
+      .order("full_name"),
+    supabase.from("business_sales_reps").select("business_id, profile_id"),
+  ]);
 
   const platformPaymentSettings: PlatformPaymentSettings = {
     mpesaNumber: paymentSettingsRow?.mpesa_number ?? "",
@@ -105,16 +120,6 @@ export default async function AdminPage() {
       p.full_name,
     ])
   );
-
-  const { data: salesReps } = await supabase
-    .from("profiles")
-    .select("id, full_name")
-    .eq("role", "sales")
-    .order("full_name");
-
-  const { data: salesAssignments } = await supabase
-    .from("business_sales_reps")
-    .select("business_id, profile_id");
 
   const salesRepByBusiness = new Map(
     (salesAssignments ?? []).map((a) => [a.business_id, a.profile_id])

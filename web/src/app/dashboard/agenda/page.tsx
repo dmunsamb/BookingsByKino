@@ -63,32 +63,32 @@ export default async function AgendaPage() {
   }
 
   const supabase = await createClient();
-  const [{ data: rules }, { data: staff }] = await Promise.all([
-    supabase
-      .from("availability_rules")
-      .select(
-        "id, weekday, start_time, end_time, slot_duration_minutes, capacity, staff_id"
-      )
-      .eq("business_id", profile.business_id)
-      .order("weekday")
-      .order("start_time"),
-    supabase
-      .from("staff_members")
-      .select("id, name, active")
-      .eq("business_id", profile.business_id)
-      .order("name"),
-  ]);
+  const [{ data: rules }, { data: staff }, { data: blockRows }] =
+    await Promise.all([
+      supabase
+        .from("availability_rules")
+        .select(
+          "id, weekday, start_time, end_time, slot_duration_minutes, capacity, staff_id"
+        )
+        .eq("business_id", profile.business_id)
+        .order("weekday")
+        .order("start_time"),
+      supabase
+        .from("staff_members")
+        .select("id, name, active")
+        .eq("business_id", profile.business_id)
+        .order("name"),
+      supabase
+        .from("agenda_entries")
+        .select("id, block_group_id, start_time, end_time, staff_id")
+        .eq("business_id", profile.business_id)
+        .eq("source", "blokkering")
+        .gte("start_time", new Date().toISOString())
+        .order("start_time"),
+    ]);
 
   const staffNameById = new Map((staff ?? []).map((s) => [s.id, s.name]));
   const activeStaffMembers = (staff ?? []).filter((s) => s.active);
-
-  const { data: blockRows } = await supabase
-    .from("agenda_entries")
-    .select("id, block_group_id, start_time, end_time, staff_id")
-    .eq("business_id", profile.business_id)
-    .eq("source", "blokkering")
-    .gte("start_time", new Date().toISOString())
-    .order("start_time");
 
   const blockGroups = new Map<
     string,

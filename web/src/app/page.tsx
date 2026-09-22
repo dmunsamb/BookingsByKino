@@ -41,7 +41,15 @@ export default async function Home({
     );
   }
 
-  const { data: businesses } = await query;
+  // communeRows ne dépend pas du résultat de `query` : lancées en
+  // parallèle plutôt qu'en séquence.
+  const [{ data: businesses }, { data: communeRows }] = await Promise.all([
+    query,
+    // Seulement les communes effectivement renseignées par au moins un
+    // établissement — pas la liste complète des 24 communes de Kinshasa,
+    // qui proposerait des filtres ne renvoyant jamais rien.
+    supabase.from("businesses").select("commune").not("commune", "is", null),
+  ]);
 
   const businessIds = (businesses ?? []).map((b) => b.id);
   const { data: photoRows } = businessIds.length
@@ -58,14 +66,6 @@ export default async function Home({
       coverPhotoByBusiness.set(photo.business_id, photo.url);
     }
   }
-
-  // Seulement les communes effectivement renseignées par au moins un
-  // établissement — pas la liste complète des 24 communes de Kinshasa,
-  // qui proposerait des filtres ne renvoyant jamais rien.
-  const { data: communeRows } = await supabase
-    .from("businesses")
-    .select("commune")
-    .not("commune", "is", null);
 
   const communes = Array.from(
     new Set(
