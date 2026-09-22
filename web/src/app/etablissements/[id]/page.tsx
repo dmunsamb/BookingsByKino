@@ -17,6 +17,13 @@ import { formatBookingReference } from "@/lib/booking-reference";
 import { getSubscriptionStatus } from "@/lib/subscription";
 import { formatCdf } from "@/lib/currency";
 
+type Tab = "apercu" | "services" | "avis";
+const TABS: { key: Tab; label: string }[] = [
+  { key: "apercu", label: "Aperçu" },
+  { key: "services", label: "Services" },
+  { key: "avis", label: "Avis" },
+];
+
 export default async function BusinessPage({
   params,
   searchParams,
@@ -27,11 +34,17 @@ export default async function BusinessPage({
     service?: string;
     confirmed?: string;
     ref?: string;
+    tab?: string;
   }>;
 }) {
   const { id } = await params;
-  const { date: dateParam, service: serviceIdParam, confirmed, ref } =
-    await searchParams;
+  const {
+    date: dateParam,
+    service: serviceIdParam,
+    confirmed,
+    ref,
+    tab: tabParam,
+  } = await searchParams;
   const minDate = minBookableDateIso();
   // Une date explicitement choisie par la cliente (navigation dans le
   // sélecteur) est toujours respectée telle quelle, même si elle s'avère
@@ -102,6 +115,17 @@ export default async function BusinessPage({
   const selectedService = serviceIdParam
     ? services?.find((s) => s.id === serviceIdParam)
     : undefined;
+
+  // Onglets façon Setmore (Aperçu / Services / Avis) — même page, juste
+  // l'URL qui change (?tab=...) : un lien partageable/rechargeable plutôt
+  // qu'un état client qui se perdrait au rafraîchissement. Choisir un
+  // service force l'onglet "Services", quel que soit ?tab= reçu, puisque
+  // c'est là que vit le formulaire de réservation.
+  const activeTab: Tab = selectedService
+    ? "services"
+    : tabParam === "avis" || tabParam === "services"
+      ? tabParam
+      : "apercu";
 
   let bookingSection: ReactNode = null;
 
@@ -242,7 +266,11 @@ export default async function BusinessPage({
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10">
       <Link
-        href={selectedService ? `/etablissements/${id}` : "/"}
+        href={
+          selectedService
+            ? `/etablissements/${id}?tab=services`
+            : "/"
+        }
         className="mb-4 inline-block text-xs font-bold text-ink-400 hover:underline"
       >
         ← {selectedService ? "Retour aux prestations" : "Retour à la recherche"}
@@ -254,27 +282,13 @@ export default async function BusinessPage({
         {business.name}
       </h1>
       {!isInactive && (business.address || business.commune || business.city) && (
-        <p className="mb-6 text-sm text-ink-400">
+        <p className="mb-4 text-sm text-ink-400">
           {[business.address, business.commune, business.city]
             .filter(Boolean)
             .join(", ")}
         </p>
       )}
       {isInactive && <div className="mb-4" />}
-
-      {!isInactive && !selectedService && business.description && (
-        <p className="mb-6 text-sm leading-relaxed text-ink-900 dark:text-paper">
-          {business.description}
-        </p>
-      )}
-
-      {!isInactive && !selectedService && (
-        <OpeningHours hours={businessHours ?? []} />
-      )}
-
-      {!isInactive && !selectedService && (
-        <ReviewsSection reviews={reviews ?? []} />
-      )}
 
       {confirmed && (
         <div className="mb-6 rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-ink-900 dark:text-paper">
@@ -300,16 +314,58 @@ export default async function BusinessPage({
         </div>
       )}
 
-      {!isInactive && !selectedService && (
-        <Link
-          href={`/etablissements/${id}/file-attente`}
-          className="mb-6 block rounded-xl border border-kino-200 bg-kino-50 p-4 text-sm font-bold text-ink-900 transition hover:shadow-md dark:border-kino-800 dark:bg-ink-800 dark:text-paper"
-        >
-          File d&apos;attente sans rendez-vous →
-        </Link>
+      {!isInactive && (
+        <>
+          {/* Onglets sur la même page (?tab=...), inspirés d'une page de
+              réservation Setmore : une navigation qui ressemble à des
+              pages séparées, mais reste un seul chargement — voir plus
+              haut, activeTab. */}
+          <div className="mb-6 flex gap-2 border-b border-ink-900/10 pb-3 dark:border-paper/10">
+            {TABS.map((t) => (
+              <Link
+                key={t.key}
+                href={`/etablissements/${id}?tab=${t.key}`}
+                className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
+                  activeTab === t.key
+                    ? "bg-kino-400 text-ink-900"
+                    : "text-ink-400 hover:bg-ink-900/5 dark:hover:bg-paper/10"
+                }`}
+              >
+                {t.label}
+              </Link>
+            ))}
+          </div>
+
+          {activeTab === "apercu" && (
+            <>
+              {business.description && (
+                <p className="mb-6 text-sm leading-relaxed text-ink-900 dark:text-paper">
+                  {business.description}
+                </p>
+              )}
+              <OpeningHours hours={businessHours ?? []} />
+            </>
+          )}
+
+          {activeTab === "avis" && <ReviewsSection reviews={reviews ?? []} />}
+
+          {activeTab === "services" && (
+            <>
+              {!selectedService && (
+                <Link
+                  href={`/etablissements/${id}/file-attente`}
+                  className="mb-6 block rounded-xl border border-kino-200 bg-kino-50 p-4 text-sm font-bold text-ink-900 transition hover:shadow-md dark:border-kino-800 dark:bg-ink-800 dark:text-paper"
+                >
+                  File d&apos;attente sans rendez-vous →
+                </Link>
+              )}
+              {bookingSection}
+            </>
+          )}
+        </>
       )}
 
-      {bookingSection}
+      {isInactive && bookingSection}
     </div>
   );
 }
