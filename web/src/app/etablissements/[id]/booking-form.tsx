@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import Link from "next/link";
+import { useActionState, useState } from "react";
 import { createBookingRequest, type BookingFormState } from "./actions";
 import type { Slot } from "@/lib/availability";
 import { formatCdf } from "@/lib/currency";
@@ -42,6 +43,7 @@ export function BookingForm({
     initialState
   );
   const hasAvailableSlot = slots.some((s) => s.available);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -155,6 +157,43 @@ export function BookingForm({
             </span>
           </div>
 
+          <div className="rounded-xl border border-ink-900/10 bg-kino-50/60 p-3.5 text-xs leading-relaxed text-ink-900 dark:border-paper/10 dark:bg-ink-900/60 dark:text-paper">
+            <p className="mb-2 font-bold uppercase tracking-widest text-ink-400">
+              Avant d&apos;envoyer votre demande
+            </p>
+            <ul className="mb-3 list-disc space-y-1 pl-4 text-ink-400">
+              <li>L&apos;acompte demandé après validation n&apos;est pas remboursable.</li>
+              <li>
+                En cas d&apos;empêchement, prévenez l&apos;établissement sur
+                WhatsApp le plus tôt possible.
+              </li>
+              <li>
+                En cas d&apos;absence sans avoir prévenu (no-show), l&apos;acompte
+                est perdu.
+              </li>
+            </ul>
+            <label className="flex cursor-pointer items-start gap-2">
+              <input
+                type="checkbox"
+                name="accepted_terms"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-0.5"
+              />
+              <span>
+                J&apos;ai lu et j&apos;accepte les{" "}
+                <Link
+                  href="/conditions-generales"
+                  target="_blank"
+                  className="font-bold text-kino-600 hover:underline dark:text-kino-300"
+                >
+                  conditions générales de vente
+                </Link>
+                .
+              </span>
+            </label>
+          </div>
+
           {state.error && (
             <p className="rounded-xl bg-danger/10 p-3 text-xs text-danger">
               {state.error}
@@ -163,7 +202,7 @@ export function BookingForm({
 
           <button
             type="submit"
-            disabled={pending || !hasAvailableSlot}
+            disabled={pending || !hasAvailableSlot || !acceptedTerms}
             className="w-full rounded-xl bg-kino-400 py-3.5 text-sm font-bold text-ink-900 transition hover:bg-kino-500 disabled:opacity-60"
           >
             {pending ? "Envoi..." : "Envoyer la demande gratuite"}

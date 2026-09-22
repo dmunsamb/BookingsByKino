@@ -42,6 +42,7 @@ export async function createBookingRequest(
   const slot = formData.get("slot");
   const clientName = formData.get("client_name");
   const clientPhone = formData.get("client_phone");
+  const acceptedTerms = formData.get("accepted_terms");
 
   if (
     typeof businessId !== "string" ||
@@ -55,6 +56,17 @@ export async function createBookingRequest(
   ) {
     return {
       error: "Veuillez remplir tous les champs et choisir un créneau.",
+    };
+  }
+
+  // Défense en profondeur : la case à cocher est déjà obligatoire côté
+  // interface (bouton désactivé tant qu'elle n'est pas cochée), mais un
+  // envoi direct du formulaire (JS désactivé, requête forgée) ne doit pas
+  // pouvoir la contourner.
+  if (acceptedTerms !== "on") {
+    return {
+      error:
+        "Merci d'accepter les conditions générales de vente avant d'envoyer votre demande.",
     };
   }
 
