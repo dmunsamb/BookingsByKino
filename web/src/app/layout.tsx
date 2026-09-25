@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
+import { NotificationBanner } from "@/components/notification-banner";
 import { SiteFooter } from "@/components/site-footer";
 import "./globals.css";
 
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col font-sans">
         <SiteHeader />
+        <NotificationBanner />
         {children}
         <SiteFooter />
       </body>

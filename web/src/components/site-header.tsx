@@ -7,13 +7,13 @@ import { KinoBookingLockup } from "./kino-booking-logo";
 /**
  * En-tête persistant sur toutes les pages : logo cliquable vers l'accueil.
  * Corrige l'absence de chemin de retour depuis le dashboard vers la
- * homepage.
+ * homepage. N'affiche que le prénom (premier mot du nom complet) : plus
+ * lisible sur mobile, où le nom complet était souvent tronqué.
  *
- * Affiche aussi, pour un platform_admin connecté, un badge du nombre
- * d'inscriptions en attente de validation — sans ça, rien ne prévenait
- * qu'un gérant venait de s'inscrire : il fallait penser à consulter
- * /admin manuellement. Le badge est visible sur toutes les pages
- * (dashboard, catalogue public...), pas seulement /admin.
+ * La notification (inscriptions en attente pour platform_admin) n'est
+ * plus un badge dans le header : voir NotificationBanner ci-dessous,
+ * rendue juste en dessous du header (visible sur toutes les pages tant
+ * qu'il y a quelque chose à traiter, pas seulement au clic).
  *
  * Utilise directement supabase.auth.getUser() (jamais getCurrentProfile,
  * qui redirige vers /login) : ce composant est aussi rendu pour les
@@ -25,8 +25,8 @@ export async function SiteHeader() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let pendingCount = 0;
   let displayName: string | null = null;
+  let firstName: string | null = null;
   // Par défaut /dashboard (gérant/personnel) — platform_admin/sales n'ont
   // de business_id "actif" que pendant une session "voir en tant que" (voir
   // lib/impersonation.ts) : sans ça, /dashboard leur affiche juste "Accès
@@ -40,22 +40,11 @@ export async function SiteHeader() {
       .maybeSingle();
 
     displayName = profile?.full_name ?? user.email ?? null;
+    firstName = profile?.full_name?.trim().split(/\s+/)[0] ?? displayName;
 
     if (profile?.role === "platform_admin" || profile?.role === "sales") {
       const impersonation = await readImpersonation(user.id);
       homeHref = impersonation ? "/dashboard" : "/admin";
-    }
-
-    if (profile?.role === "platform_admin") {
-      // Compte aussi "awaiting_payment" (approuvé sous conditions, en
-      // attente de confirmation de paiement — voir migration 0030) :
-      // sans ça, un gérant qui a payé pourrait rester bloqué sans accès
-      // si l'admin oublie l'étape 2/2 faute de rappel visuel.
-      const { count } = await supabase
-        .from("businesses")
-        .select("id", { count: "exact", head: true })
-        .in("signup_status", ["pending_approval", "awaiting_payment"]);
-      pendingCount = count ?? 0;
     }
   }
 
@@ -66,23 +55,13 @@ export async function SiteHeader() {
           <KinoBookingLockup size={20} onDark />
         </Link>
         <div className="flex items-center gap-2">
-          {pendingCount > 0 && (
-            <Link
-              href="/admin"
-              className="flex items-center gap-1.5 rounded-full bg-kino-900 px-3 py-1 text-xs font-bold text-kino-200 transition hover:bg-kino-800"
-            >
-              <span className="h-2 w-2 rounded-full bg-kino-400" />
-              {pendingCount} inscription{pendingCount > 1 ? "s" : ""} en
-              attente
-            </Link>
-          )}
           {user ? (
             <Link
               href={homeHref}
               className="max-w-[10rem] truncate rounded-full px-3 py-1.5 text-sm font-bold text-paper transition hover:bg-paper/10"
               title={displayName ?? undefined}
             >
-              {displayName}
+              {firstName}
             </Link>
           ) : (
             <Link
