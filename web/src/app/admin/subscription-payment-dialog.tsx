@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { recordSubscriptionPayment } from "./actions";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
+import type { SubscriptionPlan } from "./subscription-plans-section";
 
 type DurationMonths = 1 | 3 | 12;
 
@@ -16,10 +17,11 @@ const DURATION_OPTIONS: { value: DurationMonths; label: string }[] = [
  * Popup d'enregistrement d'un paiement gérant (premier paiement après
  * approbation "sous conditions" — étape 2/2, voir AwaitingPaymentSection
  * — ou renouvellement ordinaire — recordSubscriptionPayment gère les
- * deux cas correctement). On choisit d'abord la durée payée, ce qui
- * affiche le tarif déjà configuré pour cette durée (voir section "Tarifs
- * d'abonnement") en présélection — avec une option "Autre montant" si le
- * gérant a payé un montant différent (négocié, partiel, etc.).
+ * deux cas correctement). On choisit d'abord le plan payé PARMI CEUX
+ * AUXQUELS CE SALON A DROIT (voir migration 0042), puis la durée, ce qui
+ * affiche le tarif configuré pour ce plan/cette durée en présélection —
+ * avec une option "Autre montant" si le gérant a payé un montant
+ * différent (négocié, partiel, etc.).
  *
  * `sendWelcomeMessage` (première activation uniquement, pas les
  * renouvellements) ouvre WhatsApp avec un message de bienvenue confirmant
@@ -32,7 +34,8 @@ export function SubscriptionPaymentDialog({
   businessName,
   ownerName,
   ownerWhatsapp,
-  prices,
+  plans,
+  currentPlanId,
   triggerLabel,
   sendWelcomeMessage = false,
 }: {
@@ -40,18 +43,25 @@ export function SubscriptionPaymentDialog({
   businessName: string;
   ownerName?: string | null;
   ownerWhatsapp?: string | null;
-  prices: Record<DurationMonths, number>;
+  plans: SubscriptionPlan[];
+  currentPlanId?: string | null;
   triggerLabel: string;
   sendWelcomeMessage?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const defaultPlanId =
+    (currentPlanId && plans.find((p) => p.id === currentPlanId)?.id) ||
+    plans[0]?.id ||
+    "";
+  const [planId, setPlanId] = useState(defaultPlanId);
   const [months, setMonths] = useState<DurationMonths>(1);
   const [choice, setChoice] = useState<"preset" | "other">("preset");
   const [customAmount, setCustomAmount] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const presetAmount = prices[months];
+  const selectedPlan = plans.find((p) => p.id === planId);
+  const presetAmount = selectedPlan?.prices[months] ?? 0;
 
   function close() {
     setOpen(false);
@@ -61,6 +71,11 @@ export function SubscriptionPaymentDialog({
   }
 
   function submit() {
+    if (!selectedPlan) {
+      setError("Merci de choisir un plan.");
+      return;
+    }
+
     const amount = choice === "preset" ? presetAmount : Number(customAmount);
     if (!Number.isFinite(amount) || amount < 0) {
       setError("Montant invalide.");
@@ -75,13 +90,14 @@ export function SubscriptionPaymentDialog({
         ownerWhatsapp,
         `Bonjour ${ownerName ?? ""} ! Nous avons bien reçu votre paiement de $${amount.toFixed(
           2
-        )} (${durationLabel}) pour "${businessName}". Votre établissement est maintenant actif sur KinoBooking : connectez-vous à votre tableau de bord ici : https://kinobooking.netlify.app/login — avec l'email utilisé à l'inscription. Bienvenue !`
+        )} (${selectedPlan.name}, ${durationLabel}) pour "${businessName}". Votre établissement est maintenant actif sur KinoBooking : connectez-vous à votre tableau de bord ici : https://kinobooking.netlify.app/login — avec l'email utilisé à l'inscription. Bienvenue !`
       );
       window.open(welcomeLink, "_blank", "noopener,noreferrer");
     }
 
     const formData = new FormData();
     formData.set("id", businessId);
+    formData.set("plan_id", selectedPlan.id);
     formData.set("months", String(months));
     formData.set("amount_usd", String(amount));
 
@@ -96,7 +112,8 @@ export function SubscriptionPaymentDialog({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500"
+        disabled={plans.length === 0}
+        className="rounded-xl bg-kino-400 px-4 py-2 text-xs font-bold text-ink-900 transition hover:bg-kino-500 disabled:cursor-not-allowed disabled:opacity-40"
       >
         {triggerLabel}
       </button>
@@ -116,6 +133,26 @@ export function SubscriptionPaymentDialog({
             <p className="mb-4 text-xs text-ink-400">
               {businessName}
             </p>
+
+            {plans.length > 1 && (
+              <>
+                <p className="mb-1 text-xs font-bold uppercase tracking-widest text-ink-400">
+                  Plan payé
+                </p>
+                <div className="mb-4 space-y-1 text-sm text-ink-900 dark:text-paper">
+                  {plans.map((plan) => (
+                    <label key={plan.id} className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        checked={planId === plan.id}
+                        onChange={() => setPlanId(plan.id)}
+                      />
+                      {plan.name}
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
 
             <p className="mb-1 text-xs font-bold uppercase tracking-widest text-ink-400">
               Durée payée
@@ -146,7 +183,8 @@ export function SubscriptionPaymentDialog({
                   checked={choice === "preset"}
                   onChange={() => setChoice("preset")}
                 />
-                ${presetAmount.toFixed(2)} (tarif configuré — {DURATION_OPTIONS.find((o) => o.value === months)?.label})
+                ${presetAmount.toFixed(2)} (tarif {selectedPlan?.name ?? ""} —{" "}
+                {DURATION_OPTIONS.find((o) => o.value === months)?.label})
               </label>
               <label className="flex items-center gap-2">
                 <input

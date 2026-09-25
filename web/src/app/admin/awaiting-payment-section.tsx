@@ -4,7 +4,7 @@ import { rejectBusiness } from "./actions";
 import { SubscriptionPaymentDialog } from "./subscription-payment-dialog";
 import { ViewSignupDialog } from "./view-signup-dialog";
 import { TestBadge } from "./test-badge";
-import { fetchPriceByDuration, resolveOwnerNames } from "./signup-shared";
+import { fetchEligiblePlansByBusiness, resolveOwnerNames } from "./signup-shared";
 
 /**
  * Étape 2/2 du flux d'approbation (voir PendingSignupsSection pour
@@ -25,7 +25,10 @@ export async function AwaitingPaymentSection() {
     .eq("signup_status", "awaiting_payment")
     .order("created_at", { ascending: false });
 
-  const priceByDuration = await fetchPriceByDuration(supabase);
+  const eligiblePlansByBusiness = await fetchEligiblePlansByBusiness(
+    supabase,
+    (awaiting ?? []).map((b) => b.id)
+  );
   const ownerNameByBusiness = await resolveOwnerNames(
     supabase,
     (awaiting ?? []).map((b) => b.id)
@@ -75,7 +78,7 @@ export async function AwaitingPaymentSection() {
                   businessName={b.name}
                   ownerName={ownerNameByBusiness.get(b.id)}
                   ownerWhatsapp={b.owner_whatsapp}
-                  prices={priceByDuration}
+                  plans={eligiblePlansByBusiness.get(b.id) ?? []}
                   triggerLabel="Ils ont payé leur abonnement"
                   sendWelcomeMessage
                 />

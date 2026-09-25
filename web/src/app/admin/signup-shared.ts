@@ -65,19 +65,90 @@ export async function resolveOwnerNames(
   );
 }
 
-export async function fetchPriceByDuration(
-  supabase: Supabase
-): Promise<Record<DurationMonths, number>> {
-  const { data: prices } = await supabase
-    .from("subscription_prices")
-    .select("duration_months, amount_usd");
+export type SubscriptionPlan = {
+  id: string;
+  name: string;
+  active: boolean;
+  prices: Record<DurationMonths, number>;
+};
 
-  return Object.fromEntries(
-    DURATION_MONTHS.map((m) => [
-      m,
-      prices?.find((p) => p.duration_months === m)?.amount_usd ?? 0,
-    ])
-  ) as Record<DurationMonths, number>;
+type PlanRow = {
+  id: string;
+  name: string;
+  active: boolean;
+  subscription_plan_prices: { duration_months: number; amount_usd: number }[];
+};
+
+function toPlan(row: PlanRow): SubscriptionPlan {
+  return {
+    id: row.id,
+    name: row.name,
+    active: row.active,
+    prices: Object.fromEntries(
+      DURATION_MONTHS.map((m) => [
+        m,
+        row.subscription_plan_prices.find((p) => p.duration_months === m)
+          ?.amount_usd ?? 0,
+      ])
+    ) as Record<DurationMonths, number>,
+  };
+}
+
+/** Tous les plans (actifs et désactivés) — gestion des tarifs dans /admin. */
+export async function fetchAllSubscriptionPlans(
+  supabase: Supabase
+): Promise<SubscriptionPlan[]> {
+  const { data } = await supabase
+    .from("subscription_plans")
+    .select("id, name, active, subscription_plan_prices(duration_months, amount_usd)")
+    .order("created_at");
+
+  return ((data ?? []) as PlanRow[]).map(toPlan);
+}
+
+/** Plans proposables à un nouveau salon (approbation "sous conditions"). */
+export async function fetchActiveSubscriptionPlans(
+  supabase: Supabase
+): Promise<SubscriptionPlan[]> {
+  const { data } = await supabase
+    .from("subscription_plans")
+    .select("id, name, active, subscription_plan_prices(duration_months, amount_usd)")
+    .eq("active", true)
+    .order("created_at");
+
+  return ((data ?? []) as PlanRow[]).map(toPlan);
+}
+
+/**
+ * Plans auxquels chaque établissement a droit (choisis par l'admin à
+ * l'approbation, voir conditionallyApproveBusiness) — pour proposer le bon
+ * choix à l'enregistrement d'un paiement (SubscriptionPaymentDialog).
+ */
+export async function fetchEligiblePlansByBusiness(
+  supabase: Supabase,
+  businessIds: string[]
+): Promise<Map<string, SubscriptionPlan[]>> {
+  const map = new Map<string, SubscriptionPlan[]>();
+  if (businessIds.length === 0) return map;
+
+  const { data } = await supabase
+    .from("business_subscription_plans")
+    .select(
+      "business_id, subscription_plans(id, name, active, subscription_plan_prices(duration_months, amount_usd))"
+    )
+    .in("business_id", businessIds);
+
+  for (const row of (data ?? []) as unknown as {
+    business_id: string;
+    subscription_plans: PlanRow | null;
+  }[]) {
+    if (!row.subscription_plans) continue;
+    const list = map.get(row.business_id) ?? [];
+    list.push(toPlan(row.subscription_plans));
+    map.set(row.business_id, list);
+  }
+
+  return map;
 }
 
 export type PlatformContactInfo = {

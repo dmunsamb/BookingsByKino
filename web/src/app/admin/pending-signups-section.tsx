@@ -5,8 +5,8 @@ import { ApproveSignupButton } from "./approve-signup-button";
 import { ViewSignupDialog } from "./view-signup-dialog";
 import { TestBadge } from "./test-badge";
 import {
+  fetchActiveSubscriptionPlans,
   fetchPlatformAccounts,
-  fetchPriceByDuration,
   resolveOwnerNames,
 } from "./signup-shared";
 
@@ -43,7 +43,7 @@ export async function PendingSignupsSection({
     return null;
   }
 
-  const priceByDuration = await fetchPriceByDuration(supabase);
+  const activePlans = await fetchActiveSubscriptionPlans(supabase);
   const {
     accounts: platformAccounts,
     contactName,
@@ -93,7 +93,7 @@ export async function PendingSignupsSection({
                   businessName={b.name}
                   ownerName={ownerNameByBusiness.get(b.id)}
                   ownerWhatsapp={b.owner_whatsapp}
-                  prices={priceByDuration}
+                  plans={activePlans}
                   platformAccounts={platformAccounts}
                   contactName={contactName}
                   contactWhatsapp={contactWhatsapp}

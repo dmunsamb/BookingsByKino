@@ -7,14 +7,19 @@ import {
   type SubscriptionStatus,
 } from "@/lib/subscription";
 import { SubscriptionPaymentDialog } from "./subscription-payment-dialog";
-import { SubscriptionPricesForm } from "./subscription-prices-form";
+import { SubscriptionPlansSection } from "./subscription-plans-section";
 import {
   PlatformPaymentSettingsForm,
   type PlatformPaymentSettings,
 } from "./platform-payment-settings-form";
 import { PendingSignupsSection } from "./pending-signups-section";
 import { AwaitingPaymentSection } from "./awaiting-payment-section";
-import { fetchPriceByDuration, resolveOwnerNames, resolveOwnerProfiles } from "./signup-shared";
+import {
+  fetchAllSubscriptionPlans,
+  fetchEligiblePlansByBusiness,
+  resolveOwnerNames,
+  resolveOwnerProfiles,
+} from "./signup-shared";
 import { TestBadge } from "./test-badge";
 import { SalesAssignmentSelect, type SalesRep } from "./sales-assignment-select";
 import { SalesTeamSection } from "./sales-team-section";
@@ -73,7 +78,7 @@ export default async function AdminPage() {
   // inutilement leurs allers-retours réseau au chargement de la page.
   const [
     { data: businesses },
-    priceByDuration,
+    allPlans,
     { data: paymentSettingsRow },
     { data: salesReps },
     { data: salesAssignments },
@@ -81,11 +86,11 @@ export default async function AdminPage() {
     supabase
       .from("businesses")
       .select(
-        "id, name, main_category, address, city, signup_status, subscription_paid_until, owner_whatsapp, is_test, created_at"
+        "id, name, main_category, address, city, signup_status, subscription_paid_until, subscription_plan_id, owner_whatsapp, is_test, created_at"
       )
       .neq("signup_status", "pending_approval")
       .order("created_at", { ascending: false }),
-    fetchPriceByDuration(supabase),
+    fetchAllSubscriptionPlans(supabase),
     supabase
       .from("platform_payment_settings")
       .select(
@@ -144,14 +149,18 @@ export default async function AdminPage() {
   );
 
   const needsAttentionIds = needsAttention.map((b) => b.id);
-  const { data: stuckBookings } = needsAttentionIds.length
-    ? await supabase
-        .from("agenda_entries")
-        .select("id, business_id, client_name, start_time")
-        .in("business_id", needsAttentionIds)
-        .eq("status", "pending_approval")
-        .order("start_time")
-    : { data: [] };
+  const [{ data: stuckBookings }, eligiblePlansForNeedsAttention] =
+    await Promise.all([
+      needsAttentionIds.length
+        ? supabase
+            .from("agenda_entries")
+            .select("id, business_id, client_name, start_time")
+            .in("business_id", needsAttentionIds)
+            .eq("status", "pending_approval")
+            .order("start_time")
+        : Promise.resolve({ data: [] }),
+      fetchEligiblePlansByBusiness(supabase, needsAttentionIds),
+    ]);
 
   const stuckBookingsByBusiness = new Map<
     string,
@@ -187,9 +196,9 @@ export default async function AdminPage() {
 
       <section className="mb-8">
         <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">
-          Tarifs d&apos;abonnement
+          Plans tarifaires
         </h2>
-        <SubscriptionPricesForm initialPrices={priceByDuration} />
+        <SubscriptionPlansSection plans={allPlans} />
       </section>
 
       <section className="mb-8">
@@ -265,7 +274,8 @@ export default async function AdminPage() {
                   <SubscriptionPaymentDialog
                     businessId={b.id}
                     businessName={b.name}
-                    prices={priceByDuration}
+                    plans={eligiblePlansForNeedsAttention.get(b.id) ?? []}
+                    currentPlanId={b.subscription_plan_id}
                     triggerLabel="Ils ont payé leur abonnement"
                   />
                   {reminderLink ? (

@@ -58,14 +58,27 @@ function addMonths(date: Date, months: number): Date {
  * KINOBOOKING. L'accès réel n'est donné qu'à l'étape 2, une fois le
  * paiement confirmé (voir recordSubscriptionPayment).
  */
+/**
+ * Les plans auxquels ce salon a droit doivent être choisis AVANT de
+ * l'approuver "sous conditions" — sans ça, l'étape 2/2
+ * (recordSubscriptionPayment) n'aurait aucun tarif à proposer. Au moins un
+ * plan est donc obligatoire ici.
+ */
 export async function conditionallyApproveBusiness(formData: FormData) {
   const admin = await requirePlatformAdmin();
   if (!admin) return;
 
   const id = formData.get("id");
-  if (typeof id !== "string") return;
+  const planIds = formData.getAll("plan_ids").filter(
+    (v): v is string => typeof v === "string" && v.length > 0
+  );
+  if (typeof id !== "string" || planIds.length === 0) return;
 
   const supabase = await createClient();
+  await supabase
+    .from("business_subscription_plans")
+    .insert(planIds.map((planId) => ({ business_id: id, plan_id: planId })));
+
   await supabase
     .from("businesses")
     .update({ signup_status: "awaiting_payment" })
@@ -88,9 +101,18 @@ export async function recordSubscriptionPayment(formData: FormData) {
   if (!admin) return;
 
   const id = formData.get("id");
+  const planId = formData.get("plan_id");
   const months = parseDurationMonths(formData);
   const amountUsd = parseAmountUsd(formData);
-  if (typeof id !== "string" || months === null || amountUsd === null) return;
+  if (
+    typeof id !== "string" ||
+    typeof planId !== "string" ||
+    !planId ||
+    months === null ||
+    amountUsd === null
+  ) {
+    return;
+  }
 
   const supabase = await createClient();
   const { data: business } = await supabase
@@ -109,12 +131,14 @@ export async function recordSubscriptionPayment(formData: FormData) {
     .from("businesses")
     .update({
       signup_status: "approved",
+      subscription_plan_id: planId,
       subscription_paid_until: addMonths(base, months).toISOString(),
     })
     .eq("id", id);
 
   await supabase.from("subscription_payments").insert({
     business_id: id,
+    plan_id: planId,
     amount_usd: amountUsd,
     duration_months: months,
     recorded_by: admin.id,
@@ -139,27 +163,103 @@ export async function rejectBusiness(formData: FormData) {
   revalidatePath("/admin");
 }
 
-/**
- * Met à jour les tarifs d'abonnement (1/3/12 mois) affichés en
- * pré-sélection lors de l'enregistrement d'un paiement gérant.
- */
-export async function updateSubscriptionPrices(formData: FormData) {
-  const admin = await requirePlatformAdmin();
-  if (!admin) throw new Error("Accès réservé à l'équipe KinoBooking.");
-
-  const supabase = await createClient();
+function parsePlanPrices(formData: FormData): Record<number, number> | null {
+  const prices: Record<number, number> = {};
   for (const months of ALLOWED_DURATION_MONTHS) {
     const raw = formData.get(`price_${months}`);
     const amount = Number(raw);
-    if (!Number.isFinite(amount) || amount < 0) {
-      throw new Error("Montant invalide.");
-    }
-    const { error } = await supabase
-      .from("subscription_prices")
-      .update({ amount_usd: amount, updated_at: new Date().toISOString() })
-      .eq("duration_months", months);
-    if (error) throw new Error("Erreur lors de l'enregistrement des tarifs.");
+    if (!Number.isFinite(amount) || amount < 0) return null;
+    prices[months] = amount;
   }
+  return prices;
+}
+
+/** Crée un nouveau plan tarifaire (nom + tarif par durée) — voir SubscriptionPlansSection. */
+export async function createSubscriptionPlan(formData: FormData) {
+  const admin = await requirePlatformAdmin();
+  if (!admin) throw new Error("Accès réservé à l'équipe KinoBooking.");
+
+  const name = formData.get("name");
+  const prices = parsePlanPrices(formData);
+  if (typeof name !== "string" || !name.trim() || !prices) {
+    throw new Error("Nom et tarifs invalides.");
+  }
+
+  const supabase = await createClient();
+  const { data: plan, error } = await supabase
+    .from("subscription_plans")
+    .insert({ name: name.trim() })
+    .select("id")
+    .single();
+  if (error || !plan) throw new Error("Erreur lors de la création du plan.");
+
+  const { error: pricesError } = await supabase
+    .from("subscription_plan_prices")
+    .insert(
+      ALLOWED_DURATION_MONTHS.map((months) => ({
+        plan_id: plan.id,
+        duration_months: months,
+        amount_usd: prices[months],
+      }))
+    );
+  if (pricesError) throw new Error("Erreur lors de l'enregistrement des tarifs.");
+
+  revalidatePath("/admin");
+}
+
+/** Met à jour le nom, les tarifs et l'état actif/désactivé d'un plan existant. */
+export async function updateSubscriptionPlan(formData: FormData) {
+  const admin = await requirePlatformAdmin();
+  if (!admin) throw new Error("Accès réservé à l'équipe KinoBooking.");
+
+  const id = formData.get("id");
+  const name = formData.get("name");
+  const active = formData.get("active") === "true";
+  const prices = parsePlanPrices(formData);
+  if (
+    typeof id !== "string" ||
+    typeof name !== "string" ||
+    !name.trim() ||
+    !prices
+  ) {
+    throw new Error("Nom et tarifs invalides.");
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("subscription_plans")
+    .update({ name: name.trim(), active })
+    .eq("id", id);
+  if (error) throw new Error("Erreur lors de l'enregistrement du plan.");
+
+  for (const months of ALLOWED_DURATION_MONTHS) {
+    const { error: priceError } = await supabase
+      .from("subscription_plan_prices")
+      .update({ amount_usd: prices[months] })
+      .eq("plan_id", id)
+      .eq("duration_months", months);
+    if (priceError) throw new Error("Erreur lors de l'enregistrement des tarifs.");
+  }
+
+  revalidatePath("/admin");
+}
+
+/**
+ * Supprime un plan tarifaire — les salons qui y étaient éligibles ou
+ * l'avaient comme plan actif ne sont pas supprimés, seul le lien l'est
+ * (on delete cascade/set null, voir migration 0042). À utiliser avec
+ * précaution sur un plan encore utilisé ; désactiver (active=false) est
+ * en général préférable pour ne plus le proposer à de nouveaux salons.
+ */
+export async function deleteSubscriptionPlan(formData: FormData) {
+  const admin = await requirePlatformAdmin();
+  if (!admin) return;
+
+  const id = formData.get("id");
+  if (typeof id !== "string") return;
+
+  const supabase = await createClient();
+  await supabase.from("subscription_plans").delete().eq("id", id);
 
   revalidatePath("/admin");
 }
