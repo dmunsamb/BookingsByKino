@@ -48,7 +48,21 @@ export default function ConditionsGeneralesPage() {
         </section>
 
         <section>
-          <h2 className="mb-2 font-bold">3. Acompte</h2>
+          <h2 className="mb-2 font-bold">3. Délai de réponse de l&apos;établissement</h2>
+          <p>
+            L&apos;établissement s&apos;engage à répondre à toute demande de
+            réservation (validation ou refus) dans un délai de{" "}
+            <strong>2 heures</strong>, pendant ses heures d&apos;ouverture
+            déclarées. Une demande reçue en dehors de ces heures est traitée
+            dès la réouverture. Il s&apos;agit d&apos;un engagement de
+            moyens de l&apos;établissement envers le client ; il n&apos;engage
+            pas la responsabilité de KinoBooking, simple intermédiaire
+            technique entre les deux (voir article 8).
+          </p>
+        </section>
+
+        <section>
+          <h2 className="mb-2 font-bold">4. Acompte</h2>
           <p>
             Une fois votre demande validée, l&apos;établissement vous
             communique le montant de l&apos;acompte et ses coordonnées
@@ -60,7 +74,7 @@ export default function ConditionsGeneralesPage() {
         </section>
 
         <section>
-          <h2 className="mb-2 font-bold">4. Annulation ou changement d&apos;horaire</h2>
+          <h2 className="mb-2 font-bold">5. Annulation ou changement d&apos;horaire</h2>
           <p>
             Si vous ne pouvez pas honorer votre rendez-vous, prévenez
             directement l&apos;établissement sur WhatsApp, le plus tôt
@@ -71,7 +85,7 @@ export default function ConditionsGeneralesPage() {
         </section>
 
         <section>
-          <h2 className="mb-2 font-bold">5. Absence au rendez-vous (no-show)</h2>
+          <h2 className="mb-2 font-bold">6. Absence au rendez-vous (no-show)</h2>
           <p>
             Si vous ne vous présentez pas à votre rendez-vous sans avoir
             prévenu l&apos;établissement au préalable, l&apos;acompte payé
@@ -80,7 +94,7 @@ export default function ConditionsGeneralesPage() {
         </section>
 
         <section>
-          <h2 className="mb-2 font-bold">6. Mode « Sans rendez-vous »</h2>
+          <h2 className="mb-2 font-bold">7. Mode « Sans rendez-vous »</h2>
           <p>
             La file d&apos;attente sans rendez-vous ne demande aucun acompte.
             Une place dans la file n&apos;est pas garantie : elle dépend de
@@ -90,7 +104,7 @@ export default function ConditionsGeneralesPage() {
         </section>
 
         <section>
-          <h2 className="mb-2 font-bold">7. Rôle de KinoBooking</h2>
+          <h2 className="mb-2 font-bold">8. Rôle de KinoBooking</h2>
           <p>
             KinoBooking met en relation clients et établissements. La
             gestion du rendez-vous, l&apos;encaissement de l&apos;acompte et
@@ -101,7 +115,7 @@ export default function ConditionsGeneralesPage() {
         </section>
 
         <section>
-          <h2 className="mb-2 font-bold">8. Données personnelles</h2>
+          <h2 className="mb-2 font-bold">9. Données personnelles</h2>
           <p>
             Votre nom et votre numéro de téléphone ne sont transmis qu&apos;à
             l&apos;établissement concerné par votre réservation, pour vous
@@ -110,7 +124,7 @@ export default function ConditionsGeneralesPage() {
         </section>
 
         <section>
-          <h2 className="mb-2 font-bold">9. Modification des présentes conditions</h2>
+          <h2 className="mb-2 font-bold">10. Modification des présentes conditions</h2>
           <p>
             KinoBooking peut modifier ces conditions générales de vente à
             tout moment. La version applicable à une réservation est celle

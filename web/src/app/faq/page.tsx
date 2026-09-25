@@ -24,6 +24,11 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
       "Une fois votre demande validée par l'établissement, vous recevez un message WhatsApp avec le montant de l'acompte à envoyer et les coordonnées mobile money pour le faire.",
   },
   {
+    question: "Sous combien de temps l'établissement répond-il à ma demande ?",
+    answer:
+      "Chaque établissement s'engage à répondre à toute demande de réservation dans un délai de 2 heures, pendant ses heures d'ouverture. Passé ce délai, vous pouvez le relancer directement sur WhatsApp avec votre numéro de suivi.",
+  },
+  {
     question: "Dois-je payer un acompte ? Comment ?",
     answer:
       "Oui, pour une réservation avec rendez-vous : un acompte par mobile money (M-Pesa, Orange Money ou Airtel Money selon l'établissement) confirme votre créneau. Le mode « Sans rendez-vous » n'en demande pas.",
@@ -61,7 +66,7 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
     question: "Que faire si un établissement ne répond pas ?",
     answer:
-      "Recontactez-le directement sur WhatsApp. KinoBooking met en relation clients et établissements mais ne gère pas les rendez-vous à leur place.",
+      "Les établissements s'engagent à répondre sous 2 heures. Passé ce délai, recontactez-le directement sur WhatsApp — KinoBooking met en relation clients et établissements mais ne gère pas les rendez-vous à leur place.",
   },
   {
     question: "Est-ce gratuit pour moi ?",

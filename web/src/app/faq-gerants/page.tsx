@@ -23,6 +23,11 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
       "Depuis la fiche de votre établissement, sans créer de compte : il choisit un service puis un créneau (jamais le jour même) et envoie sa demande. Vous la validez depuis votre tableau de bord, ce qui ouvre WhatsApp avec un message prérempli demandant l'acompte au client.",
   },
   {
+    question: "Ai-je un délai pour répondre à une demande de réservation ?",
+    answer:
+      "Oui : par engagement envers vos clients, toute nouvelle demande de réservation doit être validée ou refusée dans un délai de 2 heures pendant vos heures d'ouverture (voir les CGV, article 3). Pensez à surveiller votre tableau de bord ou vos notifications.",
+  },
+  {
     question: "Puis-je accepter des clients sans rendez-vous ?",
     answer:
       "Oui, avec le mode « Sans rendez-vous » : le client prend un ticket dans une file d'attente, sans acompte à payer, et sans le délai imposé aux réservations avec rendez-vous.",
@@ -40,7 +45,7 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
     question: "Comment ajouter les membres de mon équipe ?",
     answer:
-      "Depuis Configuration → Équipe. Une fois ajoutés, ils deviennent assignables à une réservation (« avec untel/unetelle ») — il ne s'agit pas encore de comptes de connexion séparés, seulement d'une organisation interne.",
+      "Depuis Configuration → Équipe. Une fois ajoutés, ils deviennent assignables à une réservation (« avec untel/unetelle »). Vous pouvez aussi leur donner un accès à leur propre compte (téléphone + mot de passe, sans email requis), avec le rôle Coiffeur/Coiffeuse ou Gérant.",
   },
   {
     question: "Comment bloquer un créneau (congé, indisponibilité) ?",

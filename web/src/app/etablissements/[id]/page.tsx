@@ -321,6 +321,12 @@ export default async function BusinessPage({
               </p>
             </>
           )}
+          <p className="mt-3 border-t border-success/20 pt-3 text-xs text-ink-400">
+            L&apos;établissement s&apos;engage à répondre sous{" "}
+            <strong>2 heures</strong> (pendant ses heures d&apos;ouverture).
+            Passé ce délai, relancez-le directement sur WhatsApp avec votre
+            numéro de suivi.
+          </p>
         </div>
       )}
 
