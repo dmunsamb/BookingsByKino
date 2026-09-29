@@ -10,7 +10,8 @@ import { getSubscriptionStatus } from "@/lib/subscription";
 import { createClient } from "@/lib/supabase/server";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { formatCdf } from "@/lib/currency";
-import { logout, updateBookingStatus } from "./actions";
+import { updateBookingStatus } from "./actions";
+import { logout } from "@/lib/auth/actions";
 import { ValidateWithWhatsAppButton } from "./validate-with-whatsapp-button";
 import { ConfirmPaymentWithWhatsAppButton } from "./confirm-payment-with-whatsapp-button";
 import { ThankYouWhatsAppButton } from "./thank-you-whatsapp-button";
@@ -553,14 +554,6 @@ export default async function DashboardPage() {
               : roleLabels[profile.role] ?? profile.role}
           </p>
         </div>
-        <form action={logout}>
-          <button
-            type="submit"
-            className="rounded-xl border border-ink-900/16 px-4 py-2 text-sm font-bold text-ink-900 hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
-          >
-            Se déconnecter
-          </button>
-        </form>
       </div>
 
       {profile.role === "owner" && profile.business_id && (

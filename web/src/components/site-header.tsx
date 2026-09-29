@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { readImpersonation } from "@/lib/impersonation";
+import { logout } from "@/lib/auth/actions";
 import { HeaderMenu } from "./header-menu";
 import { KinoBookingLockup } from "./kino-booking-logo";
 
@@ -9,6 +10,10 @@ import { KinoBookingLockup } from "./kino-booking-logo";
  * Corrige l'absence de chemin de retour depuis le dashboard vers la
  * homepage. N'affiche que le prénom (premier mot du nom complet) : plus
  * lisible sur mobile, où le nom complet était souvent tronqué.
+ *
+ * Le bouton de déconnexion vit ici (pas seulement sur /dashboard) : c'est
+ * le seul endroit garanti visible sur TOUTES les pages une fois connecté
+ * (dashboard, /admin, fiche établissement en mode "voir en tant que"...).
  *
  * La notification (inscriptions en attente pour platform_admin) n'est
  * plus un badge dans le header : voir NotificationBanner ci-dessous,
@@ -56,13 +61,35 @@ export async function SiteHeader() {
         </Link>
         <div className="flex items-center gap-2">
           {user ? (
-            <Link
-              href={homeHref}
-              className="max-w-[10rem] truncate rounded-full px-3 py-1.5 text-sm font-bold text-paper transition hover:bg-paper/10"
-              title={displayName ?? undefined}
-            >
-              {firstName}
-            </Link>
+            <>
+              <Link
+                href={homeHref}
+                className="max-w-[10rem] truncate rounded-full px-3 py-1.5 text-sm font-bold text-paper transition hover:bg-paper/10"
+                title={displayName ?? undefined}
+              >
+                {firstName}
+              </Link>
+              <form action={logout}>
+                <button
+                  type="submit"
+                  aria-label="Se déconnecter"
+                  title="Se déconnecter"
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-paper/80 transition hover:bg-paper/10 hover:text-paper"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="h-5 w-5"
+                  >
+                    <path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3" />
+                    <path d="M10 8l-4 4 4 4" />
+                    <path d="M14 12H4" />
+                  </svg>
+                </button>
+              </form>
+            </>
           ) : (
             <Link
               href="/login"

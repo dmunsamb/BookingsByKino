@@ -67,6 +67,15 @@ export default function LoginPage() {
             </p>
           )}
 
+          <p className="text-right text-xs">
+            <Link
+              href="/mot-de-passe-oublie"
+              className="font-bold text-kino-600 hover:underline dark:text-kino-300"
+            >
+              Mot de passe oublié ?
+            </Link>
+          </p>
+
           <button
             type="submit"
             disabled={pending}
