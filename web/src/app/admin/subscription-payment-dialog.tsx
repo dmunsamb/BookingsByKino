@@ -90,7 +90,7 @@ export function SubscriptionPaymentDialog({
         ownerWhatsapp,
         `Bonjour ${ownerName ?? ""} ! Nous avons bien reçu votre paiement de $${amount.toFixed(
           2
-        )} (${selectedPlan.name}, ${durationLabel}) pour "${businessName}". Votre établissement est maintenant actif sur KinoBooking : connectez-vous à votre tableau de bord ici : https://kinobooking.netlify.app/login — avec l'email utilisé à l'inscription. Bienvenue !`
+        )} (${selectedPlan.name}, ${durationLabel}) pour "${businessName}". Votre établissement est maintenant actif sur KinoBooking : connectez-vous à votre tableau de bord ici : https://kinobooking.app/login — avec l'email utilisé à l'inscription. Bienvenue !`
       );
       window.open(welcomeLink, "_blank", "noopener,noreferrer");
     }
