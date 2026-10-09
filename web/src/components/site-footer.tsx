@@ -17,6 +17,10 @@ export function SiteFooter() {
   return (
     <footer className="mt-auto bg-ink-900">
       <div className="mx-auto max-w-5xl px-4 py-4 text-center text-xs text-muted-on-ink">
+        <Link href="/devenir-partenaire" className="hover:underline">
+          Vous avez un salon ? Rejoignez KinoBooking
+        </Link>
+        <span className="mx-2">·</span>
         <Link href="/conditions-generales" className="hover:underline">
           Conditions générales de vente
         </Link>
