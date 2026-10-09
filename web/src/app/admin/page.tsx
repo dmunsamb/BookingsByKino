@@ -15,6 +15,7 @@ import {
 import { PendingSignupsSection } from "./pending-signups-section";
 import { AwaitingPaymentSection } from "./awaiting-payment-section";
 import { ContactMessagesSection } from "./contact-messages-section";
+import { StatsSection } from "./stats-section";
 import {
   fetchAllSubscriptionPlans,
   fetchEligiblePlansByBusiness,
@@ -194,6 +195,8 @@ export default async function AdminPage() {
           </Link>
         </div>
       </div>
+
+      <StatsSection />
 
       <section className="mb-8">
         <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">

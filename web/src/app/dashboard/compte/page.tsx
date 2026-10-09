@@ -3,7 +3,7 @@ import { requireUser, getRealProfile } from "@/lib/auth/dal";
 import { logout } from "@/lib/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 import { ChangePasswordForm } from "./change-password-form";
-import { NotifyEmailToggle } from "./notify-email-toggle";
+import { NotifyEmailToggle } from "../notify-email-toggle";
 
 /**
  * Page "Mon compte" — volontairement accessible à N'IMPORTE QUEL compte
@@ -13,16 +13,18 @@ import { NotifyEmailToggle } from "./notify-email-toggle";
  * qu'ils n'ont pas forcément de salon actif. Le changement d'EMAIL reste
  * réservé à /admin (platform_admin), voir dashboard/compte/actions.ts.
  *
- * Notification par email (voir notify-email-toggle.tsx) : affichée
- * seulement pour owner/platform_admin — un compte personnel (staff) se
- * connecte par téléphone, sans email, donc rien à notifier par mail.
+ * Notification par email (voir dashboard/notify-email-toggle.tsx) :
+ * affichée ici uniquement pour platform_admin (pas d'équivalent "Mon
+ * établissement" pour ce rôle) — celle d'un gérant vit dans Configuration
+ * → Notifications (dashboard/configuration/page.tsx), à côté des autres
+ * réglages de son établissement.
  */
 export default async function ComptePage() {
   const user = await requireUser();
   const profile = await getRealProfile();
 
   let notifyByEmail = true;
-  if (user.email && profile && (profile.role === "owner" || profile.role === "platform_admin")) {
+  if (user.email && profile?.role === "platform_admin") {
     const supabase = await createClient();
     const { data } = await supabase
       .from("profiles")
@@ -52,18 +54,14 @@ export default async function ComptePage() {
         Pour changer votre adresse email, contactez KinoBooking.
       </p>
 
-      {user.email && profile && (profile.role === "owner" || profile.role === "platform_admin") && (
+      {user.email && profile?.role === "platform_admin" && (
         <div className="mt-6 border-t border-ink-900/10 pt-6 dark:border-paper/10">
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-ink-400">
             Notifications
           </p>
           <NotifyEmailToggle
             initialEnabled={notifyByEmail}
-            label={
-              profile.role === "platform_admin"
-                ? "Recevoir un email à chaque nouvelle inscription"
-                : "Recevoir un email à chaque nouvelle demande de réservation"
-            }
+            label="Recevoir un email à chaque nouvelle inscription"
           />
         </div>
       )}

@@ -1,14 +1,16 @@
 import Link from "next/link";
-import { getCurrentProfile, canManageBusiness } from "@/lib/auth/dal";
+import { getCurrentProfile, canManageBusiness, requireUser } from "@/lib/auth/dal";
 import { createClient } from "@/lib/supabase/server";
 import { MobileMoneyForm } from "../mobile-money-form";
 import { DashboardNav } from "../dashboard-nav";
 import { OnlineToggle } from "./online-toggle";
 import { WalkinQueueToggle } from "./walkin-queue-toggle";
+import { NotifyEmailToggle } from "../notify-email-toggle";
 import type { MobileMoneyAccount, MobileMoneyProvider } from "@/lib/whatsapp";
 import packageJson from "../../../../package.json";
 
 export default async function ConfigurationPage() {
+  const user = await requireUser();
   const profile = await getCurrentProfile();
 
   if (!profile?.business_id) {
@@ -20,24 +22,35 @@ export default async function ConfigurationPage() {
   }
 
   const supabase = await createClient();
-  const [{ data: businessData }, { count: availabilityRulesCount }, { count: servicesCount }] =
-    await Promise.all([
-      supabase
-        .from("businesses")
-        .select(
-          "mpesa_number, mpesa_holder_name, orange_money_number, orange_money_holder_name, airtel_money_number, airtel_money_holder_name, is_online, walkin_queue_open"
-        )
-        .eq("id", profile.business_id)
-        .maybeSingle(),
-      supabase
-        .from("availability_rules")
-        .select("id", { count: "exact", head: true })
-        .eq("business_id", profile.business_id),
-      supabase
-        .from("services")
-        .select("id", { count: "exact", head: true })
-        .eq("business_id", profile.business_id),
-    ]);
+  const [
+    { data: businessData },
+    { count: availabilityRulesCount },
+    { count: servicesCount },
+    { data: notifyData },
+  ] = await Promise.all([
+    supabase
+      .from("businesses")
+      .select(
+        "mpesa_number, mpesa_holder_name, orange_money_number, orange_money_holder_name, airtel_money_number, airtel_money_holder_name, is_online, walkin_queue_open"
+      )
+      .eq("id", profile.business_id)
+      .maybeSingle(),
+    supabase
+      .from("availability_rules")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", profile.business_id),
+    supabase
+      .from("services")
+      .select("id", { count: "exact", head: true })
+      .eq("business_id", profile.business_id),
+    supabase
+      .from("profiles")
+      .select("notify_by_email")
+      .eq("id", profile.id)
+      .maybeSingle(),
+  ]);
+
+  const notifyByEmail = notifyData?.notify_by_email ?? true;
 
   const hasServices = (servicesCount ?? 0) > 0;
   const hasAvailability = (availabilityRulesCount ?? 0) > 0;
@@ -82,6 +95,31 @@ export default async function ConfigurationPage() {
 
       {canManageBusiness(profile) && (
         <WalkinQueueToggle isOpen={businessData?.walkin_queue_open ?? true} />
+      )}
+
+      {canManageBusiness(profile) && user.email && (
+        <div className="mb-6 rounded-2xl border border-ink-900/10 bg-white p-4 dark:border-paper/10 dark:bg-ink-800">
+          <p className="mb-3 font-bold text-ink-900 dark:text-paper">
+            Notifications
+          </p>
+          <div className="space-y-2">
+            <NotifyEmailToggle
+              initialEnabled={notifyByEmail}
+              label="Email — nouvelle demande de réservation"
+            />
+            <label className="flex items-center gap-3 rounded-xl border border-ink-900/16 p-3 text-sm text-ink-400 opacity-60 dark:border-paper/16">
+              <input
+                type="checkbox"
+                disabled
+                className="h-5 w-5 flex-none accent-kino-400"
+              />
+              WhatsApp — nouvelle demande de réservation
+              <span className="ml-auto rounded-full bg-ink-900/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-ink-400 dark:bg-paper/10">
+                Bientôt disponible
+              </span>
+            </label>
+          </div>
+        </div>
       )}
 
       {canManageBusiness(profile) && (!hasServices || !hasAvailability) && (

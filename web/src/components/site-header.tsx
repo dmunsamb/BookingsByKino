@@ -112,6 +112,7 @@ export async function SiteHeader() {
           <HeaderMenu
             faqHref={user ? "/faq-gerants" : "/faq"}
             faqSectionLabel={user ? "Gérants" : "Aide"}
+            loggedIn={!!user}
           />
         </div>
       </div>

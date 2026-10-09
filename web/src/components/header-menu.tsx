@@ -13,9 +13,11 @@ import { CATEGORIES } from "@/lib/categories";
 export function HeaderMenu({
   faqHref,
   faqSectionLabel,
+  loggedIn,
 }: {
   faqHref: string;
   faqSectionLabel: string;
+  loggedIn: boolean;
 }) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
 
@@ -48,6 +50,17 @@ export function HeaderMenu({
         </svg>
       </summary>
       <div className="absolute right-0 z-20 mt-2 w-56 rounded-2xl border border-ink-900/10 bg-white p-2 shadow-lg dark:border-paper/10 dark:bg-ink-800">
+        {!loggedIn && (
+          <>
+            <Link
+              href="/devenir-partenaire"
+              className="block rounded-xl bg-kino-100 px-3 py-2 text-sm font-bold text-kino-700 hover:bg-kino-200 dark:bg-kino-900 dark:text-kino-300 dark:hover:bg-kino-800"
+            >
+              Vous avez un salon ? Devenez partenaire
+            </Link>
+            <hr className="my-2 border-ink-900/10 dark:border-paper/10" />
+          </>
+        )}
         <p className="px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-widest text-ink-400">
           Catégories
         </p>

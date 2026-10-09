@@ -1,7 +1,7 @@
 "use client";
 
 import { useOptimistic, useTransition } from "react";
-import { updateNotifyByEmail } from "./actions";
+import { updateNotifyByEmail } from "./compte/actions";
 
 /**
  * Même pattern optimiste que OnlineToggle (dashboard/configuration) —
