@@ -24,32 +24,32 @@ const BENEFITS: { title: string; description: string }[] = [
   {
     title: "Zéro appel manqué",
     description:
-      "Vos clients réservent depuis leur téléphone à toute heure, même salon fermé — plus besoin de décrocher pour prendre un rendez-vous.",
+      "Vos clients réservent depuis leur téléphone à toute heure, même quand le salon est fermé. Plus besoin de décrocher pour prendre un rendez-vous.",
   },
   {
     title: "Acompte sécurisé, sans y penser",
     description:
-      "Dès qu'une demande est validée, WhatsApp s'ouvre avec un message prérempli indiquant vos coordonnées mobile money (M-Pesa, Orange Money, Airtel Money). Fini les rendez-vous fantômes.",
+      "Dès qu'une demande est validée, WhatsApp s'ouvre avec un message prérempli qui indique vos coordonnées mobile money (M-Pesa, Orange Money, Airtel Money). Fini les rendez-vous fantômes.",
   },
   {
     title: "File d'attente pour le sans rendez-vous",
     description:
-      "Les clients de passage prennent un ticket, sans bloquer un créneau ni verser d'acompte — votre salon reste ouvert aux deux façons de venir.",
+      "Les clients de passage prennent un ticket. Pas de créneau à bloquer, pas d'acompte à verser : votre salon reste ouvert aux deux façons de venir.",
   },
   {
     title: "Votre équipe, pas que vous",
     description:
-      "Créez des comptes pour vos coiffeurs et coiffeuses, assignez-les aux réservations, sans partager votre mot de passe gérant.",
+      "Créez des comptes pour vos coiffeurs et coiffeuses, assignez-les aux réservations, sans jamais partager votre mot de passe de gérant.",
   },
   {
     title: "Vos chiffres, en clair",
     description:
-      "Encaissements, meilleures ventes, taux d'absence, rapport par semaine/mois/trimestre exportable en CSV — ce que vous faisiez de tête, enfin écrit noir sur blanc.",
+      "Encaissements, meilleures ventes, taux d'absence : votre rapport par semaine, par mois ou par trimestre, exportable en CSV. Ce que vous gardiez de tête jusque-là, enfin écrit noir sur blanc.",
   },
   {
     title: "Une fiche qui donne envie",
     description:
-      "Photos, horaires, avis clients et services en un lien unique à partager sur WhatsApp ou vos réseaux — votre vitrine, sans rien coder.",
+      "Photos, horaires, avis clients et services réunis en un seul lien à partager sur WhatsApp ou vos réseaux. Votre vitrine, sans une ligne de code à écrire.",
   },
 ];
 
@@ -69,7 +69,7 @@ const STEPS = [
     number: "3",
     title: "Vous recevez vos premières demandes",
     description:
-      "Dès que votre fiche est en ligne, vos clients peuvent réserver — vous validez chaque demande en 2h.",
+      "Dès que votre fiche est en ligne, vos clients peuvent réserver. Vous validez chaque demande dans les 2 heures.",
   },
 ];
 
@@ -87,12 +87,12 @@ const FAQ_TEASER: { question: string; answer: string }[] = [
   {
     question: "Et si je gère plusieurs salons ?",
     answer:
-      "Un seul compte peut gérer plusieurs établissements — vous basculez de l'un à l'autre depuis votre tableau de bord.",
+      "Un seul compte peut gérer plusieurs établissements. Vous basculez de l'un à l'autre depuis votre tableau de bord.",
   },
   {
     question: "Comment je suis payé ?",
     answer:
-      "Directement par vos clients, via mobile money (M-Pesa, Orange Money, Airtel Money) — KinoBooking ne touche jamais à cet argent, seul l'abonnement à la plateforme vous est facturé.",
+      "Directement par vos clients, via mobile money (M-Pesa, Orange Money, Airtel Money). KinoBooking ne touche jamais à cet argent : seul l'abonnement à la plateforme vous est facturé.",
   },
 ];
 
@@ -117,8 +117,8 @@ export default async function DevenirPartenairePage() {
             Remplissez votre salon, sans lever le téléphone
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-paper/70 sm:text-base">
-            KinoBooking gère vos réservations, vos acomptes et votre file
-            d&apos;attente — vous vous concentrez sur vos clients.
+            KinoBooking s&apos;occupe des réservations, des acomptes et de
+            la file d&apos;attente. À vous de vous occuper de vos clients.
           </p>
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
@@ -189,7 +189,7 @@ export default async function DevenirPartenairePage() {
           Un tarif simple, verrouillé pour les premiers
         </h2>
         <p className="mb-8 text-center text-sm text-ink-400">
-          Plan Standard — tout est inclus, aucune fonctionnalité en plus à
+          Plan Standard. Tout est inclus, aucune fonctionnalité en plus à
           payer.
         </p>
 
