@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { localSlotToIso } from "@/lib/availability";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { notifyBusinessOwnersOfNewBooking } from "@/lib/notifications";
 
 /**
  * Soumission d'une demande de réservation "avec RDV" par le client
@@ -116,6 +117,12 @@ export async function createBookingRequest(
         "Ce créneau n'est plus disponible ou une erreur est survenue. Merci de réessayer.",
     };
   }
+
+  await notifyBusinessOwnersOfNewBooking(
+    businessId,
+    clientName.trim(),
+    referenceNumber
+  );
 
   redirect(`/etablissements/${businessId}?confirmed=1&ref=${referenceNumber}`);
 }

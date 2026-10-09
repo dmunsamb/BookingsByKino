@@ -9,6 +9,7 @@ import { uploadPhoto } from "@/lib/supabase/media-admin";
 import { MAX_BUSINESS_PHOTOS } from "@/lib/media";
 import { isValidCategory, mainCategoryForAny } from "@/lib/categories";
 import { normalizeCongoPhone } from "@/lib/phone";
+import { notifyPlatformAdminsOfNewSignup } from "@/lib/notifications";
 
 /**
  * Auto-inscription d'un nouveau gérant. Toutes les écritures passent par
@@ -204,6 +205,8 @@ export async function signup(
   if (photoRows.length > 0) {
     await admin.from("business_photos").insert(photoRows);
   }
+
+  await notifyPlatformAdminsOfNewSignup(businessName.trim());
 
   // Connecte immédiatement le gérant (cookies de session) pour qu'il
   // arrive sur son dashboard, même en attente de validation — plus

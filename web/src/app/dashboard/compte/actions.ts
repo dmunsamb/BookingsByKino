@@ -67,3 +67,20 @@ export async function changeOwnPassword(
 
   return { success: true };
 }
+
+/**
+ * Préférence de notification par email (profiles.notify_by_email, voir
+ * migration 0045 et lib/notifications.ts) — agit toujours sur le VRAI
+ * compte connecté, jamais sur un salon impersonné (même raison que
+ * changeOwnPassword ci-dessus).
+ */
+export async function updateNotifyByEmail(formData: FormData) {
+  const user = await requireUser();
+  const notifyByEmail = formData.get("notify_by_email") === "true";
+
+  const supabase = await createClient();
+  await supabase
+    .from("profiles")
+    .update({ notify_by_email: notifyByEmail })
+    .eq("id", user.id);
+}

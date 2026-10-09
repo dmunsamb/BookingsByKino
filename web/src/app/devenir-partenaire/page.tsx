@@ -56,6 +56,11 @@ const BENEFITS: { title: string; description: string }[] = [
     description:
       "Photos, horaires, avis clients et services réunis en un seul lien à partager sur WhatsApp ou vos réseaux. Votre vitrine, sans une ligne de code à écrire.",
   },
+  {
+    title: "Alertes email, incluses",
+    description:
+      "Recevez un email dès qu'une nouvelle demande de réservation arrive, sans rafraîchir votre tableau de bord toutes les cinq minutes. Gratuit, inclus dans l'abonnement, activable ou désactivable à tout moment.",
+  },
 ];
 
 const STEPS = [
