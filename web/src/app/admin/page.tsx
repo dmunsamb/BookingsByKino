@@ -14,6 +14,7 @@ import {
 } from "./platform-payment-settings-form";
 import { PendingSignupsSection } from "./pending-signups-section";
 import { AwaitingPaymentSection } from "./awaiting-payment-section";
+import { ContactMessagesSection } from "./contact-messages-section";
 import {
   fetchAllSubscriptionPlans,
   fetchEligiblePlansByBusiness,
@@ -213,6 +214,8 @@ export default async function AdminPage() {
       <PendingSignupsSection />
 
       <AwaitingPaymentSection />
+
+      <ContactMessagesSection />
 
       <section className="mb-8">
         <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-ink-400">

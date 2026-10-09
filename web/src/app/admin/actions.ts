@@ -163,6 +163,20 @@ export async function rejectBusiness(formData: FormData) {
   revalidatePath("/admin");
 }
 
+/** Marque un message du formulaire de contact (/devenir-partenaire) comme traité. */
+export async function deleteContactMessage(formData: FormData) {
+  const admin = await requirePlatformAdmin();
+  if (!admin) return;
+
+  const id = formData.get("id");
+  if (typeof id !== "string") return;
+
+  const supabase = await createClient();
+  await supabase.from("contact_messages").delete().eq("id", id);
+
+  revalidatePath("/admin");
+}
+
 function parsePlanPrices(formData: FormData): Record<number, number> | null {
   const prices: Record<number, number> = {};
   for (const months of ALLOWED_DURATION_MONTHS) {

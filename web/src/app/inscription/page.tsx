@@ -116,9 +116,11 @@ export default function SignupPage() {
             />
           </div>
 
+          <CityCommuneFields />
+
           <div>
             <label className="mb-1 block text-xs font-bold uppercase tracking-widest text-ink-400">
-              Point de repère (optionnel)
+              Référence (optionnel)
             </label>
             <input
               name="address_reference"
@@ -131,8 +133,6 @@ export default function SignupPage() {
               sans adresse précise.
             </p>
           </div>
-
-          <CityCommuneFields />
 
           <div>
             <div className="mb-1 flex items-baseline justify-between">

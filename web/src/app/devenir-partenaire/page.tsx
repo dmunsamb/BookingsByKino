@@ -4,6 +4,7 @@ import { KinoBookingLockup } from "@/components/kino-booking-logo";
 import { FaqAccordion } from "@/components/faq-accordion";
 import { ContactForm } from "./contact-form";
 import { formatCdf } from "@/lib/currency";
+import { buildWhatsAppLink } from "@/lib/whatsapp";
 
 /**
  * Sales page destinée aux prospects (gérants de salon pas encore
@@ -101,20 +102,24 @@ const FAQ_TEASER: { question: string; answer: string }[] = [
 ];
 
 export default async function DevenirPartenairePage() {
-  // subscription_payments n'est lisible que par platform_admin (RLS, voir
-  // migration 0017) : client admin requis ici, cette page étant publique.
-  // Seul le compte agrégé qui en ressort est rendu, jamais une ligne.
-  // subscription_payments n'est lisible que par platform_admin (RLS, voir
-  // migration 0017) : client admin requis ici, cette page étant publique.
-  // Seul le compte agrégé qui en ressort est rendu, jamais une ligne.
+  // subscription_payments et platform_payment_settings ne sont lisibles
+  // que par platform_admin (RLS) : client admin requis ici, cette page
+  // étant publique. Seules des valeurs agrégées/de configuration en
+  // ressortent, jamais une ligne de paiement.
   const admin = createAdminClient();
-  const { data: paidBusinesses } = await admin
-    .from("subscription_payments")
-    .select("business_id");
+  const [{ data: paidBusinesses }, { data: paymentSettings }] = await Promise.all([
+    admin.from("subscription_payments").select("business_id"),
+    admin
+      .from("platform_payment_settings")
+      .select("contact_whatsapp")
+      .eq("id", true)
+      .maybeSingle(),
+  ]);
 
   const foundersTaken = new Set((paidBusinesses ?? []).map((p) => p.business_id))
     .size;
   const slotsLeft = Math.max(0, FOUNDER_SLOTS - foundersTaken);
+  const contactWhatsapp = paymentSettings?.contact_whatsapp || null;
 
   return (
     <div className="w-full">
@@ -286,6 +291,25 @@ export default async function DevenirPartenairePage() {
           Écrivez-nous, on vous répond directement.
         </p>
         <ContactForm />
+
+        {contactWhatsapp && (
+          <>
+            <p className="my-6 text-center text-xs font-bold uppercase tracking-widest text-ink-400">
+              ou
+            </p>
+            <a
+              href={buildWhatsAppLink(
+                contactWhatsapp,
+                "Bonjour, j'ai une question sur KinoBooking avant de m'inscrire."
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-ink-900/16 py-3.5 text-sm font-bold text-ink-900 transition hover:bg-ink-900/5 dark:border-paper/16 dark:text-paper dark:hover:bg-paper/5"
+            >
+              Nous écrire directement sur WhatsApp
+            </a>
+          </>
+        )}
       </section>
 
       {/* CTA final */}
