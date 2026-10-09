@@ -10,12 +10,12 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
     question: "Comment mon établissement devient-il visible sur KinoBooking ?",
     answer:
-      "Après votre inscription, l'établissement reste « en attente de validation » et n'apparaît pas encore dans le catalogue public. L'équipe KinoBooking valide manuellement chaque nouvelle inscription ; vous recevez un accès complet dès que c'est fait.",
+      "Après votre inscription, l'établissement reste « en attente de validation » et n'apparaît pas encore dans le catalogue public. L'équipe KinoBooking valide chaque nouvelle inscription ; vous recevez un accès complet dès que c'est fait.",
   },
   {
     question: "Comment fonctionne l'abonnement KinoBooking ?",
     answer:
-      "L'abonnement se règle par mobile money, pour 1, 3 ou 12 mois selon la durée choisie (tarif fixé par KinoBooking). Passé la date d'échéance, vous disposez d'un délai de grâce de 7 jours avant que l'accès à votre tableau de bord ne soit suspendu — les demandes de réservation de vos clients continuent d'arriver pendant ce temps.",
+      "L'abonnement se règle par mobile money, pour 1, 3 ou 12 mois selon la durée choisie (tarif fixé par KinoBooking). Passé la date d'échéance, vous disposez d'un délai de grâce de 7 jours avant que l'accès à votre tableau de bord ne soit suspendu. Les demandes de réservation de vos clients continuent d'arriver pendant ce temps.",
   },
   {
     question: "Comment un client réserve-t-il un rendez-vous ?",
@@ -85,7 +85,7 @@ export default function FaqGerantsPage() {
       </Link>
 
       <h1 className="mb-2 font-serif text-2xl text-ink-900 dark:text-paper">
-        Questions fréquentes — Gérants
+        Questions fréquentes pour les gérants
       </h1>
       <p className="mb-6 text-sm text-ink-400">
         Tout ce qu&apos;un gérant ou son équipe se demande le plus souvent

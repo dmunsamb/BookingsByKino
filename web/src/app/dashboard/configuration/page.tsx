@@ -6,6 +6,7 @@ import { DashboardNav } from "../dashboard-nav";
 import { OnlineToggle } from "./online-toggle";
 import { WalkinQueueToggle } from "./walkin-queue-toggle";
 import type { MobileMoneyAccount, MobileMoneyProvider } from "@/lib/whatsapp";
+import packageJson from "../../../../package.json";
 
 export default async function ConfigurationPage() {
   const profile = await getCurrentProfile();
@@ -246,6 +247,10 @@ export default async function ConfigurationPage() {
           </p>
         </Link>
       </div>
+
+      <p className="mt-8 text-center text-xs text-ink-400">
+        KinoBooking v{packageJson.version}
+      </p>
     </div>
   );
 }

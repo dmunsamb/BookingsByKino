@@ -22,7 +22,7 @@ export default function LoginPage() {
           Espace Salon
         </h1>
         <p className="mb-6 text-sm text-ink-400">
-          Connectez-vous avec le compte fourni par KinoBooking — email pour
+          Connectez-vous avec le compte fourni par KinoBooking : email pour
           un gérant, numéro de téléphone pour un membre de l&apos;équipe.
         </p>
 

@@ -26,10 +26,10 @@ export default async function NewBusinessPage() {
         Ajouter un établissement
       </h1>
       <p className="mb-6 text-sm text-ink-400">
-        Vous restez connecté avec le même compte — vous pourrez basculer
+        Vous restez connecté avec le même compte : vous pourrez basculer
         entre vos établissements depuis le tableau de bord. Ce nouvel
-        établissement sera visible des clients après validation manuelle
-        par l&apos;équipe KinoBooking.
+        établissement sera visible des clients après validation par
+        l&apos;équipe KinoBooking.
       </p>
 
       <NewBusinessForm />

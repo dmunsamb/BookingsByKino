@@ -8,6 +8,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 import { uploadPhoto } from "@/lib/supabase/media-admin";
 import { MAX_BUSINESS_PHOTOS } from "@/lib/media";
 import { isValidCategory, mainCategoryForAny } from "@/lib/categories";
+import { normalizeCongoPhone } from "@/lib/phone";
 
 /**
  * Auto-inscription d'un nouveau gérant. Toutes les écritures passent par
@@ -19,13 +20,18 @@ import { isValidCategory, mainCategoryForAny } from "@/lib/categories";
  *
  * L'établissement créé reste en statut "pending_approval" (voir
  * migration 0014) : invisible du catalogue public tant que KinoBooking
- * ne l'a pas validé manuellement.
+ * ne l'a pas validé.
  *
  * L'email est obligatoire (c'est l'identifiant de connexion Supabase
  * Auth — pas d'authentification par téléphone sur ce projet). Le numéro
- * WhatsApp reste optionnel : c'est une simple coordonnée de contact,
- * utilisée notamment pour les rappels de paiement d'abonnement envoyés
- * par KinoBooking (voir /admin).
+ * WhatsApp est obligatoire aussi : c'est le canal utilisé par KinoBooking
+ * pour contacter le gérant (validation, rappels de paiement d'abonnement,
+ * voir /admin), donc indispensable dès l'inscription.
+ *
+ * Au moins une photo du salon est exigée : une fiche sans photo convertit
+ * nettement moins bien auprès des clients, autant le demander dès
+ * l'inscription plutôt que de compter sur un ajout a posteriori qui
+ * n'arrive souvent jamais.
  */
 
 export type SignupState = { error?: string };
@@ -58,13 +64,20 @@ export async function signup(
     (v): v is string => typeof v === "string"
   );
   const address = formData.get("address");
+  const addressReferenceRaw = formData.get("address_reference");
   const commune = formData.get("commune");
   const city = formData.get("city");
   const descriptionRaw = formData.get("description");
   const logo = formData.get("logo");
+  const photoFiles = formData
+    .getAll("photos")
+    .filter((f): f is File => f instanceof File && f.size > 0)
+    .slice(0, MAX_BUSINESS_PHOTOS);
 
   const email = typeof emailRaw === "string" ? emailRaw.trim() : "";
   const whatsapp = typeof whatsappRaw === "string" ? whatsappRaw.trim() : "";
+  const addressReference =
+    typeof addressReferenceRaw === "string" ? addressReferenceRaw.trim() : "";
   const description =
     typeof descriptionRaw === "string" ? descriptionRaw.trim() : "";
 
@@ -79,6 +92,16 @@ export async function signup(
     !categories.every(isValidCategory)
   ) {
     return { error: "Veuillez remplir tous les champs obligatoires." };
+  }
+
+  if (!normalizeCongoPhone(whatsapp)) {
+    return {
+      error: "Veuillez indiquer un numéro WhatsApp congolais valide.",
+    };
+  }
+
+  if (photoFiles.length === 0) {
+    return { error: "Veuillez ajouter au moins une photo de votre salon." };
   }
 
   if (description.length > 500) {
@@ -133,6 +156,7 @@ export async function signup(
       main_category: mainCategoryForAny(categories),
       categories,
       address: typeof address === "string" ? address.trim() || null : null,
+      address_reference: addressReference || null,
       commune: typeof commune === "string" ? commune.trim() || null : null,
       city: typeof city === "string" ? city.trim() || null : null,
       image_url: logoUrl,
@@ -166,10 +190,10 @@ export async function signup(
     };
   }
 
-  // Galerie de photos du salon (facultative, en plus du logo) — meilleur
-  // effort : une photo invalide ou en échec d'upload ne doit jamais faire
-  // échouer toute l'inscription, elle est simplement ignorée.
-  const photoFiles = formData.getAll("photos").slice(0, MAX_BUSINESS_PHOTOS);
+  // Galerie de photos du salon (en plus du logo) — au moins une photo est
+  // déjà garantie par la validation plus haut ; l'upload individuel reste
+  // en meilleur effort, une photo en échec ne doit pas faire échouer toute
+  // l'inscription (le gérant vient d'y passer plusieurs minutes).
   const photoRows: { business_id: string; url: string; position: number }[] = [];
   for (let i = 0; i < photoFiles.length; i++) {
     const url = await uploadPhoto(photoFiles[i], `businesses/${business.id}`);

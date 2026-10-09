@@ -41,7 +41,7 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
     question: "Puis-je réserver pour aujourd'hui même ?",
     answer:
-      "Pas avec un rendez-vous — les créneaux s'ouvrent à partir du lendemain. Pour le jour même, présentez-vous directement en mode « Sans rendez-vous ».",
+      "Pas avec un rendez-vous : les créneaux s'ouvrent à partir du lendemain. Pour le jour même, présentez-vous directement en mode « Sans rendez-vous ».",
   },
   {
     question: "Comment savoir si ma réservation est confirmée ?",
@@ -51,7 +51,7 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
     question: "Puis-je annuler ou changer l'horaire de ma réservation ?",
     answer:
-      "Contactez directement l'établissement sur WhatsApp avec votre numéro de suivi — c'est lui qui gère votre réservation, KinoBooking n'intervient pas dans cet échange.",
+      "Contactez directement l'établissement sur WhatsApp avec votre numéro de suivi. C'est lui qui gère votre réservation, KinoBooking n'intervient pas dans cet échange.",
   },
   {
     question: "Mon numéro de téléphone est-il visible par tout le monde ?",
@@ -66,7 +66,7 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
     question: "Que faire si un établissement ne répond pas ?",
     answer:
-      "Les établissements s'engagent à répondre sous 2 heures. Passé ce délai, recontactez-le directement sur WhatsApp — KinoBooking met en relation clients et établissements mais ne gère pas les rendez-vous à leur place.",
+      "Les établissements s'engagent à répondre sous 2 heures. Passé ce délai, recontactez-le directement sur WhatsApp : KinoBooking met en relation clients et établissements, mais ne gère pas les rendez-vous à leur place.",
   },
   {
     question: "Est-ce gratuit pour moi ?",

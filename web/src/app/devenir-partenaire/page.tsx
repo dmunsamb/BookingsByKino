@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { KinoBookingLockup } from "@/components/kino-booking-logo";
 import { FaqAccordion } from "@/components/faq-accordion";
+import { ContactForm } from "./contact-form";
 import { formatCdf } from "@/lib/currency";
 
 /**
@@ -11,11 +12,14 @@ import { formatCdf } from "@/lib/currency";
  * (déjà-inscrits) : ici on explique pourquoi s'inscrire avant d'y
  * envoyer le prospect.
  *
- * Compteur "places fondateur" : les 30 premiers établissements inscrits
- * gardent ce tarif de lancement à vie, au-delà le tarif remonte (décision
- * produit, pas encore chiffrée). Basé sur le nombre réel d'établissements
- * déjà créés (tous statuts confondus) plutôt qu'un chiffre codé en dur,
- * pour rester honnête si le compteur est consulté plusieurs fois.
+ * Compteur "places fondateur" : les 30 premiers établissements ayant
+ * réellement payé leur abonnement gardent ce tarif de lancement à vie,
+ * au-delà le tarif remonte (décision produit, pas encore chiffrée). Compté
+ * sur subscription_payments (un paiement confirmé par un platform_admin
+ * via recordSubscriptionPayment), pas sur le nombre d'inscriptions : une
+ * simple inscription en attente de validation ne doit pas consommer une
+ * place. business_id dédupliqué pour qu'un renouvellement ne compte pas
+ * une deuxième fois le même établissement.
  */
 
 const FOUNDER_SLOTS = 30;
@@ -82,7 +86,7 @@ const FAQ_TEASER: { question: string; answer: string }[] = [
   {
     question: "Combien de temps avant que ma fiche soit en ligne ?",
     answer:
-      "L'équipe KinoBooking valide manuellement chaque nouvelle inscription, généralement sous 24h.",
+      "L'équipe KinoBooking valide chaque nouvelle inscription, généralement sous 24h.",
   },
   {
     question: "Et si je gère plusieurs salons ?",
@@ -97,12 +101,19 @@ const FAQ_TEASER: { question: string; answer: string }[] = [
 ];
 
 export default async function DevenirPartenairePage() {
-  const supabase = await createClient();
-  const { count } = await supabase
-    .from("businesses")
-    .select("id", { count: "exact", head: true });
+  // subscription_payments n'est lisible que par platform_admin (RLS, voir
+  // migration 0017) : client admin requis ici, cette page étant publique.
+  // Seul le compte agrégé qui en ressort est rendu, jamais une ligne.
+  // subscription_payments n'est lisible que par platform_admin (RLS, voir
+  // migration 0017) : client admin requis ici, cette page étant publique.
+  // Seul le compte agrégé qui en ressort est rendu, jamais une ligne.
+  const admin = createAdminClient();
+  const { data: paidBusinesses } = await admin
+    .from("subscription_payments")
+    .select("business_id");
 
-  const foundersTaken = count ?? 0;
+  const foundersTaken = new Set((paidBusinesses ?? []).map((p) => p.business_id))
+    .size;
   const slotsLeft = Math.max(0, FOUNDER_SLOTS - foundersTaken);
 
   return (
@@ -264,6 +275,17 @@ export default async function DevenirPartenairePage() {
             Voir toutes les questions gérants →
           </Link>
         </p>
+      </section>
+
+      {/* Contact */}
+      <section id="contact" className="mx-auto max-w-md px-4 py-14">
+        <h2 className="mb-2 text-center font-serif text-2xl text-ink-900 dark:text-paper">
+          Une question avant de vous lancer ?
+        </h2>
+        <p className="mb-8 text-center text-sm text-ink-400">
+          Écrivez-nous, on vous répond directement.
+        </p>
+        <ContactForm />
       </section>
 
       {/* CTA final */}
