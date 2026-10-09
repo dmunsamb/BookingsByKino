@@ -1,5 +1,6 @@
 import Link from "next/link";
 import packageJson from "../../package.json";
+import { ManageCookiesLink } from "./manage-cookies-link";
 
 /**
  * Pied de page persistant (numéro de version + copyright) — demandé
@@ -24,6 +25,12 @@ export function SiteFooter() {
         <Link href="/conditions-generales" className="hover:underline">
           Conditions générales de vente
         </Link>
+        <span className="mx-2">·</span>
+        <Link href="/politique-de-confidentialite" className="hover:underline">
+          Politique de confidentialité
+        </Link>
+        <span className="mx-2">·</span>
+        <ManageCookiesLink />
         <span className="mx-2">·</span>
         KinoBooking v{packageJson.version} · © {year} kinshasa.io
       </div>
